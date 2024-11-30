@@ -1,0 +1,1 @@
+export type StreamingTextArray = Array<{id: number, text: string}>;
