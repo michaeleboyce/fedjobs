@@ -4,3 +4,5 @@ export type AnalysisStatus = {
     isComplete: boolean;
     progress: number;
   }
+
+  

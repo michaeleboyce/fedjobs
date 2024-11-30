@@ -1,27 +1,51 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES6",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
+    "target": "es2020",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "allowJs": true,
+    "noEmit": true,
     "jsx": "preserve",
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ],
+      "@fedjobs/types": [
+        "../../packages/types/src"
+      ],
+      "@fedjobs/utils": [
+        "../../packages/utils/src"
+      ],
+      "@fedjobs/database": [
+        "../../packages/database/src"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/(routes)/api/ai/vectorize/[docName]"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "app/(routes)/api/ai/vectorize/[docName]",
+    "app/(routes)/api/ai/parse/[id]"
+  ],
+  "references": [
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/database"
+    }
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

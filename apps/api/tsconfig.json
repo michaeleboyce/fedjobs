@@ -1,0 +1,31 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+      "outDir": "dist",
+      "rootDir": "src",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "baseUrl": ".",
+      "noEmit": false,
+      "paths": {
+        "@/*": [
+          "./src/*"
+        ],
+        "@fedjobs/types": [
+          "../../packages/types/src"
+        ],
+        "@fedjobs/utils": [
+          "../../packages/utils/src"
+        ],
+        "@fedjobs/database": [
+          "../../packages/database/src"
+        ]
+      },
+    },
+    "include": ["src/**/*"],
+    "references": [
+      { "path": "../../packages/types" },
+      { "path": "../../packages/utils" },
+      { "path": "../../packages/database" }
+    ]
+  }
