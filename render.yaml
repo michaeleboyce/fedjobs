@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: fedjobs-api
+    env: node
+    region: oregon
+    buildCommand: pnpm install && pnpm build
+    startCommand: cd apps/api && node dist/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
