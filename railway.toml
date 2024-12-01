@@ -1,0 +1,12 @@
+[
+build
+]
+builder = "nixpacks"
+buildCommand = "pnpm install && pnpm build"
+
+[
+deploy
+]
+startCommand = "pnpm --filter @fedjobs/api start"
+restartPolicyType = "ON_FAILURE"
+healthcheckPath = "/health"
