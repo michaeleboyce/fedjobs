@@ -4,12 +4,8 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY packages ./packages
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-COPY apps/api ./apps/api
+COPY . .
+RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @fedjobs/api build
 
 EXPOSE 3001
