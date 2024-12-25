@@ -4,11 +4,16 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint src/**/*.ts"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
   }
 }

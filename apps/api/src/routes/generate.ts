@@ -17,6 +17,7 @@ router.post('/', async (
   try {
     const validation = GenerateRequestSchema.safeParse(req.body);
     if (!validation.success) {
+      console.log(validation.error.format());
       throw new ApiError(400, 'Invalid request body');
     }
 
@@ -25,7 +26,7 @@ router.post('/', async (
     if (streaming) {
       const stream = await anthropic.messages.create({
         messages: [{ role: 'user', content }],
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-3-5-sonnet-20241022',
         stream: true,
         max_tokens: 4096,
       });
@@ -48,7 +49,7 @@ router.post('/', async (
     } else {
       const response = await anthropic.messages.create({
         messages: [{ role: 'user', content }],
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 4096,
       });
 

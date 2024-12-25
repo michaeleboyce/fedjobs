@@ -50,7 +50,7 @@ async function parseDocument(text: string, documentId: number, userId: string) {
 
     // Ask OpenAI for a streaming completion given the prompt
     const response = await openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o",
         temperature: temperature,
         max_tokens: 4096,
         stream: true,

@@ -75,7 +75,7 @@ function generatePrompt(doc: string, existingAccomplishments: Accomplishments): 
 
 async function callGpt4Api(prompt: string): Promise<string> {
   const response = await openai.chat.completions.create({
-    model: "gpt-4-1106-preview",
+    model: "gpt-4o",
     response_format: {"type":"json_object"},
     temperature: 1.0,
     max_tokens: 4096,

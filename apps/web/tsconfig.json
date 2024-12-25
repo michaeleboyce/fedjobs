@@ -4,7 +4,6 @@
     "target": "es2020",
     "moduleResolution": "bundler",
     "allowJs": true,
-    "noEmit": true,
     "jsx": "preserve",
     "plugins": [
       {
@@ -24,7 +23,8 @@
       "@fedjobs/database": [
         "../../packages/database/src"
       ]
-    }
+    },
+    "noEmit": true
   },
   "include": [
     "next-env.d.ts",

@@ -1,9 +1,8 @@
-"use  server"
+'use server';
 import mammoth from 'mammoth';
 import pdf from 'pdf-parse/lib/pdf-parse';
 import { ProcessDocumentResponse } from '@/app/_types/FunctionReturns';
 
-export const runtime = 'nodejs';
 
 export async function parseWordDocumentArrayBuffer(fileBuffer: ArrayBuffer): Promise<string>{
   try {

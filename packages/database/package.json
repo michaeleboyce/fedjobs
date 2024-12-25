@@ -9,13 +9,14 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "drizzle-orm": "latest",
-    "@neondatabase/serverless": "latest",
     "@fedjobs/types": "workspace:*",
-    "@fedjobs/utils": "workspace:*"
+    "@fedjobs/utils": "workspace:*",
+    "@neondatabase/serverless": "^0.10.4",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.2"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "drizzle-kit": "latest"
+    "drizzle-kit": "^0.30.1",
+    "typescript": "^5.7.2"
   }
 }

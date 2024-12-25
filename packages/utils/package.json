@@ -4,14 +4,20 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@fedjobs/types": "workspace:*"
+    "@aws-sdk/client-s3": "^3.717.0",
+    "@aws-sdk/s3-request-presigner": "^3.717.0",
+    "@fedjobs/types": "workspace:*",
+    "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.7.2"
   }
 }

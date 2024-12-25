@@ -1,13 +1,14 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+// packages/database/index.ts
 
-export * from 'drizzle-orm'
-
-const sql = neon(process.env.DATABASE_URL!);
-export const db = drizzle(sql, { logger: true });
-
+// Re-export db connection
+export { db } from './db-connection';
+import { eq, and, desc } from 'drizzle-orm';
+export { eq, and, desc};
+// Re-export schema (optional)
 export * from './schema/documents';
 export * from './schema/generations';
-//export * from './schema/outputs';
 export * from './schema/parsings';
-export * from './queries/query';
+export * from './queries/parsingQueries';
+export * from './dbService';
+
+

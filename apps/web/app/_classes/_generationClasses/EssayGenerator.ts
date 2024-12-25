@@ -76,7 +76,7 @@ export abstract class EssayGenerator {
         try {
             const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY_35 || '' });
             const response = await openai.chat.completions.create({
-                model: "gpt-4-1106-preview",
+                model: "gpt-4o",
                 messages: [
                     { role: "system", content: "You are a helpful writer whose job is to create draft documents for job applications, including cover letters, technical core equalification, or executive core qualification essays. Your writing style show prefer showing over telling, and should be concise and very action oriented, while also providing a narrative that ties elements together conhesively." },
                     { role: "user", content: prompt }

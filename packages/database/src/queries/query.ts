@@ -1,5 +1,5 @@
-import { sql} from "drizzle-orm";
-import { db, eq } from "../index";
+import { sql, eq} from "drizzle-orm";
+import { db } from "../index";
 import { documents as documentsTable } from "../schema/documents";
 
 export const preparedDocsByUserId = db

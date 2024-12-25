@@ -8,7 +8,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY_35,
   });
 
-export const callAndStreamAIResponse = async (prompt: string, userId: string, type: string, isParagraph: boolean, temperature: number, max_tokens: number, model: string = 'gpt-4-turbo-preview') => {
+export const callAndStreamAIResponse = async (prompt: string, userId: string, type: string, isParagraph: boolean, temperature: number, max_tokens: number, model: string = 'gpt-4o') => {
     const response = await openai.chat.completions.create({
         model: model,
         temperature: temperature,
