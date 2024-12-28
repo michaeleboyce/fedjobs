@@ -107,7 +107,7 @@ export async function processFile(
       description,
       inKnowledgeBank: addToKnowledgeBank,
       content,
-      name: generateFileName() + "_" + file.name, // Use a unique file name.
+      name: file.name, // Use a unique file name.
     });
 
     // Determine the next steps based on the document type.
@@ -186,10 +186,11 @@ async function initiateParsing(payload: {
     };
 
     // Determine the API base URL from environment variables or use a relative path.
-    const API_BASE_URL = process.env.API_BASE_URL || ''; // Ensure this is set correctly.
+    //TODO: Unify all of these default urls
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
 
     // Make a POST request to the /api/parse endpoint.
-    const response = await axios.post(`${API_BASE_URL}/api/parse`, parseApiPayload, {
+    const response = await axios.post(`${API_URL}/api/parse`, parseApiPayload, {
       headers: {
         'Content-Type': 'application/json',
       },

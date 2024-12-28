@@ -1,74 +1,132 @@
-'use client';
+"use client";
 import React, { useState } from "react";
 import { processFile } from "../../../_actions/files/fileActions";
-import { Document } from '@/app/_db/schema/documents';
+import { Document } from "@/app/_db/schema/documents";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
+import { DocumentType } from "@fedjobs/types";
+import axios from "axios";
 
-type FileUploaderProps = { 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
+
+type FileUploaderProps = {
   addDocument: (newDocument: Document) => void;
-  processDocumentFromFormData: (formData: FormData) => Promise<ProcessDocumentResponse>;
-}
+  processDocumentFromFormData: (
+    formData: FormData
+  ) => Promise<ProcessDocumentResponse>;
+};
 
-
-const FileUploadBox: React.FC<FileUploaderProps> = ({addDocument, processDocumentFromFormData}) => {
+const FileUploadBox: React.FC<FileUploaderProps> = ({
+  addDocument,
+  processDocumentFromFormData,
+}) => {
   const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState("resume"); // default to 'resume'
+  const [documentType, setDocumentType] = useState<DocumentType>("resume"); // default to 'resume'
   const [uploadStatus, setUploadStatus] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [useDummyData, setUseDummyData] = useState<boolean>(false);
   const [description, setDescription] = useState("");
-  const [shouldAddToKnowledgeBank, setShouldAddToKnowledgeBank] = useState(true);
+  const [shouldAddToKnowledgeBank, setShouldAddToKnowledgeBank] =
+    useState(true);
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  const ALLOWED_TYPES = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      
+      // Validate file size
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        alert('File is too large. Maximum size is 10MB');
+        e.target.value = ''; // Reset input
+        return;
+      }
+      
+      // Validate file type
+      if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+        alert('Invalid file type. Only PDF and Word documents are allowed.');
+        e.target.value = ''; // Reset input
+        return;
+      }
+      
+      setFile(selectedFile);
     }
   };
-
   async function handleUpload(event: React.MouseEvent) {
     event.preventDefault();
-
+  
     if (!file) {
-      console.error("No file selected");
+      alert("Please select a file first");
       return;
     }
-
+  
+    setIsLoading(true);
     let dotCount = 0;
     const interval = setInterval(() => {
       dotCount = (dotCount + 1) % 4;
       setUploadStatus(`Uploading${".".repeat(dotCount)}`);
-    }, 500); // Update every 500 milliseconds
+    }, 500);
+  
     try {
-      const data = new FormData();
-      data.append('file', file);
-      let text: string;
-      const response = await processDocumentFromFormData(data);
-      if (response.success){
-        text = response.success.text;
-      } else {
-        if (response.failure.isInvalidDocType){
-          const errorMsg = 'Invalid document type, please only upload a PDF or Word Document - sorry!';
-          window.alert(errorMsg);
-          throw new Error(errorMsg);
-        } else {
-          throw new Error(response.failure.message);
-        }
-      }
-      const result = await processFile(data, shouldAddToKnowledgeBank, documentType, description, text);
-      if (result.success){
+      const formData = new FormData();
+      formData.append('file', file);
+  
+      const response = await axios.post(`${API_URL}/api/parse/document`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        // Add timeout and show upload progress
+        timeout: 30000,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || file.size));
+          console.log(percentCompleted)
+          if (percentCompleted % 5 === 0) {
+            setUploadStatus(`Uploading: ${percentCompleted}%`);
+          }
+        },
+      });
+  
+      const data = response.data;
+      const { text, type } = data;
+      const result = await processFile(formData, shouldAddToKnowledgeBank, documentType, description, text);
+      
+      if (result.success) {
         addDocument(result.success.document);
+      } else {
+        //@ts-ignore  
+        throw new Error(result.error || 'Failed to process file');
       }
-      console.log(result);
     } catch (error) {
       console.error(error);
+      console.debug(JSON.stringify(error, null, 2));
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 413) {
+          alert('File is too large. Maximum size is 10MB');
+        } else if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        } else if (error.code === 'ECONNABORTED') {
+          alert('Upload timed out. Please try again.');
+        } else {
+          alert('An error occurred while uploading the file. Please try again.');
+        }
+      } else {
+        alert('An unexpected error occurred. Please try again.');
+      }
+      console.error('Upload error:', error);
     } finally {
-      clearInterval(interval); // Clear the interval when upload is done
+      clearInterval(interval);
       setIsLoading(false);
-      setUploadStatus(""); // Reset upload status
+      setUploadStatus("");
+      // Optional: Reset file input
+      setFile(null);
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     }
   }
-
   return (
     <div className="upload-section bg-white p-4 border border-gray-200 rounded-lg">
       <div className="upload-card flex flex-col items-start">
@@ -101,7 +159,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({addDocument, processDocumen
         </div>
         <select
           value={documentType}
-          onChange={(e) => setDocumentType(e.target.value)}
+          onChange={(e) => setDocumentType(e.target.value as DocumentType)}
           className="mb-4 w-full text-base p-2 border border-gray-300 rounded-md bg-white"
         >
           <option value="resume">Resume</option>

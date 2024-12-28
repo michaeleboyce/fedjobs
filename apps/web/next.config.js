@@ -9,6 +9,9 @@ const nextConfig = {
     },
     experimental: {
         serverMinification: false,
+        serverActions: {
+            bodySizeLimit: '15mb'
+        }
       },
     
 };

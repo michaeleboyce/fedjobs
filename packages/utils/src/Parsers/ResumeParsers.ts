@@ -24,44 +24,46 @@ const extractAttribute = (text: string, tagName: string, attributeName: string):
 
 export const parsePosition = (positionText: string): Position => {
   const organization: Organization = {
-    name: extractTagContent(positionText, "organization")
+    name: extractTagContent(positionText, "organization"),
   };
 
   const title: Title = {
-    title: extractTagContent(positionText, "title")
+    title: extractTagContent(positionText, "title"),
   };
 
   const date: ResumeDate = {
     startDate: extractAttribute(positionText, "date", "startDate"),
     endDate: extractAttribute(positionText, "date", "endDate"),
-    present: extractAttribute(positionText, "date", "present") === "true"
+    present: extractAttribute(positionText, "date", "present") === "true",
   };
 
   const detailsText = extractTagContent(positionText, "details");
   const details: Details = {
     activities: extractMultipleTagContents(detailsText, "activity"),
-    accomplishments: extractMultipleTagContents(detailsText, "accomplishment")
+    accomplishments: extractMultipleTagContents(detailsText, "accomplishment"),
   };
 
   return { organization, title, date, details };
 };
 
-export const parseResumeText = (text: string): Resume => {
-  const positionRegex = /<position>(.*?)<\/position>/gs;
-  const positions: Position[] = [];
-  
-  let match;
-  while ((match = positionRegex.exec(text)) !== null) {
-    try {
-      const position = parsePosition(match[1]);
-      positions.push(position);
-    } catch (error) {
-      console.error("Error parsing position:", error);
-    }
-  }
+export const parseResumeText = (text: string): Resume | null => {
+  try {
+    const positionRegex = /<position>(.*?)<\/position>/gs;
+    const positions: Position[] = [];
+    let match;
 
-  return {
-    positions,
-    filename: `Resume-${Date.now()}.json`
-  };
+    while ((match = positionRegex.exec(text)) !== null) {
+      const positionBlock = match[1];
+      const position = parsePosition(positionBlock);
+      positions.push(position);
+    }
+
+    return {
+      positions,
+      filename: `Resume-${Date.now()}.json`,
+    };
+  } catch (err) {
+    console.error("Error parsing annotated resume text:", err);
+    return null; // or an empty object
+  }
 };

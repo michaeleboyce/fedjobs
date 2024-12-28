@@ -1,7 +1,7 @@
 'use server'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { db, eq } from "@/app/_db";
-import { parsings as parsingsTable } from '@/app/_db/schema/parsings';
+import { db, eq } from "@fedjobs/database";
+import { parsings as parsingsTable } from '@fedjobs/database';
 import { ParseResponse } from '@/app/_types/ParseResponse';
 
 export async function getParsingStatus(documentId: number): Promise<ParseResponse> {

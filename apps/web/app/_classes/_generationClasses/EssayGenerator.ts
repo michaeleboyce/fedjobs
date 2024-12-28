@@ -6,6 +6,7 @@ import { OpenAI } from 'openai';
 import { GenerationSelection } from '@/app/_types/GenerationSelection';
 import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
 import { formatDateMMDDYYYY } from '@/app/_utils/DateUtils';
+import { DocumentType } from '@fedjobs/types';
 
 export type SaveDocumentResult = {status: 'ok', body: { url: string, documentId: number, documentName: string, generatedText: string }}|
     {status: 'error', body: {message: string}};
@@ -18,15 +19,15 @@ export abstract class EssayGenerator {
         streamingTextArray: StreamingTextArray): string;
     abstract getDescription(): string; // Abstract method to be overridden by child classes
     abstract getFileNamePrefix(): string;
-    protected _documentType: string;
+    protected _documentType: DocumentType;
     protected _generationSelection: GenerationSelection;
 
-    constructor(documentType: string, generationSelection: GenerationSelection){
+    constructor(documentType: DocumentType, generationSelection: GenerationSelection){
         this._documentType = documentType;
         this._generationSelection = generationSelection;
     }
     
-    public get documentType(): string {
+    public get documentType(): DocumentType{
         return this._documentType;
     }
 

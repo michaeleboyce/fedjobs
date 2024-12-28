@@ -24,7 +24,7 @@
         "../../packages/database/src"
       ]
     },
-    "noEmit": true
+    "noEmit": false
   },
   "include": [
     "next-env.d.ts",
