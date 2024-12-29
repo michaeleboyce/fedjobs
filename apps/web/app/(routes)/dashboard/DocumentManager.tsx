@@ -1,7 +1,7 @@
 'use client'
 import FileUploadBox from "@/app/(routes)/dashboard/_Components/FileUploadBox";
 import React, { useState, useCallback } from "react";
-import { Document } from '@/app/_db/schema/documents';
+import { Document } from '@fedjobs/database';
 import { Documents } from "./documents";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
 import { QueryClient, QueryClientProvider } from 'react-query';

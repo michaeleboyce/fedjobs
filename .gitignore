@@ -111,3 +111,5 @@ debug.log
 
 # Vercel
 .vercel
+
+all_files_with_contents.txt

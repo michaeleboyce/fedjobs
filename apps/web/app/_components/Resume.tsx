@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { ResumeObject} from "@/app/_classes/Resume";
@@ -21,50 +21,42 @@ export const Resume: React.FC<ResumeProps> = ({ resume, onSelectionChange, isVie
   const [selectedAccomplishments, setSelectedAccomplishments] = useState<number[]>([]);
 
   useEffect(() => {
-    // Call onSelectionChange only when selectedPosition or selectedActivities or selectedAccomplishments change
-    onSelectionChange({ 
-      position: selectedPosition, 
-      selectedActivities, 
-      selectedAccomplishments 
-    });
-  }, [selectedPosition, selectedActivities, selectedAccomplishments, onSelectionChange]);
-
-  const handlePositionSelect = (position: PositionObject) => {
-    if (selectedPosition === position) {
-      setSelectedPosition(null);
-      setSelectedActivities([]);
-      setSelectedAccomplishments([]);
-      onSelectionChange({ position: null, selectedActivities: [], selectedAccomplishments: [] });
-    } else {
-      setSelectedPosition(position);
-      setSelectedActivities([]);
-      setSelectedAccomplishments([]);
-      onSelectionChange({ position, selectedActivities: [], selectedAccomplishments: [] });
+    if (selectedPosition || selectedActivities.length || selectedAccomplishments.length) {
+      onSelectionChange({ 
+        position: selectedPosition, 
+        selectedActivities, 
+        selectedAccomplishments 
+      });
     }
-  };
+  }, [selectedPosition, selectedActivities, selectedAccomplishments]);
+
+  const handlePositionSelect = useCallback((position: PositionObject) => {
+    setSelectedPosition((prev) => {
+      const newPosition = prev === position ? null : position;
+      if (!newPosition) {
+        setSelectedActivities([]);
+        setSelectedAccomplishments([]);
+      }
+      return newPosition;
+    });
+  }, []);
 
   const toggleDetails = (position: PositionObject) => {
     setSelectedPosition(selectedPosition === position ? null : position);
   };
 
-
-
-  const handleCheckboxChange = (type: "activities" | "accomplishments", idx: number) => {
+  const handleCheckboxChange = useCallback((type: "activities" | "accomplishments", idx: number) => {
     if (isViewOnly) return;
     if (type === "activities") {
       setSelectedActivities(prev => {
-        const newActivities = prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
-        onSelectionChange({ position: selectedPosition, selectedActivities: newActivities, selectedAccomplishments });
-        return newActivities;
+        return prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
       });
     } else {
       setSelectedAccomplishments(prev => {
-        const newAccomplishments = prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
-        onSelectionChange({ position: selectedPosition, selectedActivities, selectedAccomplishments: newAccomplishments });
-        return newAccomplishments;
+        return prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
       });
     }
-  };
+  }, []);
 
   return (
     <>

@@ -1,11 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { processFile } from "../../../_actions/files/fileActions";
-import { Document } from "@/app/_db/schema/documents";
+import { Document } from "@fedjobs/database";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
 import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
 
+//TODO: Ensure that the API_URL is standard across the application
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
 
 type FileUploaderProps = {

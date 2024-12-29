@@ -1,14 +1,12 @@
 'use client'
 import React, { useRef, useState } from 'react';
 import { deleteDocument, getDocumentSignedURL, getUpdatedDocumentStatus } from '../../../_actions/files/fileActions';
-import { Document } from '@/app/_db/schema/documents';
+import { Document } from '@fedjobs/database';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faChevronDown, faChevronUp, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
-import { getParsingsByDocId, updateDocWithResumeJSON } from '@/app/_actions/dbActions';
 import { truncateDescription } from '../../../_utils/textUtils';
 import { ParseResponse } from '@/app/_types/ParseResponse';
-import { useQuery } from 'react-query';
 import usePageVisibility from '@/app/_hooks/usePageVisibility';
 import { AnalysisStatus } from '@/app/_types/AnalysisStatus';
 import { useDocumentPolling } from '@/app/_hooks/useDocumentPolling';

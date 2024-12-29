@@ -1,7 +1,7 @@
 // apps/api/src/routes/parsingStatus.ts
 
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { db, eq, desc } from "@fedjobs/database";
+import { db, eq, desc, getLatestParsingByDocId } from "@fedjobs/database";
 import { parsings } from "@fedjobs/database/src/schema/parsings";
 import { ApiError } from '../middleware/error';
 
@@ -18,20 +18,12 @@ router.get('/:documentId', async (req: Request, res: Response, next: NextFunctio
       throw new ApiError(400, 'Invalid document ID');
     }
 
-    const parsingTasks = await db
-      .select()
-      .from(parsings)
-      .where(eq(parsings.documentId, documentId))
-      .orderBy(desc(parsings.createdAt))
-      .limit(1)
-      .execute();
-
-    if (parsingTasks.length === 0) {
+    // Use your new query function:
+    const parseTask = await getLatestParsingByDocId(documentId);
+    if (!parseTask) {
       throw new ApiError(404, 'No parsing task found for this document');
     }
-
-    const parseTask = parsingTasks[0];
-
+    
     res.json({
       parseId: parseTask.id,
       isComplete: parseTask.isComplete,

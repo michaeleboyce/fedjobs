@@ -2,7 +2,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 
 import { DocumentManager } from "./DocumentManager";
-import { getDocsByUserId } from "./actions";
+import { getDocsByUserId } from "@fedjobs/database";
 import { processDocumentFromFormData } from "@/app/_utils/documentParsing";
 
 export default async function Page(){

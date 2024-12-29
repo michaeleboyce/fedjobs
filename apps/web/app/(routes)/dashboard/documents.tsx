@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Document
-} from "@/app/_db/schema/documents";
+} from "@fedjobs/database";
 import DocumentCard from "./_Components/DocumentCard";
 import { useRouter } from "next/navigation";
 

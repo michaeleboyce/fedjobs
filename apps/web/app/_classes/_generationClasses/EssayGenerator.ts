@@ -1,7 +1,7 @@
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { db } from "@/app/_db";
-import { documents as documentsTable } from "@/app/_db/schema/documents";
+import { db } from "@fedjobs/database";
+import { documents as documentsTable } from "@fedjobs/database";
 import { OpenAI } from 'openai';
 import { GenerationSelection } from '@/app/_types/GenerationSelection';
 import { StreamingTextArray } from '@/app/_types/StreamingTextArray';

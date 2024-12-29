@@ -45,8 +45,10 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
 
   const showIsDummy = userEmail === "wizrb47@gmail.com";
   const handleSelectionChange = useCallback((newSelectedState: SelectedStateType) => {
-    setSelectedState(newSelectedState);
-    setIsGenerateEnabled(newSelectedState.position !== null);
+    requestAnimationFrame(() => {
+      setSelectedState(newSelectedState);
+      setIsGenerateEnabled(newSelectedState.position !== null);
+    });
   }, []);
 
   const handleViewClick = async (documentId: number) => {
