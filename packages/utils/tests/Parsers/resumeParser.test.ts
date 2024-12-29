@@ -1,5 +1,5 @@
 import { parseResumeText, parsePosition } from '../../src/Parsers/ResumeParsers';
-import { singlePositionXml, multiplePositionsXml, invalidXml } from './__fixtures__/resumeXML';
+import { singlePositionXml, multiplePositionsXml, invalidXml, largeResumeXml} from './__fixtures__/resumeXML';
 import { describe, expect, test} from 'vitest';
 
 describe('parsePosition', () => {
@@ -42,7 +42,7 @@ describe('parsePosition', () => {
 
 describe('parseResumeText', () => {
   test('parses multiple positions correctly', () => {
-    const result = parseResumeText(multiplePositionsXml);
+    const result = parseResumeText(multiplePositionsXml)!;
     
     expect(result.positions).toHaveLength(2);
     expect(result.positions[0].organization.name).toBe('Company 1');
@@ -51,16 +51,34 @@ describe('parseResumeText', () => {
   });
 
   test('returns empty positions array for invalid XML', () => {
-    const result = parseResumeText(invalidXml.missingClose);
+    const result = parseResumeText(invalidXml.missingClose)!;
     expect(result.positions).toEqual([]);
   });
 
   test('handles malformed date attributes', () => {
     const result = parseResumeText(invalidXml.malformedDate);
-    expect(result.positions[0].date).toEqual({
+    expect(result!.positions[0].date).toEqual({
       startDate: 'invalid',
       endDate: '',
       present: false
     });
+  });
+});
+
+describe('parseResumeText with large resume XML', () => {
+  test('parses large semi-malformed resume without error and includes specific organizations', () => {
+    const result = parseResumeText(largeResumeXml)!;
+
+    // Ensure we got positions
+    expect(result).not.toBeNull();
+    expect(result.positions).toBeDefined();
+    expect(result.positions.length).toBeGreaterThan(0);
+
+    // Convert each position's organization name into an array for easier checking
+    const organizationNames = result!.positions.map((pos) => pos.organization.name);
+
+    // Check that these two crucial organizations are included
+    expect(organizationNames).toContain('White House Leadership Development Program');
+    expect(organizationNames).toContain('Executive Office of the President, Office of Management and Budget');
   });
 });

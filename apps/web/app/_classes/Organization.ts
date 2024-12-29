@@ -33,7 +33,7 @@ export class Organization {
 
     static fromJSON(json: any): Organization {
         try {
-            return new Organization(json.organization);
+            return new Organization(json.name);
         } catch (error) {
             console.error("Error parsing JSON for Organization:", error);
             return new Organization('');

@@ -20,9 +20,9 @@ export default async function Page({ params }: { params: { id: number } }) {
   if (!user || !user.id) {
     return <div>Error retrieving user information</div>;
   }
-
+  const loadedParams = await params;
   // Now getDocumentById returns a single Document (or undefined).
-  const doc = await getDocumentById(params.id, user.id);
+  const doc = await getDocumentById(loadedParams.id, user.id);
   if (!doc) {
     return <div>Error: resume not found or you don&apos;t have permission</div>;
   }

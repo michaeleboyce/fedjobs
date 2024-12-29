@@ -1,10 +1,18 @@
 "use client";
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import { ResumeObject} from "@/app/_classes/Resume";
+import { ResumeObject } from "@/app/_classes/Resume";
 import { PositionObject } from '../_classes/Position';
 
+/**
+ * Props for the Resume component
+ * @interface ResumeProps
+ * @property {ResumeObject} resume - The resume data to display
+ * @property {Function} onSelectionChange - Callback when selection state changes
+ * @property {boolean} isViewOnly - Whether the resume is in view-only mode
+ */
 type ResumeProps = {
   resume: ResumeObject;
   onSelectionChange: (selectedState: {
@@ -12,27 +20,42 @@ type ResumeProps = {
     selectedActivities: number[];
     selectedAccomplishments: number[];
   }) => void;
-  isViewOnly: boolean; 
+  isViewOnly: boolean;
 };
 
+/**
+ * Resume Component
+ * Displays a resume with selectable positions, activities, and accomplishments
+ * Handles state management for selected items and notifies parent of changes
+ */
 export const Resume: React.FC<ResumeProps> = ({ resume, onSelectionChange, isViewOnly }) => {
+  // Track selected items state
   const [selectedPosition, setSelectedPosition] = useState<PositionObject | null>(null);
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
   const [selectedAccomplishments, setSelectedAccomplishments] = useState<number[]>([]);
 
+  /**
+   * Notify parent component of selection changes
+   * Only triggers when there are actual selections
+   */
   useEffect(() => {
     if (selectedPosition || selectedActivities.length || selectedAccomplishments.length) {
-      onSelectionChange({ 
-        position: selectedPosition, 
-        selectedActivities, 
-        selectedAccomplishments 
+      onSelectionChange({
+        position: selectedPosition,
+        selectedActivities,
+        selectedAccomplishments
       });
     }
-  }, [selectedPosition, selectedActivities, selectedAccomplishments]);
+  }, [selectedPosition, selectedActivities, selectedAccomplishments, onSelectionChange]);
 
+  /**
+   * Handles position selection/deselection
+   * Clears related selections when position is deselected
+   */
   const handlePositionSelect = useCallback((position: PositionObject) => {
-    setSelectedPosition((prev) => {
+    setSelectedPosition(prev => {
       const newPosition = prev === position ? null : position;
+      // Clear dependent selections when deselecting position
       if (!newPosition) {
         setSelectedActivities([]);
         setSelectedAccomplishments([]);
@@ -41,10 +64,17 @@ export const Resume: React.FC<ResumeProps> = ({ resume, onSelectionChange, isVie
     });
   }, []);
 
-  const toggleDetails = (position: PositionObject) => {
-    setSelectedPosition(selectedPosition === position ? null : position);
-  };
+  /**
+   * Toggles position details visibility
+   */
+  const toggleDetails = useCallback((position: PositionObject) => {
+    setSelectedPosition(prev => prev === position ? null : position);
+  }, []);
 
+  /**
+   * Handles checkbox changes for activities and accomplishments
+   * Prevents changes in view-only mode
+   */
   const handleCheckboxChange = useCallback((type: "activities" | "accomplishments", idx: number) => {
     if (isViewOnly) return;
     if (type === "activities") {
@@ -56,7 +86,7 @@ export const Resume: React.FC<ResumeProps> = ({ resume, onSelectionChange, isVie
         return prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
       });
     }
-  }, []);
+  }, [isViewOnly]);
 
   return (
     <>
