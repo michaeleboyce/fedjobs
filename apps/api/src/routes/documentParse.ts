@@ -2,7 +2,7 @@
 
 import express, { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
-import { processDocumentTextFromBuffer } from '@fedjobs/utils';
+import { processDocumentTextFromBuffer } from '../backend-utils/DocumentParsers';
 import { ApiError } from '../middleware/error';
 
 // Configure multer for memory storage

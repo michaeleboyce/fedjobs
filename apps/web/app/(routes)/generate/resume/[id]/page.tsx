@@ -1,12 +1,22 @@
 import React from 'react';
-import { db, eq } from '@/app/_db';
-import { documents as documentsTable } from '@/app/_db/schema/documents';
+import { db, eq } from '@fedjobs/database';
+import { documents as documentsTable } from '@fedjobs/database';
 import { Resume as ResumeModel } from '@/app/_classes/Resume';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { PageClient } from '@/app/(routes)/generate/resume/[id]/PageClient';
-//import ResumeProvider  from './_Providers/ResumeProvider';
 
-export default async function Page({ params }: { params: { id: number } }) {
+
+// In Next 13+, dynamic route params need to be awaited first:
+export default async function Page(props: Promise<{
+  params: { id: string };
+}>) {
+  // 1. Await your props
+  const { params } = await props;
+
+  const loadedParams = await params;
+
+  // 2. Safely parse your dynamic param
+  const docId = Number(loadedParams.id);
   const { getUser, isAuthenticated } = await getKindeServerSession();
   if (!(await isAuthenticated()))
     return <div>Sorry you are not authenticated to use this page...</div>
@@ -21,7 +31,7 @@ export default async function Page({ params }: { params: { id: number } }) {
       data: documentsTable.data
     })
     .from(documentsTable)
-    .where(eq(documentsTable.id, params.id))
+    .where(eq(documentsTable.id, docId))
     .execute();
 
   if (!docs || docs.length <= 0) {

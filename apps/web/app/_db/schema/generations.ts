@@ -8,7 +8,7 @@ export const generations = pgTable("generations", {
   userId: text("user_id").notNull(),
   type: generationType("generation_type").notNull(),
   isParagraph: boolean('is_paragraph').notNull(),
-  promp: text("prompt").notNull(),
+  prompt: text("prompt").notNull(),
   completion: text("completion").notNull(),
   temperature: decimal('temperature', { precision: 2, scale: 1}).notNull(),//Two total digits, one after the decimal place
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

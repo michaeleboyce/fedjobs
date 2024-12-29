@@ -10,6 +10,7 @@
         "name": "next"
       }
     ],
+    "typeRoots": ["./src/api/ai/generate/(utils)", "./node_modules/@types"],
     "paths": {
       "@/*": [
         "./*"
@@ -32,7 +33,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/(routes)/api/ai/vectorize/[docName]",
-    "app/(routes)/api/ai/parse/[id]"
+    "app/(routes)/api/ai/parse/[id]",
+    "src/api/ai/generate/(utils)/types.d.ts"
   ],
   "references": [
     {
@@ -45,6 +47,7 @@
       "path": "../../packages/database"
     }
   ],
+  
   "exclude": [
     "node_modules"
   ]

@@ -1,4 +1,4 @@
-// /apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
+// /apps/web/app/(routes)/api/ai/generate/(utils)/streamHandler.ts
 
 import { ReadableStream } from "web-streams-polyfill/ponyfill"; // Ensure compatibility
 import { db } from "@fedjobs/database";
@@ -20,7 +20,7 @@ interface CallAndStreamOptions {
 /**
  * Handles the streaming process for any AI provider implementing AIProviderStream.
  */
-export async function callAndStreamAIResponse(
+export async function handleStreaming(
   providerStream: AIProviderStream,
   options: CallAndStreamOptions
 ): Promise<Response> {
@@ -52,7 +52,7 @@ export async function callAndStreamAIResponse(
             isParagraph: options.isParagraph,
             userId: options.userId,
             completion: fullCompletion,
-            temperature: options.temperature.toFixed(1), // Ensures one decimal place
+            temperature: options.temperature.toString(),
           });
         } catch (dbErr) {
           console.error("DB insertion error:", dbErr);

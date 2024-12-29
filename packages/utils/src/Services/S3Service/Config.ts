@@ -1,9 +1,5 @@
 // packages/utils/src/Constants/Config.ts
 
-import { config as dotenvConfig } from 'dotenv';
-
-dotenvConfig();
-
 export const AWS_CONFIG = {
   region: process.env.AWS_BUCKET_REGION!,
   accessKeyId: process.env.AWS_ACCESS_KEY_PROD!,
