@@ -5,6 +5,8 @@
     "moduleResolution": "bundler",
     "allowJs": true,
     "jsx": "preserve",
+    "types": ["react", "react-dom"], // Explicitly include React types
+
     "plugins": [
       {
         "name": "next"

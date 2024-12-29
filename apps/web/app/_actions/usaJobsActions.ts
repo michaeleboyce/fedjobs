@@ -2,7 +2,6 @@
 import { Job } from "@/app/_types/Job";
 
 import OpenAI from 'openai';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 
 // Define the structure of a SearchResultItem (if it's different from Job)

@@ -171,7 +171,7 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
   const handleParagraphDelete = useCallback((id: number) => {
     setStreamingTextArray(prevArray => prevArray.filter(paragraph => paragraph.id !== id));
     setSelectedParagraph(null);
-  }, [selectedParagraph]);
+  }, []);
 
   const moveParagraph = useCallback((index: number, direction: 'up' | 'down') => {
     setStreamingTextArray(prevArray => {

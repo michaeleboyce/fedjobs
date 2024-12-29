@@ -1,3 +1,5 @@
+'use server';
+
 import React from 'react';
 import { db, eq } from '@fedjobs/database';
 import { documents as documentsTable } from '@fedjobs/database';
@@ -7,16 +9,14 @@ import { PageClient } from '@/app/(routes)/generate/resume/[id]/PageClient';
 
 
 // In Next 13+, dynamic route params need to be awaited first:
-export default async function Page(props: Promise<{
-  params: { id: string };
-}>) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   // 1. Await your props
-  const { params } = await props;
+  const { id } = await params;
 
   const loadedParams = await params;
 
   // 2. Safely parse your dynamic param
-  const docId = Number(loadedParams.id);
+  const docId = Number(id);
   const { getUser, isAuthenticated } = await getKindeServerSession();
   if (!(await isAuthenticated()))
     return <div>Sorry you are not authenticated to use this page...</div>
