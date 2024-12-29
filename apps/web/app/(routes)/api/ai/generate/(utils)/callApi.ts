@@ -25,7 +25,7 @@ export async function callApi(
   request: NextRequest,
   createEssayGenerator: (selection: GenerationSelection) => EssayGenerator,
   isParagraph: boolean,
-  defaultProvider: ProviderType = "openai" // Defaults to Claude
+  defaultProvider: ProviderType = "anthropic" // Defaults to Claude
 ) {
   const { isAuthenticated, getUser } = await getKindeServerSession();
   if (!(await isAuthenticated())) return NextResponse.error();
