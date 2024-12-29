@@ -16,9 +16,11 @@ import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
 import { useGenerationContext } from '../_Providers/GenerationProvider';
 
 type SelectedStateType = {
-  position: PositionObject | null;
-  selectedActivities: number[];
-  selectedAccomplishments: number[];
+  positions: {
+    position: PositionObject;
+    selectedActivities: number[];
+    selectedAccomplishments: number[];
+  }[];
 };
 
 type GenerationManagerProps = {
@@ -31,9 +33,7 @@ const appUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' 
 const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail}) => {
   const {jobInfo, docInfo, otherInfo} = useGenerationContext();
   const [selectedState, setSelectedState] = useState<SelectedStateType>({
-    position: null,
-    selectedActivities: [],
-    selectedAccomplishments: []
+    positions: []
   });
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false);
   const [selectedParagraph, setSelectedParagraph] = useState<number | null>(null);
@@ -44,10 +44,16 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
   const [saveResult, setSaveResult] = useState({ url: '', message: '' });
 
   const showIsDummy = userEmail === "wizrb47@gmail.com";
-  const handleSelectionChange = useCallback((newSelectedState: SelectedStateType) => {
+  const handleSelectionChange = useCallback((newSelectedState: {
+    positions: {
+      position: PositionObject;
+      selectedActivities: number[];
+      selectedAccomplishments: number[];
+    }[];
+  }) => {
     requestAnimationFrame(() => {
       setSelectedState(newSelectedState);
-      setIsGenerateEnabled(newSelectedState.position !== null);
+      setIsGenerateEnabled(newSelectedState.positions.length > 0);
     });
   }, []);
 
@@ -62,19 +68,26 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
     };
 
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
-    if (!selectedState.position) {
-      console.error("No position selected");
+    if (!selectedState.positions.length) {
+      console.error("No positions selected");
       return;
     }
-
+  
     const generationSelection: GenerationSelection = {
-      position: selectedState.position,
-      selectedActivities: selectedState.selectedActivities.map(idx => selectedState.position?.details.activities[idx] ?? ''),
-      selectedAccomplishments: selectedState.selectedAccomplishments.map(idx => selectedState.position?.details.accomplishments[idx] ?? ''),
+      // Transform each “positionData” into text or keep indexes, etc.
+      positions: selectedState.positions.map((posData) => ({
+        position: posData.position,
+        selectedActivities: posData.selectedActivities.map(
+          (idx) => posData.position.details.activities[idx]
+        ),
+        selectedAccomplishments: posData.selectedAccomplishments.map(
+          (idx) => posData.position.details.accomplishments[idx]
+        ),
+      })),
       otherInfo: otherInfo,
       jobInfo: jobInfo,
       docInfo: docInfo,
-      length: 500 // Specify the length if required
+      length: 500,
     };
     //TODO: make sure everything is either res or result, req or request
     let reader;

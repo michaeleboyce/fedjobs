@@ -1,115 +1,119 @@
-import { GenerationSelection } from '@/app/_types/GenerationSelection';
-import { PositionObject } from '../Position';
-import { EssayGenerator } from './EssayGenerator';
-import { JobInfo } from '@/app/_types/JobInfo';
-import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
-
+// TCQGenerator.ts
+import { EssayGenerator } from "./EssayGenerator";
+import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
+import { GenerationSelection } from "@/app/_types/GenerationSelection";
 
 export class TCQGenerator extends EssayGenerator {
+  constructor(generationSelection: GenerationSelection) {
+    super("tcq", generationSelection);
+  }
 
+  createPrompt(): string {
+    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
 
-    constructor(generationSelection: GenerationSelection) {
-        super('tcq', generationSelection);
-    }
+    const positionsText = positions
+      .map((posData, i) => {
+        const p = posData.position;
+        const activities = posData.selectedActivities.join("\n- ");
+        const accomplishments = posData.selectedAccomplishments.join("\n- ");
+        return `
+[Position #${i + 1}]:
+  ${p.title.title} at ${p.organization.name}
+  Dates: ${p.date.startDate} - ${p.date.present ? "Present" : p.date.endDate}
 
-    createPrompt(): string {
-        
-        const {
-            docInfo,
-            jobInfo,
-            length,
-            otherInfo,
-            position,
-            selectedAccomplishments,
-            selectedActivities
-        } = this._generationSelection;
-        
-        const prompt = `Please write the following technical core qualification document, based on the following prompt: ${docInfo.essayPrompt}
-                      
+  Selected Activities:
+  - ${activities}
 
-${this.jobDescription ? `____
-The TCQ you are writing is related to the following job description:
-${this.jobDescription}` : ``}
+  Selected Accomplishments:
+  - ${accomplishments}
+        `;
+      })
+      .join("\n\n");
 
-____
+    const prompt = `
+Please write a Technical Core Qualification (TCQ) document based on the following prompt:
+${docInfo.essayPrompt}
+
+${
+  this.jobDescription
+    ? `The TCQ is related to the following job:
+${this.jobDescription}`
+    : ""
+}
+
 The TCQ you are writing should be supported by this information in your background:
-    Position: ${position.title.title} at ${position.organization.name}, from ${position.date.startDate} to ${position.date.present ? 'Present' : position.date.endDate}.
-        
-    Selected Activities:
-    - ${selectedActivities.join('\n- ')}
-        
-    Selected Accomplishments:\n- ${selectedAccomplishments.join('\n- ')}
-        
-    ${(otherInfo ?
-        `_____
-Finally consider the following information: ${otherInfo} ` : '')}
+${positionsText}
+
+${
+  otherInfo
+    ? `Finally, consider the following extra information:
+${otherInfo}`
+    : ""
+}
+
 ________
-When writing the TCQ, IT MUST BE NO MORE THAN ${length.toString()} WORDS. Feel free to add additional action-oriented steps that would logically have occured, even if not explicitly stated in the supporting information:
+The TCQ must be **NO MORE THAN ${length} WORDS**. 
+Feel free to add action-oriented steps that logically might have occurred. DO NOT provide any other comments, only the text of the TCQ.
 `;
 
-        return prompt;
+    return prompt;
+  }
+
+  createParagraphPrompt(
+    paragraphId: number,
+    regenerationText: string,
+    streamingTextArray: StreamingTextArray
+  ): string {
+    const { docInfo, otherInfo, positions } = this._generationSelection;
+
+    const positionsText = positions
+      .map((posData) => `${posData.position.title.title} at ${posData.position.organization.name}`)
+      .join("\n");
+
+    const paragraphText =
+      streamingTextArray.find((item) => item.id === paragraphId)?.text ?? "";
+
+    if (!paragraphText) {
+      throw new Error(`Error with paragraph text: ${paragraphText}`);
     }
 
-    createParagraphPrompt(
-        paragraphId: number,
-        regenerationText: string,
-        streamingTextArray: StreamingTextArray
-        ): string {
-        
-        const {
-            docInfo,
-            jobInfo,
-            length,
-            otherInfo,
-            position,
-            selectedAccomplishments,
-            selectedActivities
-        } = this._generationSelection;
-        const paragraphText = streamingTextArray.find(item => 
-                item.id === paragraphId
-        )?.text ?? '';
+    const prompt = `
+ Consider the following in updating a technical core qualification document for a Senior Executive/Senior Leader position as describe here: ${docInfo.essayPrompt}
 
-        if (!paragraphText)
-            throw new Error(`Error with paragraph text: ${paragraphText}`);
+Additional info: ${docInfo.additionalDocInfo ?? "(none)"}
 
-        const prompt = `Consider the following in updating a technical core qualification document for a Senior Executive/Senior Leader position as describe here: ${docInfo.essayPrompt} ${docInfo.additionalDocInfo}
-${this.jobDescription ? `____
-The TCQ you are writing is related to the following job description:
-${this.jobDescription}` : ``}
-____
+${
+  this.jobDescription
+    ? `Job context:
+${this.jobDescription}`
+    : ""
+}
 
-And the TCQ relies on the following position information, activities, and accomplishments:
-    Position: ${position.title.title} at ${position.organization.name}, from ${position.date.startDate} to ${position.date.present ? 'Present' : position.date.endDate}.
-        
-    Selected Activities:
-    - ${selectedActivities.join('\n- ')}
-        
-    Selected Accomplishments:\n- ${selectedAccomplishments.join('\n- ')}
+Positions used:
+${positionsText}
 
-        
-Finally consider the following information: ${(otherInfo ? `${otherInfo}` : '')}
-_____
-Given that this is the current document:
-        ${streamingTextArray.reduce((prev, curr) => {
-            return prev + curr.text + '\n';
-        }, '') }
+Other info:
+${otherInfo ?? "(none)"}
+
+---
+Current TCQ text:
+${streamingTextArray.reduce((prev, curr) => prev + curr.text + "\n", "")}
 
 Rewrite ONLY the following paragraph:
 ${paragraphText}
 
-You MUST rewrite the paragraph with the following instructions: ${regenerationText}
+And you MUST apply these instructions. ONLY REWRITE THE PARAGRAPH. DO NOT INCLUDE OTHER COMMENTARY:
+${regenerationText}
 `;
 
-        return prompt;
-    }
-    getDescription(): string {
-        return `Other Document`;
-    }
+    return prompt;
+  }
 
-    getFileNamePrefix(): string {
-        return `Other-Document-`;
-    }
+  getDescription(): string {
+    return `TCQ Document`;
+  }
 
-
+  getFileNamePrefix(): string {
+    return `TCQ-Document-`;
+  }
 }
-

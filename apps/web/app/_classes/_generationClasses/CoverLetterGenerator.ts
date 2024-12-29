@@ -1,47 +1,52 @@
-import { GenerationSelection } from '@/app/_types/GenerationSelection';
-import { PositionObject } from '../Position';
-import { EssayGenerator } from './EssayGenerator';
-import { JobInfo } from '@/app/_types/JobInfo';
-import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
-
+// CoverLetterGenerator.ts
+import { GenerationSelection } from "@/app/_types/GenerationSelection";
+import { EssayGenerator } from "./EssayGenerator";
+import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 
 export class CoverLetterGenerator extends EssayGenerator {
+  constructor(generationSelection: GenerationSelection) {
+    super("cover_letter", generationSelection);
+  }
 
+  createPrompt(): string {
+    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
 
-    constructor(generationSelection: GenerationSelection) {
-        super('cover_letter', generationSelection);
-    }
+    // Build a string describing all selected positions
+    const positionsText = positions
+      .map((posData, i) => {
+        const p = posData.position;
+        const activitiesText = posData.selectedActivities.join("\n- ");
+        const accomplishmentsText = posData.selectedAccomplishments.join("\n- ");
+        return `
+[Position #${i + 1}]:
+  ${p.title.title} at ${p.organization.name}
+  Dates: ${p.date.startDate} - ${p.date.present ? "Present" : p.date.endDate}
+  
+  Selected Activities:
+  - ${activitiesText}
+  
+  Selected Accomplishments:
+  - ${accomplishmentsText}
+        `;
+      })
+      .join("\n\n");
 
-    createPrompt(): string {
-        const {
-            docInfo,
-            jobInfo,
-            length,
-            otherInfo,
-            position,
-            selectedAccomplishments,
-            selectedActivities
-        } = this._generationSelection;
-
-        const prompt = `Please write a cover letter narrative based on the following details${!docInfo.additionalDocInfo ? '' :
-            ` And consider the following: ${docInfo.additionalDocInfo}`}:
-        
-                
-You should use the following cover letter as an example:
+    // Example standard template letter
+    const exampleLetter = `
 [Your Name]
 [Your Address]
-[City], [State]02139
-${new Intl.DateTimeFormat('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: '2-digit'
-            }).format(Date.now())}
-[Recipient of cover letter]
-[Organizational affiliation of recipient]
-[Organizational level #2 of recipient]
-Address
-City, State Zip
-Dear [recipient or to whom it may concern]:
+[City, State ZIP]
+${new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "2-digit",
+}).format(Date.now())}
+[Recipient Name]
+[Recipient Organization]
+[Recipient Address]
+
+Dear [recipient or to whom it may concern],
+
 
 I am responding to your posting for a  position in the Department of Mechanical Engineering at University
 of XXX. I graduated from the Department of Aeronautics and Astronautics at MIT in June with a doctorate, and am
@@ -78,93 +83,101 @@ your consideration. I look forward to hearing from you soon.
 
 Sincerely,
 Your Name
-____
-The cover letteryou are writing should support obtaining the following job:
-${this.jobDescription}
+`.trim();
 
-____
-Base the cover letter off the following accomplishment:
-    Position: ${position.title.title} at ${position.organization.name}, from ${position.date.startDate} to ${position.date.present ? 'Present' : position.date.endDate}.
-        
-    Selected Activities:
-    - ${selectedActivities.join('\n- ')}
-        
-    Selected Accomplishments:\n- ${selectedAccomplishments.join('\n- ')}
-        
-    ${(otherInfo ?
-                `_____
-Finally consider the following information: ${otherInfo} ` : '')}
+    const prompt = `
+Please write a cover letter based on the following details${
+      docInfo.additionalDocInfo
+        ? ` and consider the following: ${docInfo.additionalDocInfo}`
+        : ""
+    }:
 
-${(otherInfo ? `\n\n${otherInfo}` : '')}
+Example cover letter:
+${exampleLetter}
+
 ________
-When writing the Cover Letter, IT MUST BE NO MORE THAN ${length.toString()} WORDS. Feel free to add additional logical information that likely occurred to provide a more action-oriented letter:
-`;
-
-        return prompt;
-    }
-
-    createParagraphPrompt(
-        paragraphId: number,
-        regenerationText: string,
-        streamingTextArray: StreamingTextArray,
-    ): string {
-        const {
-            docInfo,
-            jobInfo,
-            length,
-            otherInfo,
-            position,
-            selectedAccomplishments,
-            selectedActivities
-        } = this._generationSelection;
-        const paragraphText = streamingTextArray.find(item =>
-            item.id === paragraphId
-        )?.text ?? '';
-
-        if (!paragraphText)
-            throw new Error(`Error with paragraph text: ${paragraphText}`);
-
-        const prompt = `Update a cover letter${!docInfo.additionalDocInfo ? '' :
-            ` that incorporates the following: ${docInfo.additionalDocInfo}`}:
-        ____
-The cover letter
+The cover letter you're writing should support obtaining the following job:
 ${this.jobDescription}
-____
 
-And the cover letter relies on the following accomplishments:
-    Position: ${position.title.title} at ${position.organization.name}, from ${position.date.startDate} to ${position.date.present ? 'Present' : position.date.endDate}.
-        
-    Selected Activities:
-    - ${selectedActivities.join('\n- ')}
-        
-    Selected Accomplishments:\n- ${selectedAccomplishments.join('\n- ')}
+________
+Use the following positions as examples/experience (multiple positions may be mentioned):
+${positionsText}
 
-    ${(otherInfo ?
-                `_____
-Finally consider the following information: ${otherInfo} ` : '')}
-
-_____
-Given that this is the current cover letter
-        ${streamingTextArray.reduce((prev, curr) => {
-                    return prev + curr.text + '\n';
-                }, '')}
-
-Rewrite ONLY the following paragraph:
-${paragraphText}
-
-You MUST rewrite the paragraph with the following instructions: ${regenerationText}
-`;
-
-        return prompt;
-    }
-    getDescription(): string {
-        return `Cover letter`;
-    }
-
-    getFileNamePrefix(): string {
-        return `Cover-Letter-`;
-    }
-
-
+${
+  otherInfo
+    ? `
+________
+Finally, consider the following information:
+${otherInfo}
+`
+    : ""
 }
 
+________
+When writing the Cover Letter, **IT MUST BE NO MORE THAN ${length} WORDS**. 
+Feel free to add any additional relevant or logical information to provide a more action-oriented letter. Only respond with the letter, DO NOT provide any other comments.
+`;
+    return prompt;
+  }
+
+  createParagraphPrompt(
+    paragraphId: number,
+    regenerationText: string,
+    streamingTextArray: StreamingTextArray
+  ): string {
+    const { docInfo, otherInfo, positions } = this._generationSelection;
+
+    // Same approach for multiple positions
+    const positionsText = positions
+      .map((posData, i) => {
+        const p = posData.position;
+        return `
+[Position #${i + 1}]:
+  ${p.title.title} at ${p.organization.name}
+  (Dates: ${p.date.startDate} - ${p.date.present ? "Present" : p.date.endDate})
+`;
+      })
+      .join("\n\n");
+
+    const paragraphText =
+      streamingTextArray.find((item) => item.id === paragraphId)?.text || "";
+
+    if (!paragraphText) {
+      throw new Error(`Error with paragraph text: ${paragraphText}`);
+    }
+
+    const prompt = `
+Update a cover letter. 
+${
+  docInfo.additionalDocInfo
+    ? `Incorporate the following: ${docInfo.additionalDocInfo}`
+    : ""
+}
+
+The cover letter must reference the positions below:
+${positionsText}
+
+Any additional info:
+${otherInfo ?? "(none)"}
+
+---
+Current cover letter so far:
+${streamingTextArray.map((p) => p.text).join("\n")}
+
+Rewrite **ONLY** the following paragraph:
+${paragraphText}
+
+Please rewrite it with these instructions. ONLY REWRITE THE PARAGRAPH. DO NOT INCLUDE OTHER COMMENTARY:
+${regenerationText}
+`;
+    return prompt;
+  }
+
+  getDescription(): string {
+    return `Cover letter`;
+  }
+
+  getFileNamePrefix(): string {
+    return `Cover-Letter-`;
+  }
+}
