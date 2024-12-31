@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 // /apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 
 import { ReadableStream } from "web-streams-polyfill/ponyfill"; // Ensure compatibility

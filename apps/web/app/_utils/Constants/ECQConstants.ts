@@ -1,3 +1,4 @@
+// File path: apps/web/app/_utils/Constants/ECQConstants.ts
 import { ECQCompetency, ECQNamesType, ECQNamesTypeWithEmptyString } from "@/app/_types/ECQCompetencies";
 
 export const ECQ_NAMES = ['Leading Change','Leading People','Results Driven','Business Acumen','Building Coalitions'];

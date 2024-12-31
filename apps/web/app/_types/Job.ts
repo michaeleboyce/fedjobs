@@ -1,3 +1,4 @@
+// File path: apps/web/app/_types/Job.ts
 export type Job = {
     MatchedObjectId: string;
     MatchedObjectDescriptor: {

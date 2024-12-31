@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/ClaudeStream.ts
 // ClaudeStream.ts (final version)
 import { AIProviderStream } from "./interfaces";
 import Anthropic from "@anthropic-ai/sdk";

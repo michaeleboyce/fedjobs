@@ -1,3 +1,4 @@
+// File path: apps/api/src/middleware/error.ts
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 

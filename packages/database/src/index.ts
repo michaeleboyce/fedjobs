@@ -1,3 +1,4 @@
+// File path: packages/database/src/index.ts
 // packages/database/index.ts
 
 // Re-export db connection

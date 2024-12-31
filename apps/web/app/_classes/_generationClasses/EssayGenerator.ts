@@ -1,5 +1,5 @@
+// File path: apps/web/app/_classes/_generationClasses/EssayGenerator.ts
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@fedjobs/database";
 import { documents as documentsTable } from "@fedjobs/database";
 import { OpenAI } from "openai";
@@ -7,6 +7,7 @@ import { GenerationSelection } from "@/app/_types/GenerationSelection";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { formatDateMMDDYYYY } from "@/app/_utils/DateUtils";
 import { DocumentType } from "@fedjobs/types";
+import { uploadFile, generateKeyFromFileName} from "@fedjobs/utils";
 
 export type SaveDocumentResult =
   | {
@@ -78,7 +79,6 @@ export abstract class EssayGenerator {
 
   async GenerateDocument(userId: string) {
     const generatedText = await this.generateDocument();
-    // If you need to do more, handle it here
     return generatedText;
   }
 
@@ -87,27 +87,54 @@ export abstract class EssayGenerator {
     generatedText: string,
     description: string
   ): Promise<SaveDocumentResult> {
-    const filename = `GeneratedDocument-${generateFileName()}.docx`;
-    const buffer = await EssayGenerator.createWordDocumentBuffer(generatedText);
+    try {
+      const buffer = await EssayGenerator.createWordDocumentBuffer(generatedText);
+      const originalName = `GeneratedDocument.docx`;
+      const s3Key = generateKeyFromFileName(originalName);
+      
+      // Upload the buffer directly to S3
+      const uploadResponse = await uploadFile(
+        s3Key,
+        originalName,
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        userId,
+        buffer.length
+      );
 
-    const url = await EssayGenerator.uploadBufferToS3(buffer, filename);
-    const { id, name } = await EssayGenerator.saveToDatabase(
-      userId,
-      url,
-      generatedText,
-      filename,
-      description
-    );
+      if (uploadResponse.status === 'failure') {
+        return {
+          status: "error",
+          body: { message: uploadResponse.message }
+        };
+      }
 
-    return {
-      status: "ok",
-      body: { url, documentId: id, documentName: name, generatedText }
-    };
+      const { id, name } = await EssayGenerator.saveToDatabase(
+        userId,
+        uploadResponse.url,
+        generatedText,
+        originalName,
+        s3Key,
+        description
+      );
+
+      return {
+        status: "ok",
+        body: { 
+          url: uploadResponse.url, 
+          documentId: id, 
+          documentName: name, 
+          generatedText 
+        }
+      };
+    } catch (error) {
+      console.error("Error in SaveDocument:", error);
+      return {
+        status: "error",
+        body: { message: error instanceof Error ? error.message : "Unknown error occurred" }
+      };
+    }
   }
 
-  /**
-   * Actually calls OpenAI to get the generated text from the prompt
-   */
   private async generateDocument(): Promise<string> {
     const prompt = this.createPrompt();
 
@@ -152,34 +179,12 @@ export abstract class EssayGenerator {
     return await Packer.toBuffer(doc);
   }
 
-  private static async uploadBufferToS3(buffer: Buffer, filename: string): Promise<string> {
-    const s3Client = new S3Client({
-      region: process.env.AWS_BUCKET_REGION!,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_PROD!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-      }
-    });
-    const bucket = process.env.AWS_BUCKET_NAME!;
-    const s3Key = `${filename}`;
-
-    const uploadParams = {
-      Bucket: bucket,
-      Key: s3Key,
-      Body: buffer,
-      ContentType:
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    };
-
-    await s3Client.send(new PutObjectCommand(uploadParams));
-    return `https://${bucket}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${s3Key}`;
-  }
-
   private static async saveToDatabase(
     userId: string,
     url: string,
     content: string,
     filename: string,
+    s3Key: string,
     description: string
   ): Promise<{ id: number; name: string }> {
     const result = await db
@@ -189,6 +194,7 @@ export abstract class EssayGenerator {
         type: "ecq",
         source: "APPLICATION_GENERATED",
         url: url,
+        s3Key: s3Key,
         content: content,
         name: filename,
         description: description,
@@ -205,14 +211,3 @@ export abstract class EssayGenerator {
   }
 }
 
-function generateFileName(): string {
-  const now = new Date();
-  const month = (now.getMonth() + 1).toString().padStart(2, "0");
-  const day = now.getDate().toString().padStart(2, "0");
-  const year = now.getFullYear().toString().substring(2);
-  const hours = now.getHours().toString().padStart(2, "0");
-  const minutes = now.getMinutes().toString().padStart(2, "0");
-  const seconds = now.getSeconds().toString().padStart(2, "0");
-
-  return `${month}-${day}-${year}-${hours}-${minutes}-${seconds}`;
-}

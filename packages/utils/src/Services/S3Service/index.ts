@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Services/S3Service/index.ts
 // packages/utils/src/Services/s3Service.ts
 
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
@@ -15,8 +16,8 @@ const s3Client = new S3Client({
     secretAccessKey: AWS_CONFIG.secretAccessKey,
   },
 });
-
 export const uploadFile = async (
+  s3Key: string,
   fileName: string,
   fileType: string,
   userId: string,
@@ -24,11 +25,12 @@ export const uploadFile = async (
 ): Promise<SignedURLResponse> => {
   const putObjectCommand = new PutObjectCommand({
     Bucket: AWS_CONFIG.bucketName,
-    Key: fileName,
+    Key: s3Key,
     ContentType: fileType,
     ContentLength: fileSize,
     Metadata: {
       userId,
+      fileName,
     },
   });
 
@@ -40,21 +42,48 @@ export const uploadFile = async (
     return { status: 'failure', message: error.message || 'Failed to upload file.' };
   }
 };
+export const getPreSignedUrlforClient= async (
+  s3Key: string,
+  fileName: string,
+  fileType: string,
+  userId: string,
+  fileSize: number
+): Promise<SignedURLResponse> => {
+  const putObjectCommand = new PutObjectCommand({
+    Bucket: AWS_CONFIG.bucketName,
+    Key: s3Key,
+    ContentType: fileType,
+    ContentLength: fileSize,
+    Metadata: {
+      userId,
+      fileName,
+    },
+  });
 
-export const getFileUrl = async (fileName: string): Promise<string> => {
+  try {
+    const url = await getSignedUrl(s3Client, putObjectCommand, { expiresIn: SIGNED_URL_EXPIRATION });
+    // Suppose you've received `presignedUrl` back from the server:
+    return { status: 'success', url };
+  } catch (error: any) {
+    console.error('Error uploading file:', error);
+    return { status: 'failure', message: error.message || 'Failed to upload file.' };
+  }
+};
+
+export const getFileUrl = async (s3Key: string): Promise<string> => {
     const getObjectCommand = new GetObjectCommand({
         Bucket: AWS_CONFIG.bucketName,
-        Key: fileName,
+        Key: s3Key,
     });
 
     const url = await getSignedUrl(s3Client, getObjectCommand, { expiresIn: GET_URL_EXPIRATION });
     return url;
 };
 
-export const deleteFile = async (fileName: string): Promise<void> => {
+export const deleteFile = async (s3Key: string): Promise<void> => {
     const deleteObjectCommand = new DeleteObjectCommand({
         Bucket: AWS_CONFIG.bucketName,
-        Key: fileName,
+        Key: s3Key,
     });
 
     await s3Client.send(deleteObjectCommand);

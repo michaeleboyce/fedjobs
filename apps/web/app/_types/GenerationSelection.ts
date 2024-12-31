@@ -1,3 +1,4 @@
+// File path: apps/web/app/_types/GenerationSelection.ts
 // GenerationSelection.ts
 import { PositionObject } from "@/app/_classes/Position";
 import { DocumentInfo } from "./DocumentInfo";

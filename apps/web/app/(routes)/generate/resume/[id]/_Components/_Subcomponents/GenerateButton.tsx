@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/GenerateButton.tsx
 import React, { useState } from 'react';
 
 interface GenerateButtonProps {

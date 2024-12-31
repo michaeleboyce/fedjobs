@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/OpenAIStream.ts
 import { AIProviderStream } from "./interfaces";
 import OpenAI from "openai";
 

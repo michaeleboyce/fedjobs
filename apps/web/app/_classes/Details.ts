@@ -1,3 +1,4 @@
+//
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../_utils/Compare";
 
 export type DetailsObject = {

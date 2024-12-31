@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/AdditionalInfoBox.tsx
 'use client';
 import React from 'react';
 import { DocumentInfo } from './_Subcomponents/_AdditionalInfoBox/DocumentInfo';

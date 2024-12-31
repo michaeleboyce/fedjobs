@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/StreamingDocumentViewer.tsx
 import React, { useState, useEffect } from "react";
 import { faCheck, faPen, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

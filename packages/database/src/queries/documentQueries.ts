@@ -1,3 +1,4 @@
+// File path: packages/database/src/queries/documentQueries.ts
 // packages/database/src/queries/documentQueries.ts
 
 import { db } from '../db-connection';

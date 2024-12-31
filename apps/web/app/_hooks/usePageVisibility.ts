@@ -1,21 +1,29 @@
-import { useEffect, useState } from "react";
+// File path: apps/web/app/_hooks/usePageVisibility.ts
+import { useState, useEffect } from "react";
 
 const usePageVisibility = () => {
-    const [isPageVisible, setIsPageVisible] = useState(!document.hidden);
+    // Initialize with true and update on client-side
+    const [isPageVisible, setIsPageVisible] = useState(true);
 
     useEffect(() => {
-      const handleVisibilityChange = () => {
-        setIsPageVisible(!document.hidden);
-      };
+        // Only run in browser environment
+        if (typeof window !== 'undefined') {
+            // Set initial state
+            setIsPageVisible(!document.hidden);
 
-      document.addEventListener('visibilitychange', handleVisibilityChange);
+            const handleVisibilityChange = () => {
+                setIsPageVisible(!document.hidden);
+            };
 
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-      };
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            return () => {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+            };
+        }
     }, []);
 
     return isPageVisible;
-  };
+};
 
-  export default usePageVisibility;
+export default usePageVisibility;

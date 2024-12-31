@@ -1,3 +1,4 @@
+// File path: apps/api/src/types/index.ts
 import { z } from 'zod';
 import type { DocumentType, GenerationType } from '@fedjobs/types';
 

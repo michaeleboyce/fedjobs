@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Constants/ECQConstants.ts
 import { ECQCompetency, ECQNamesType } from "@fedjobs/types";
 
 export const ECQ_NAMES: ECQNamesType[] = [

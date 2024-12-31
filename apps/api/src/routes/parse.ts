@@ -1,13 +1,16 @@
+// File path: apps/api/src/routes/parse.ts
+// apps/api/src/routes/parse.ts
+
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { ParseRequestSchema, ParseRequest } from '@fedjobs/types';
-import { parsingService } from '../services/parsingService'; // Or wherever you keep it
+import { parsingService } from '../services/parsingService'; // Adjust the path as necessary
 import { ApiError } from '../middleware/error';
 
 const router: Router = express.Router();
 
 router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next: NextFunction) => {
   try {
-    // Validate incoming request body
+    // Validate incoming request body using Zod or similar schema validator
     const validation = ParseRequestSchema.safeParse(req.body);
     if (!validation.success) {
       console.debug(validation.error.format());
@@ -17,7 +20,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
     // Extract typed data
     const { text, userId, documentId, streaming = false } = validation.data;
 
-    // Decide streaming or not
+    // Initiate parsing based on the streaming flag
     if (streaming) {
       // Logs into DB, tracks progress, returns an ID
       const parseId = await parsingService.parseWithLoggingAndStreaming({
@@ -25,9 +28,9 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
         userId,
         documentId
       });
-      // You might want to return parse ID so that the client can poll
+      // Return parseId so that the client can poll
       // some “GET /api/parse/status/:parseId” endpoint.
-      res.json({ parseId, streaming: true });
+      res.status(200).json({ parseId, streaming: true });
     } else {
       // Immediately do a synchronous parse with no DB logging
       const annotatedText = await parsingService.parseSyncOrNoLog({
@@ -35,7 +38,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
         userId,
         documentId
       });
-      res.json({ annotatedText, streaming: false });
+      res.status(200).json({ annotatedText, streaming: false });
     }
   } catch (error) {
     next(error);

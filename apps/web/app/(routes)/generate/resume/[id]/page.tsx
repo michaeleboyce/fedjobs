@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/page.tsx
 'use server';
 
 import React from 'react';

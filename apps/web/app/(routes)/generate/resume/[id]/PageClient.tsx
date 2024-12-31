@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/PageClient.tsx
 'use client'
 import React from 'react';
 import { GenerationProvider } from '@/app/(routes)/generate/resume/[id]/_Providers/GenerationProvider'

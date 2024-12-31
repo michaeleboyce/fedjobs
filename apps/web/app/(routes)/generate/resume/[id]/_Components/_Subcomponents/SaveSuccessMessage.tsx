@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/SaveSuccessMessage.tsx
 import React from 'react';
 
 type SaveSuccessMessageProps = {

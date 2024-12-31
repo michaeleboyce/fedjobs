@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Providers/GenerationProvider.tsx
 'use client'
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { JobInfo } from '@/app/_types/JobInfo';

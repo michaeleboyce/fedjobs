@@ -1,12 +1,12 @@
+// File path: apps/api/src/services/parsingService.ts
 // apps/api/src/services/parsingService.ts
 
-import OpenAI from "openai"; // Updated import style for the OpenAI SDK
+import OpenAI from "openai";
 import { db, eq } from "@fedjobs/database";
-import { parsings as parsingsTable, type NewParsing } from "@fedjobs/database/src/schema/parsings";
-import { documents as documentsTable } from "@fedjobs/database/src/schema/documents";
+import { parsings as parsingsTable, documents as documentsTable} from "@fedjobs/database";
 import { parseResumeText } from "@fedjobs/utils";
 import type { ParseRequest } from "@fedjobs/types";
-import { DOMParser } from "xmldom"; // For XML validation
+import { DOMParser } from "xmldom";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,7 +18,7 @@ export class ParsingService {
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY_35;
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not defined in environment variables.");
+      throw new Error("OPENAI_API_KEY_35 is not defined in environment variables.");
     }
     this.openai = new OpenAI({
       apiKey, // Ensure this environment variable is set
@@ -42,256 +42,272 @@ export class ParsingService {
   </position>
 </html>
 
-Please follow this structure for the entire resume, maintaining the integrity of the original text. Provide only the XML output without additional comments and do NOT include markup and complete the ENTIRE document. The text to parse is: ${text}`;
+Please follow this structure for the entire resume, maintaining the integrity of the original text. Provide only the XML output without additional comments and complete the ENTIRE document. The text to parse is: ${text}`;
   }
- /**
-   * parseWithLoggingAndStreaming:
-   * 1) Creates a new record in the 'parsings' table to track progress
-   * 2) Streams annotated XML from OpenAI
-   * 3) Accumulates the output in 'combinedOutput'
-   * 4) Calls 'completeProcessing' to parse XML -> JSON and 
-   *    update the corresponding Document row with the JSON.
+
+  /**
+   * Parses the provided text with logging and streaming.
+   * This method creates a parsing record and starts the parsing process.
+   * 
+   * @param request - The parsing request containing text, userId, documentId, and streaming flag.
+   * @returns The ID of the created parsing record or null if failed.
    */
- async parseWithLoggingAndStreaming(request: ParseRequest): Promise<number> {
-  const parsing = await this.createParsingRecord(request);
+  async parseWithLoggingAndStreaming(request: ParseRequest): Promise<number | null> {
+    try {
+      const parsingId = await this.createParsingRecord(request);
 
-  if (!parsing.id) {
-    throw new Error("No parsing ID generated.");
+      if (!parsingId) {
+        throw new Error("Failed to create a parsing record.");
+      }
+
+      // Begin the streaming process in the background.  
+      // "fire and forget" (catch errors here or let them bubble up).
+      this.processStream(request.text, parsingId).catch(console.error);
+
+      return parsingId;
+    } catch (error: any) {
+      console.error("Error initiating parsing:", error);
+      return null;
+    }
   }
 
-  // Begin the streaming process in the background.  
-  // "fire and forget" (catch errors here or let them bubble up).
-  this.processStream(request.text, parsing.id).catch(console.error);
-
-  return parsing.id; // Return the newly-created parsing ID for reference.
-}
-
-/**
- * Creates a row in the 'parsings' table to track the entire operation.
- */
-private async createParsingRecord(request: ParseRequest) {
-  const [parsing] = await db
-    .insert(parsingsTable)
-    .values({
-      userId: request.userId,
-      type: "resume",
-      prompt: this.createPromptXML(request.text),
-      completion: "",
-      documentId: request.documentId,
-      analysisPercent: 0,
-      isComplete: false,
-      temperature: "0", // Temperature might be irrelevant or could be configured
-    })
-    .returning();
-
-  return parsing;
-}
-
-/**
- * Streams annotated XML, updates parse progress in DB, 
- * attempts re-stream if truncated, and ultimately calls
- * 'completeProcessing' with final output.
- */
-private async processStream(text: string, parsingId: number): Promise<void> {
-  let combinedOutput = "";
-  let retries = 0;
-  let finishReason: string | null = null;
-  let lastReportedProgress = 0;
-
-  while (retries < this.MAX_RETRIES) {
+  /**
+   * Creates a row in the 'parsings' table to track the entire operation.
+   * 
+   * @param request - The parsing request.
+   * @returns The ID of the created parsing record or null if failed.
+   */
+  private async createParsingRecord(request: ParseRequest): Promise<number | null> {
     try {
-      // Request streaming from GPT-4 (model name can vary).
-      const stream = await this.openai.chat.completions.create({
-        model: "gpt-4o", 
-        messages: [{ role: "user", content: this.createPromptXML(text) }],
-        stream: true,
-      });
+      const [parsing] = await db
+        .insert(parsingsTable)
+        .values({
+          userId: request.userId,
+          type: "resume",
+          prompt: this.createPromptXML(request.text),
+          completion: "",
+          documentId: request.documentId,
+          analysisPercent: 0,
+          isComplete: false,
+          temperature: "0", // Temperature might be irrelevant or could be configured
+        })
+        .returning();
 
-      // Read each chunk from the streaming response.
-      for await (const chunk of stream) {
-        const message = chunk.choices[0]?.delta?.content;
-        const currentFinishReason = chunk.choices[0]?.finish_reason;
+      return parsing?.id || null;
+    } catch (error: any) {
+      console.error("Error creating parsing record:", error);
+      return null;
+    }
+  }
 
-        if (message) {
-          combinedOutput += message;
-          // Estimate progress — in this example, up to 85% for raw annotation.
-          const progress = Math.round(
-            (combinedOutput.length / (text.length || 1)) * 85
-          );
-          if (progress - lastReportedProgress >= 10) {
-            await this.updateProgress(parsingId, progress);
-            lastReportedProgress = progress;
+  /**
+   * Streams annotated XML, updates parse progress in DB, 
+   * attempts re-stream if truncated, and ultimately calls
+   * 'completeProcessing' with final output.
+   */
+  private async processStream(text: string, parsingId: number): Promise<void> {
+    let combinedOutput = "";
+    let retries = 0;
+    let finishReason: string | null = null;
+    let lastReportedProgress = 0;
+
+    while (retries < this.MAX_RETRIES) {
+      try {
+        // Request streaming from GPT-4 (model name can vary).
+        const stream = await this.openai.chat.completions.create({
+          model: "gpt-4o", 
+          messages: [{ role: "user", content: this.createPromptXML(text) }],
+          stream: true,
+        });
+
+        // Read each chunk from the streaming response.
+        for await (const chunk of stream) {
+          const message = chunk.choices[0]?.delta?.content;
+          const currentFinishReason = chunk.choices[0]?.finish_reason;
+
+          if (message) {
+            combinedOutput += message;
+            // Estimate progress — in this example, up to 85% for raw annotation.
+            const progress = Math.round(
+              (combinedOutput.length / (text.length || 1)) * 85
+            );
+            if (progress - lastReportedProgress >= 10) {
+              await this.updateProgress(parsingId, progress);
+              lastReportedProgress = progress;
+            }
+          }
+
+          // If the chunk includes a `finish_reason`, we stop reading further.
+          if (currentFinishReason) {
+            finishReason = currentFinishReason;
+            break;
           }
         }
 
-        // If the chunk includes a `finish_reason`, we stop reading further.
-        if (currentFinishReason) {
-          finishReason = currentFinishReason;
-          break;
+        // If truncated, we can attempt a retry to capture rest of text.
+        if (finishReason === "length") {
+          retries++;
+          console.warn(
+            `Output truncated. Retry #${retries} of ${this.MAX_RETRIES}...`
+          );
+          continue;
         }
-      }
 
-      // If truncated, we can attempt a retry to capture rest of text.
-      if (finishReason === "length") {
+        // Check if the combined XML is well-formed.
+        if (this.isXMLComplete(combinedOutput)) {
+          // Final step: parse the XML -> JSON, update DB.
+          await this.completeProcessing(parsingId, combinedOutput);
+          return;
+        } else {
+          // If incomplete XML, attempt a continuation
+          retries++;
+          console.warn(
+            `Incomplete XML. Retrying #${retries} of ${this.MAX_RETRIES}...`
+          );
+        }
+      } catch (err) {
         retries++;
-        console.warn(
-          `Output truncated. Retry #${retries} of ${this.MAX_RETRIES}...`
-        );
-        continue;
-      }
-
-      // Check if the combined XML is well-formed.
-      if (this.isXMLComplete(combinedOutput)) {
-        // Final step: parse the XML -> JSON, update DB.
-        await this.completeProcessing(parsingId, combinedOutput);
-        return;
-      } else {
-        // If incomplete XML, attempt a continuation
-        retries++;
-        console.warn(
-          `Incomplete XML. Retrying #${retries} of ${this.MAX_RETRIES}...`
+        console.error(
+          `Error during streaming parse attempt #${retries}: ${err}`
         );
       }
-    } catch (err) {
-      retries++;
-      console.error(
-        `Error during streaming parse attempt #${retries}: ${err}`
-      );
     }
+
+    // If out of retries, finalize anyway with whatever we have.
+    console.error("Maximum retries reached. Possibly incomplete XML.");
+    await this.completeProcessing(parsingId, combinedOutput);
   }
 
-  // If out of retries, finalize anyway with whatever we have.
-  console.error("Maximum retries reached. Possibly incomplete XML.");
-  await this.completeProcessing(parsingId, combinedOutput);
-}
+  /**
+   * Once we have the (possibly partial) XML output, 
+   * - we parse it into JSON, 
+   * - store that JSON + mark isParsed in the documents table,
+   * - finalize the parsings table record.
+   */
+  private async completeProcessing(parsingId: number, annotatedXML: string): Promise<void> {
+    // 1) Convert XML -> JSON (which will follow your Resume schema).
+    const parsedResume = parseResumeText(annotatedXML);
 
-/**
- * Once we have the (possibly partial) XML output, 
- * - we parse it into JSON, 
- * - store that JSON + mark isParsed in the documents table,
- * - finalize the parsings table record.
- */
-private async completeProcessing(parsingId: number, annotatedXML: string): Promise<void> {
-  // 1) Convert XML -> JSON (which will follow your Resume schema).
-  const parsedResume = parseResumeText(annotatedXML);
+    // 2) If parse returns null/undefined, log an error and update accordingly.
+    if (!parsedResume) {
+      console.warn("XML->JSON parsing returned invalid data; marking as error.");
+      await db
+        .update(parsingsTable)
+        .set({ completion: "Error", isComplete: true })
+        .where(eq(parsingsTable.id, parsingId))
+        .execute();
+      return;
+    }
 
-  // 2) If parse returns null/undefined, log an error and update accordingly.
-  if (!parsedResume) {
-    console.warn("XML->JSON parsing returned invalid data; marking as error.");
+    // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
+    //    (You might store the raw XML or not — up to you.)
     await db
       .update(parsingsTable)
-      .set({ completion: "Error", isComplete: true })
+      .set({
+        completion: annotatedXML, 
+        analysisPercent: 100,
+        isComplete: true,
+      })
       .where(eq(parsingsTable.id, parsingId))
       .execute();
-    return;
+
+    // 4) Retrieve the documentId from the parsings record so we can update 
+    //    the related document row.
+    const [parsingRecord] = await db
+      .select()
+      .from(parsingsTable)
+      .where(eq(parsingsTable.id, parsingId))
+      .execute();
+
+    if (!parsingRecord?.documentId) {
+      console.error("No associated documentId for this parsing. Cannot update Document row.");
+      return;
+    }
+
+    // 5) Finally, update the Document row with parsed JSON + `isParsed = true`.
+    //    The 'data' field in your documents table is presumably a JSON column.
+    await db
+      .update(documentsTable)
+      .set({
+        data: parsedResume,   // storing the final JSON object
+        isParsed: true,
+      })
+      .where(eq(documentsTable.id, parsingRecord.documentId))
+      .execute();
   }
 
-  // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
-  //    (You might store the raw XML or not — up to you.)
-  await db
-    .update(parsingsTable)
-    .set({
-      completion: annotatedXML, 
-      analysisPercent: 100,
-      isComplete: true,
-    })
-    .where(eq(parsingsTable.id, parsingId))
-    .execute();
-
-  // 4) Retrieve the documentId from the parsings record so we can update 
-  //    the related document row.
-  const [parsingRecord] = await db
-    .select()
-    .from(parsingsTable)
-    .where(eq(parsingsTable.id, parsingId))
-    .execute();
-
-  if (!parsingRecord?.documentId) {
-    console.error("No associated documentId for this parsing. Cannot update Document row.");
-    return;
-  }
-
-  // 5) Finally, update the Document row with parsed JSON + `isParsed = true`.
-  //    The 'data' field in your documents table is presumably a JSON column.
-  await db
-    .update(documentsTable)
-    .set({
-      data: parsedResume,   // storing the final JSON object
-      isParsed: true,
-    })
-    .where(eq(documentsTable.id, parsingRecord.documentId))
-    .execute();
-}
-
-/**
- * parseSyncOrNoLog is a convenience method to parse synchronously 
- * without streaming. You might do this for smaller resumes 
- * or debugging scenarios.
- */
-async parseSyncOrNoLog(request: ParseRequest): Promise<string> {
-  let combinedOutput = "";
-  let finishReason: string | null = null;
-  let retries = 0;
-
-  while (retries < this.MAX_RETRIES) {
+  /**
+   * Checks if the generated XML is well-formed 
+   * (i.e., no <parsererror> from xmldom).
+   */
+  private isXMLComplete(xml: string): boolean {
     try {
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: this.createPromptXML(request.text) }],
-        stream: false,
-      });
-
-      combinedOutput = response.choices[0].message?.content || "";
-      finishReason = response.choices[0].finish_reason || null;
-
-      if (finishReason === "length") {
-        retries++;
-        console.warn(`Truncated sync parse. Retrying ${retries}/${this.MAX_RETRIES}`);
-        continue;
-      }
-
-      if (this.isXMLComplete(combinedOutput)) {
-        return combinedOutput;
-      } else {
-        retries++;
-        console.warn(`Incomplete XML, retrying ${retries}/${this.MAX_RETRIES}`);
-      }
-    } catch (err) {
-      retries++;
-      console.error(`Sync parse error, attempt #${retries}:`, err);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xml, "application/xml");
+      const parseError = doc.getElementsByTagName("parsererror");
+      return parseError.length === 0;
+    } catch (error) {
+      console.error("XML parsing error:", error);
+      return false;
     }
   }
 
-  return combinedOutput; // Possibly incomplete, but we've exhausted retries.
-}
-
-/**
- * A simple helper to update partial progress in the parsings table 
- * without spamming DB on every token.
- */
-private async updateProgress(parsingId: number, progress: number) {
-  await db
-    .update(parsingsTable)
-    .set({ analysisPercent: Math.min(progress, 99) })
-    .where(eq(parsingsTable.id, parsingId))
-    .execute();
-}
-
-/**
- * Checks if the generated XML is well-formed 
- * (i.e., no <parsererror> from xmldom).
- */
-private isXMLComplete(xml: string): boolean {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, "application/xml");
-    const parseError = doc.getElementsByTagName("parsererror");
-    return parseError.length === 0;
-  } catch (error) {
-    console.error("XML parsing error:", error);
-    return false;
+  /**
+   * A simple helper to update partial progress in the parsings table 
+   * without spamming DB on every token.
+   */
+  private async updateProgress(parsingId: number, progress: number) {
+    await db
+      .update(parsingsTable)
+      .set({ analysisPercent: Math.min(progress, 99) })
+      .where(eq(parsingsTable.id, parsingId))
+      .execute();
   }
-}
+
+  /**
+   * Parses a resume text synchronously without logging or streaming.
+   * Useful for smaller resumes or debugging scenarios.
+   * 
+   * @param request - The parsing request.
+   * @returns The annotated XML string.
+   */
+  async parseSyncOrNoLog(request: ParseRequest): Promise<string> {
+    let combinedOutput = "";
+    let finishReason: string | null = null;
+    let retries = 0;
+
+    while (retries < this.MAX_RETRIES) {
+      try {
+        const response = await this.openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: this.createPromptXML(request.text) }],
+          stream: false,
+        });
+
+        combinedOutput = response.choices[0].message?.content || "";
+        finishReason = response.choices[0].finish_reason || null;
+
+        if (finishReason === "length") {
+          retries++;
+          console.warn(`Truncated sync parse. Retrying ${retries}/${this.MAX_RETRIES}`);
+          continue;
+        }
+
+        if (this.isXMLComplete(combinedOutput)) {
+          await this.completeProcessing(request.documentId, combinedOutput);
+          return combinedOutput;
+        } else {
+          retries++;
+          console.warn(`Incomplete XML, retrying ${retries}/${this.MAX_RETRIES}`);
+        }
+      } catch (err) {
+        retries++;
+        console.error(`Sync parse error, attempt #${retries}:`, err);
+      }
+    }
+
+    return combinedOutput; // Possibly incomplete, but we've exhausted retries.
+  }
 }
 
 // Export a singleton instance:

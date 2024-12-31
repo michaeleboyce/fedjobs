@@ -1,3 +1,4 @@
+// File path: packages/database/src/queries/parsingQueries.ts
 // packages/database/src/queries/parsingQueries.ts
 
 import { db } from '../db-connection';

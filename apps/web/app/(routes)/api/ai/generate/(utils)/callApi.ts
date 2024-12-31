@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callApi.ts
 import { CoverLetterGenerator } from "@/app/_classes/_generationClasses/CoverLetterGenerator";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";

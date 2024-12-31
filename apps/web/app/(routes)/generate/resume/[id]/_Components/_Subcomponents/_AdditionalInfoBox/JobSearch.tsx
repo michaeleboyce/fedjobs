@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/_AdditionalInfoBox/JobSearch.tsx
 import { searchUSAJobsAPI } from '@/app/_actions/usaJobsActions';
 import { Job } from '@/app/_types/Job';
 import { formatDateMMDDYYYY } from '@/app/_utils/DateUtils';

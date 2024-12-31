@@ -1,3 +1,4 @@
+// File path: apps/web/app/_components/TopBar.tsx
 import React from 'react';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { LoginLink, RegisterLink, LogoutLink } from '@kinde-oss/kinde-auth-nextjs/components';

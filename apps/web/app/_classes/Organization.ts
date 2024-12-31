@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/Organization.ts
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../_utils/Compare";
 
 export type OrganizationObject = {

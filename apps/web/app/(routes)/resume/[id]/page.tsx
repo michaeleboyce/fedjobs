@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/resume/[id]/page.tsx
 // /apps/web/app/(routes)/resume/[id]/page.tsx
 
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";

@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/dashboard/page.tsx
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 

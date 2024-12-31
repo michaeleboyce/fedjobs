@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/GenerateBottomBar.tsx
 import React from 'react';
 import GenerateButton from '@/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/GenerateButton'; // Assuming GenerateButton is in the same directory
 import { GeneratedDocumentCard } from './GeneratedDocumentCard';

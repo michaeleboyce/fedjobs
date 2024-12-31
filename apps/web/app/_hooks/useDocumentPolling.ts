@@ -1,3 +1,4 @@
+// File path: apps/web/app/_hooks/useDocumentPolling.ts
 // hooks/useDocumentPolling.ts
 import { useEffect, useRef } from 'react';
 import { ParseResponse } from '../_types/ParseResponse';

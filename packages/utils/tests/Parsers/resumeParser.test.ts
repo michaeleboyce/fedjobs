@@ -1,3 +1,4 @@
+// File path: packages/utils/tests/Parsers/resumeParser.test.ts
 import { parseResumeText, parsePosition } from '../../src/Parsers/ResumeParsers';
 import { singlePositionXml, multiplePositionsXml, invalidXml, largeResumeXml} from './__fixtures__/resumeXML';
 import { describe, expect, test} from 'vitest';

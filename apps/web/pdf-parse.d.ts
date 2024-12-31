@@ -1,3 +1,4 @@
+// File path: apps/web/pdf-parse.d.ts
 declare module 'pdf-parse' {
   function pdf(data: { data: ArrayBuffer }): Promise<{ text: string }>;
   export = pdf;

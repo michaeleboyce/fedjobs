@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/types.ts
 // /apps/web/app/(routes)/api/ai/generate/(utils)/types.ts
 
 // Define interfaces for Claude's SSE events

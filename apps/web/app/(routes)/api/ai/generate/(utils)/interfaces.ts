@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/interfaces.ts
 // /apps/web/app/(routes)/api/ai/generate/(utils)/interfaces.ts
 
 export interface AIProviderStream {

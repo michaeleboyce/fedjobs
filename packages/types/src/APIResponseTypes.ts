@@ -1,3 +1,4 @@
+// File path: packages/types/src/APIResponseTypes.ts
 
 // Define response types for better type safety.
 export type SignedURLResponseType =

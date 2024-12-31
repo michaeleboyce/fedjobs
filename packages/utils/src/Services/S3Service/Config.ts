@@ -1,4 +1,5 @@
-// packages/utils/src/Constants/Config.ts
+// File path: packages/utils/src/Services/S3Service/Config.ts
+// packages/utils/src/Services/S3Service/Config.ts
 
 export const AWS_CONFIG = {
   region: process.env.AWS_BUCKET_REGION!,
@@ -6,6 +7,14 @@ export const AWS_CONFIG = {
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   bucketName: process.env.AWS_BUCKET_NAME!,
 };
+
+// S3 permissions needed
+export const REQUIRED_S3_PERMISSIONS = [
+  's3:PutObject',
+  's3:GetObject',
+  's3:DeleteObject',
+  's3:ListBucket'
+];
 
 export const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '104857600'); // 100 MB
 export const ALLOWED_FILE_TYPES = [

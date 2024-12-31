@@ -1,3 +1,4 @@
+// File path: packages/types/src/ECQCompetencies.ts
 export type ECQCompetency = {
   title: string;
   shortTitle: string;

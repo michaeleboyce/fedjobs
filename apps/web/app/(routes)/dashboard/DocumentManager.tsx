@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/dashboard/DocumentManager.tsx
 'use client'
 import FileUploadBox from "@/app/(routes)/dashboard/_Components/FileUploadBox";
 import React, { useState, useCallback } from "react";

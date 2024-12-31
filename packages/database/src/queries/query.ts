@@ -1,3 +1,4 @@
+// File path: packages/database/src/queries/query.ts
 import { sql, eq} from "drizzle-orm";
 import { db } from "../index";
 import { documents as documentsTable } from "../schema/documents";

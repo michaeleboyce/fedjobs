@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/GenerationManager.tsx
 'use client'
 import React, { useState, useCallback } from 'react';
 import { Resume as ResumeComponent } from '@/app/_components/Resume';

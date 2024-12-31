@@ -1,3 +1,4 @@
+//packages/types/src/ResumeTypes.ts
 export interface Organization {
     name: string;
   }

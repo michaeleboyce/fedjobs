@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/vectorize/route.ts
 'use server'
 import { Pinecone } from '@pinecone-database/pinecone';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';

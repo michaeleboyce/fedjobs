@@ -1,15 +1,15 @@
+// File path: apps/web/app/_actions/files/fileActions.ts
 'use server'; // Indicates that this module should be executed on the server side.
 
 import axios from 'axios'; // Import Axios for HTTP requests.
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from 'dotenv';
-import crypto from 'crypto';
+import { generateKeyFromFileName, getPreSignedUrlforClient } from '@fedjobs/utils';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db, eq, and } from "@fedjobs/database";
 import { documents as documentsTable, Document } from "@fedjobs/database";
 import { parsings as parsingsTable, NewParsing } from "@fedjobs/database";
-import { ECQGenerator } from "@/app/_classes/_generationClasses/ECQGenerator";
 import { EssayGenerator, SaveDocumentResult } from "@/app/_classes/_generationClasses/EssayGenerator";
 import { retrieveAndDeleteDocuments, vectorizeDocument } from "../vectorize/vectorizeActions";
 // Removed unused import: import parseDocument from "@/app/defer/parseDocument";
@@ -24,9 +24,10 @@ type SignedURLResponse =
   | { failure?: undefined; success: { url: string } }
   | { failure: string; success?: undefined };
 
-type ProcessDocumentResponse =
+  type ProcessDocumentResponse =
   | { failure?: undefined; success: { url: string; document: Document; } }
   | { failure: string; success?: undefined };
+
 
 type GetDocumentSignedURLResponse =
   | { failure?: undefined; success: { url: string; documentId: number } }
@@ -42,9 +43,6 @@ const s3Client = new S3Client({
   },
 });
 const bucket = process.env.AWS_BUCKET_NAME!; // Your S3 bucket name.
-
-// Utility function to generate a unique file name using random bytes.
-const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex");
 
 /**
  * Processes an uploaded file by performing validation, uploading to S3,
@@ -90,24 +88,49 @@ export async function processFile(
     return { failure: `File size ${file.size} exceeds the maximum allowed size of ${MAX_FILE_SIZE} bytes.` };
   }
 
+  // Initialize the S3 client with credentials and region from environment variables.
+  const s3Client = new S3Client({
+    region: process.env.AWS_BUCKET_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_PROD!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
+  const bucket = process.env.AWS_BUCKET_NAME!; // Your S3 bucket name.
+
   try {
-    // Upload the file to S3 and get the signed URL.
-    const uploadResponse = await uploadFile(file.name, file.type, user.id, file.size);
-
-    if (uploadResponse.status === 'failure') {
-      return { failure: uploadResponse.message };
-    }
-
-    const signedUrl = uploadResponse.url;
+    const s3Key = generateKeyFromFileName(file.name); 
+    const arrayBuffer = await file.arrayBuffer(); // If you are in a modern Node/Next environment
+    const buffer = Buffer.from(arrayBuffer);
+  
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: s3Key,
+        Body: buffer,
+        ContentType: file.type,
+        ContentLength: file.size,
+        Metadata: {
+          userId: user.id,
+          fileName: file.name,
+        },
+      })
+    );
+    
+    // **Construct the S3 Object URL**
+    const region = process.env.AWS_BUCKET_REGION!;
+    const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
+    
     // Insert the document record into the database.
     let document: Document = await insertDocument({
       type: documentType,
-      url: signedUrl.split("?")[0], // Strip query parameters from the URL.
+      url: s3Url, // Strip query parameters from the URL.
       userId: user.id,
       description,
       inKnowledgeBank: addToKnowledgeBank,
       content,
       name: file.name, // Use a unique file name.
+      s3Key: s3Key,
     });
 
     // Determine the next steps based on the document type.
@@ -118,27 +141,46 @@ export async function processFile(
       // For resume documents, check if they have already been parsed.
       const existingParsings = await getParsingsByDocId(document.id);
       if (existingParsings.length === 0) {
-        // If not parsed, initiate the parsing process by creating a new parsing record.
-        const parsePayload = {
+        // If not parsed, delegate parsing initiation to the parsing API via HTTP
+        
+        const parseRequest = {
           text: content,
           userId: user.id,
           documentId: document.id,
-          streaming: true, // Set to true to enable streaming and DB logging.
+          streaming: true,
         };
-
-        // Initiate parsing
-        const parseResponse = await initiateParsing(parsePayload);
-
-        if (parseResponse.failure) {
-          console.error("Failed to initiate parsing:", parseResponse.failure);
-          // Optionally, you can choose to delete the uploaded document or notify the user.
+        
+        try {
+          // Determine the API base URL from environment variables or use a default.
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
+          
+          // Make a POST request to the /api/parse endpoint.
+          const response = await axios.post(`${API_URL}/api/parse`, parseRequest, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.status !== 200) {
+            console.error("Failed to initiate parsing:", response.data);
+            // Optionally, handle the failure (e.g., notify the user, rollback the upload)
+          }
+          
+          const { parseId, streaming } = response.data;
+          if (!parseId) {
+            console.error("No parseId returned from parsing service.");
+            // Optionally, handle the failure
+          }
+          
+        } catch (error: any) {
+          console.error("Error initiating parsing via API:", error.response?.data || error.message);
+          // Optionally, handle the failure (e.g., notify the user, rollback the upload)
         }
-        // If parseResponse.success exists, the parsing task has been initiated.
       }
     }
 
     // Return a success response with the document's signed URL and details.
-    return { success: { url: signedUrl, document } };
+    return { success: { url: s3Url, document } };
   } catch (error: any) {
     console.error("Error processing file:", error);
     return { failure: error.message || "An unknown error occurred during file processing." };
@@ -291,7 +333,7 @@ export async function getDocumentSignedURL(documentId: number): Promise<GetDocum
 
   const getObjectCommand = new GetObjectCommand({
     Bucket: bucket,
-    Key: document[0].name,
+    Key: document[0].s3Key
   });
 
   try {
@@ -339,7 +381,7 @@ export async function deleteDocument(documentId: number): Promise<{ success?: st
     // Delete the file from S3.
     const deleteObjectCommand = new DeleteObjectCommand({
       Bucket: bucket,
-      Key: documentToDelete[0].name,
+      Key: documentToDelete[0].s3Key,
     });
     await s3Client.send(deleteObjectCommand);
 
@@ -391,50 +433,4 @@ export async function processNewECQDocument(text: string, ecqShortTitle: string)
   if (!user)
     return { status: 'error', body: { message: 'Error getting user information!' } };
   return await EssayGenerator.SaveDocument(user.id, text, `ECQ Essay for the ECQ Topic: ${ecqShortTitle}`);
-}
-
-/**
- * Generates a signed URL for uploading a file to S3.
- * 
- * @param fileName - The name of the file.
- * @param fileType - The MIME type of the file.
- * @param fileSize - The size of the file in bytes.
- * @param userId - The ID of the user uploading the file.
- * @returns A promise resolving to either a success object with the signed URL or a failure object with an error message.
- */
-async function getSignedURL(fileName: string, fileType: string, fileSize: number, userId: string): Promise<SignedURLResponse> {
-  // Ensure only allowed file types are processed.
-  if (!ALLOWED_FILE_TYPES.includes(fileType)) {
-    return { failure: "File type not allowed" };
-  }
-
-  if (fileSize > MAX_FILE_SIZE) {
-    return { failure: "File size too large" };
-  }
-
-
-  const putObjectCommand = new PutObjectCommand({
-    Bucket: bucket,
-    Key: fileName,
-    ContentType: fileType,
-    ContentLength: fileSize,
-    Metadata: {
-      userId: userId
-    }
-  });
-
-  try {
-    const url = await getSignedUrl(
-      s3Client,
-      putObjectCommand,
-      { expiresIn: 60 } // 60 seconds
-    );
-
-    return { success: { url } };
-  } catch (error: any) {
-    if (error instanceof Error)
-      return { failure: error.message };
-    else
-      return { failure: 'Unknown Error' };
-  }
 }

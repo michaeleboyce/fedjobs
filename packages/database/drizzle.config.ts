@@ -1,3 +1,4 @@
+// File path: packages/database/drizzle.config.ts
 import { Config } from "drizzle-kit"
 import path from 'path'
 import dotenv from 'dotenv';

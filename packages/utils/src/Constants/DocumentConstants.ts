@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Constants/DocumentConstants.ts
 import { DocumentType, GenerationType } from '@fedjobs/types';
 
 export const DOCUMENT_TYPES: [DocumentType, ...DocumentType[]] = ["resume", "ecq", "tcq", "cover_letter", "other"];

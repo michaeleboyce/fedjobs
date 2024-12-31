@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/dashboard/_Components/FileUploadBox.tsx
 "use client";
 import React, { useState } from "react";
 import { processFile } from "../../../_actions/files/fileActions";

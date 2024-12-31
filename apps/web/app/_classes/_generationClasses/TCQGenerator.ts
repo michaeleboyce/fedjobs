@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/_generationClasses/TCQGenerator.ts
 // TCQGenerator.ts
 import { EssayGenerator } from "./EssayGenerator";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
@@ -53,7 +54,7 @@ ${otherInfo}`
 
 ________
 The TCQ must be **NO MORE THAN ${length} WORDS**. 
-Feel free to add action-oriented steps that logically might have occurred. DO NOT provide any other comments, only the text of the TCQ.
+Feel free to add action-oriented steps that logically might have occurred. Given the positions, determine if you want to provide 1-2 examples in the challenge-context-action-result format, or discuss more examples. In either case, your document should have a clear but brief opening and conclusion and show flow clearly from one paragraph to the next. Write directly, objectively, avoid using flowering words. Show don't tell. DO NOT provide any other comments, only the text of the TCQ.
 `;
 
     return prompt;

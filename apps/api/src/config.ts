@@ -1,3 +1,4 @@
+// File path: apps/api/src/config.ts
 import { z } from 'zod';
 import dotenv from 'dotenv';
 

@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/types.d.ts
 // /apps/web/app/(routes)/api/ai/generate/(utils)/types.d.ts
 
 import "@anthropic-ai/sdk";

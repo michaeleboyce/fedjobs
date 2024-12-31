@@ -1,3 +1,4 @@
+// File path: apps/web/app/_actions/generate.ts
 // 'use server'
 
 // import { Details } from '../_classes/Details';

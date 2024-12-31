@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Parsers/ResumeParsers.ts
 import { Resume, Position, Organization, Title, ResumeDate, Details } from '@fedjobs/types/src/ResumeTypes';
 
 const extractTagContent = (text: string, tagName: string): string => {

@@ -1,3 +1,4 @@
+// File path: apps/web/app/_types/DocumentInfo.ts
 import { ECQNamesType } from "./ECQCompetencies";
 
 export type DocumentInfo = {

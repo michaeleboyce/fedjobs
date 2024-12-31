@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/ParagraphControls.tsx
 import React from 'react';
 
 type ParagraphControlsProps = {

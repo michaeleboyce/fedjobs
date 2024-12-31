@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/ecq/route.ts
 import { ECQGenerator } from '@/app/_classes/_generationClasses/ECQGenerator';
 import { NextRequest} from 'next/server';
 import { callApi } from '../(utils)/callApi';

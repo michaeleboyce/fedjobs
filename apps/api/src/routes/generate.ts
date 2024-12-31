@@ -1,3 +1,4 @@
+// File path: apps/api/src/routes/generate.ts
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { GenerateRequestSchema, type GenerateRequest } from '../types';
 import { ApiError } from '../middleware/error';

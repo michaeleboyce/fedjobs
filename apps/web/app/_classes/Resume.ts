@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/Resume.ts
 import { Position, PositionObject } from "./Position";
 import { Organization } from "./Organization";
 import { Title } from "./Title";

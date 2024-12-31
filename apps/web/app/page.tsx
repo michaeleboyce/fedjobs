@@ -1,3 +1,4 @@
+// File path: apps/web/app/page.tsx
 // page.tsx
 import { getKindeServerSession, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/server";
 import Link from "next/link";

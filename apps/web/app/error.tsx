@@ -1,3 +1,4 @@
+// File path: apps/web/app/error.tsx
 'use client'
  
 export default function GlobalError({

@@ -1,3 +1,4 @@
+// File path: packages/database/src/schema/generations.ts
 import { serial, boolean, text, integer, json, varchar, decimal, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
 import { DOCUMENT_TYPES, GENERATION_TYPES } from '@fedjobs/utils';
 

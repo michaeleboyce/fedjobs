@@ -1,3 +1,4 @@
+// File path: apps/web/app/_utils/Compare.ts
 export type AsyncCompareMethod<T> = (other: T) => Promise<boolean>;
 
 export async function queryChatGPTForComparison(text1: string, text2: string): Promise<boolean> {

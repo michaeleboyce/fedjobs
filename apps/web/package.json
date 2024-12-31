@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -40,7 +42,8 @@
     "react": "^19.0.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^19.0.0",
-    "react-query": "^3.39.3"
+    "react-query": "^3.39.3",
+    "voyage-ai-provider": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

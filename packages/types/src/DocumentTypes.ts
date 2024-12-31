@@ -1,3 +1,4 @@
+// File path: packages/types/src/DocumentTypes.ts
 export type DocumentType = "resume" | "ecq" | "tcq" | "cover_letter" | "other";
 export type GenerationType = DocumentType | "paragraph";
 

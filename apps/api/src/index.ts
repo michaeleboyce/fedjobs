@@ -1,3 +1,4 @@
+// File path: apps/api/src/index.ts
 // apps/api/src/index.ts
 
 import express, { ErrorRequestHandler } from 'express';

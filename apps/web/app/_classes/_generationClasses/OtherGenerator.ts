@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/_generationClasses/OtherGenerator.ts
 // OtherGenerator.ts
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
 import { EssayGenerator } from "./EssayGenerator";

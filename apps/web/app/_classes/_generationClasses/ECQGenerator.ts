@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/_generationClasses/ECQGenerator.ts
 // ECQGenerator.ts
 import { PositionObject } from "../Position";
 import { EssayGenerator } from "./EssayGenerator";

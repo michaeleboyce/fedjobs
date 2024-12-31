@@ -211,6 +211,9 @@ importers:
       react-query:
         specifier: ^3.39.3
         version: 3.39.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      voyage-ai-provider:
+        specifier: ^1.0.0
+        version: 1.0.0(zod@3.24.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
@@ -5150,6 +5153,14 @@ packages:
       happy-dom:
         optional: true
       jsdom:
+        optional: true
+
+  voyage-ai-provider@1.0.0:
+    resolution: {integrity: sha512-jvei11/p3rZgctzQxw2jyRWpqjutFo5YgF88t9HOHASvJGMj7UUPsz1Gb3YfF+f+nqvXy46n+aEFDo92AuJqsQ==}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
         optional: true
 
   web-streams-polyfill@4.0.0-beta.3:
@@ -10813,6 +10824,13 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+
+  voyage-ai-provider@1.0.0(zod@3.24.1):
+    dependencies:
+      '@ai-sdk/provider': 1.0.3
+      '@ai-sdk/provider-utils': 2.0.5(zod@3.24.1)
+    optionalDependencies:
+      zod: 3.24.1
 
   web-streams-polyfill@4.0.0-beta.3: {}
 
