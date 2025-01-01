@@ -39,6 +39,7 @@ export const Documents: React.FC<DocumentsProps> = ({ documents, removeDocument 
     setSelectedDocumentId(null);
   };
 
+  
 
   const filteredDocuments = documentTypeFilter === "all"
     ? documents

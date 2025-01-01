@@ -4,9 +4,11 @@
 import OpenAI from "openai";
 import { db, eq } from "@fedjobs/database";
 import { parsings as parsingsTable, documents as documentsTable} from "@fedjobs/database";
-import { parseResumeText } from "@fedjobs/utils";
-import type { ParseRequest } from "@fedjobs/types";
+import { parseResumeText, vectorizePositions } from "@fedjobs/utils";
+import { ParseRequest, Resume } from "@fedjobs/types";
 import { DOMParser } from "xmldom";
+import { insertPosition } from "@fedjobs/database/src/queries/positionQueries"; // Import position insertion
+import { Position } from "@fedjobs/types"; // Ensure Position includes positionUuid
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -62,7 +64,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
 
       // Begin the streaming process in the background.  
       // "fire and forget" (catch errors here or let them bubble up).
-      this.processStream(request.text, parsingId).catch(console.error);
+      this.processStream(request.text, parsingId, request.addToKnowledgeBank, request.filename).catch(console.error);
 
       return parsingId;
     } catch (error: any) {
@@ -105,7 +107,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
    * attempts re-stream if truncated, and ultimately calls
    * 'completeProcessing' with final output.
    */
-  private async processStream(text: string, parsingId: number): Promise<void> {
+  private async processStream(text: string, parsingId: number, addToKnowledgeBank: boolean, filename: string): Promise<void> {
     let combinedOutput = "";
     let retries = 0;
     let finishReason: string | null = null;
@@ -117,6 +119,10 @@ Please follow this structure for the entire resume, maintaining the integrity of
         const stream = await this.openai.chat.completions.create({
           model: "gpt-4o", 
           messages: [{ role: "user", content: this.createPromptXML(text) }],
+          prediction: {
+            type: 'content',
+            content: text
+          },
           stream: true,
         });
 
@@ -156,7 +162,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
         // Check if the combined XML is well-formed.
         if (this.isXMLComplete(combinedOutput)) {
           // Final step: parse the XML -> JSON, update DB.
-          await this.completeProcessing(parsingId, combinedOutput);
+          await this.completeProcessing(parsingId, combinedOutput, addToKnowledgeBank, filename);
           return;
         } else {
           // If incomplete XML, attempt a continuation
@@ -175,7 +181,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
 
     // If out of retries, finalize anyway with whatever we have.
     console.error("Maximum retries reached. Possibly incomplete XML.");
-    await this.completeProcessing(parsingId, combinedOutput);
+    await this.completeProcessing(parsingId, combinedOutput, addToKnowledgeBank, filename);
   }
 
   /**
@@ -184,57 +190,108 @@ Please follow this structure for the entire resume, maintaining the integrity of
    * - store that JSON + mark isParsed in the documents table,
    * - finalize the parsings table record.
    */
-  private async completeProcessing(parsingId: number, annotatedXML: string): Promise<void> {
-    // 1) Convert XML -> JSON (which will follow your Resume schema).
-    const parsedResume = parseResumeText(annotatedXML);
+ // File path: apps/api/src/services/parsingService.ts
 
-    // 2) If parse returns null/undefined, log an error and update accordingly.
-    if (!parsedResume) {
-      console.warn("XML->JSON parsing returned invalid data; marking as error.");
-      await db
-        .update(parsingsTable)
-        .set({ completion: "Error", isComplete: true })
-        .where(eq(parsingsTable.id, parsingId))
-        .execute();
-      return;
-    }
+private async completeProcessing(parsingId: number, annotatedXML: string, addToKnowledgeBank: boolean, filename: string): Promise<void> {
+  // 1) Convert XML -> JSON (which will follow your Resume schema).
+  const parsedResume = parseResumeText(annotatedXML, filename);
 
-    // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
-    //    (You might store the raw XML or not — up to you.)
+  // 2) If parse returns null/undefined, log an error and update accordingly.
+  if (!parsedResume) {
+    console.warn("XML->JSON parsing returned invalid data; marking as error.");
     await db
       .update(parsingsTable)
-      .set({
-        completion: annotatedXML, 
-        analysisPercent: 100,
-        isComplete: true,
-      })
+      .set({ completion: "Error", isComplete: true })
       .where(eq(parsingsTable.id, parsingId))
       .execute();
-
-    // 4) Retrieve the documentId from the parsings record so we can update 
-    //    the related document row.
-    const [parsingRecord] = await db
-      .select()
-      .from(parsingsTable)
-      .where(eq(parsingsTable.id, parsingId))
-      .execute();
-
-    if (!parsingRecord?.documentId) {
-      console.error("No associated documentId for this parsing. Cannot update Document row.");
-      return;
-    }
-
-    // 5) Finally, update the Document row with parsed JSON + `isParsed = true`.
-    //    The 'data' field in your documents table is presumably a JSON column.
-    await db
-      .update(documentsTable)
-      .set({
-        data: parsedResume,   // storing the final JSON object
-        isParsed: true,
-      })
-      .where(eq(documentsTable.id, parsingRecord.documentId))
-      .execute();
+    return;
   }
+
+  // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
+  await db
+    .update(parsingsTable)
+    .set({
+      completion: annotatedXML,
+      analysisPercent: 100,
+      isComplete: true,
+    })
+    .where(eq(parsingsTable.id, parsingId))
+    .execute();
+
+  // 4) Retrieve the documentId from the parsings record so we can update 
+  //    the related document row.
+  const [parsingRecord] = await db
+    .select()
+    .from(parsingsTable)
+    .where(eq(parsingsTable.id, parsingId))
+    .execute();
+
+  if (!parsingRecord?.documentId) {
+    console.error("No associated documentId for this parsing. Cannot update Document row.");
+    return;
+  }
+
+  // 5) Insert each position into the 'positions' table with isApproved = false
+  try {
+    for (const position of parsedResume.positions) {
+      await insertPosition({
+        positionUuid: position.positionUuid, // Unique UUID
+        userId: parsingRecord.userId,
+        documentId: parsingRecord.documentId,
+        organization: position.organization.name,
+        title: position.title.title,
+        startDate: position.date.startDate,
+        endDate: position.date.endDate,
+        present: position.date.present,
+        activities: position.details.activities,
+        accomplishments: position.details.accomplishments,
+        isApproved: false, // New field
+      });
+    }
+  } catch (error) {
+    console.error("Error inserting positions into the database:", error);
+    // Optionally, mark parsing as error or handle accordingly
+    await db
+      .update(parsingsTable)
+      .set({ completion: "Error inserting positions", isComplete: true })
+      .where(eq(parsingsTable.id, parsingId))
+      .execute();
+    return;
+  }
+
+  // 6) Update the Document row with parsed JSON + `isParsed = true`.
+  await db
+    .update(documentsTable)
+    .set({
+      data: parsedResume,   // storing the final JSON object
+      isParsed: true,
+      inKnowledgeBank: addToKnowledgeBank, // Update based on the flag
+    })
+    .where(eq(documentsTable.id, parsingRecord.documentId))
+    .execute();
+
+  // 7) Vectorize the positions if required
+  if (addToKnowledgeBank) {
+    try {
+      // Retrieve updated document with fresh data
+      const [updatedDoc] = await db
+        .select()
+        .from(documentsTable)
+        .where(eq(documentsTable.id, parsingRecord.documentId))
+        .execute();
+
+      // The JSON should be in updatedDoc.data; cast to your local Resume type
+      const resumeData = updatedDoc.data as Resume; // Ensure proper typing
+
+      // Now call your vectorization
+      await vectorizePositions(resumeData, String(updatedDoc.id) ,updatedDoc.userId);
+    } catch (e) {
+      console.error("Error vectorizing positions:", e);
+      // Optionally, set a flag or record an error in the DB
+    }
+  }
+}
+
 
   /**
    * Checks if the generated XML is well-formed 
@@ -281,6 +338,10 @@ Please follow this structure for the entire resume, maintaining the integrity of
         const response = await this.openai.chat.completions.create({
           model: "gpt-4o",
           messages: [{ role: "user", content: this.createPromptXML(request.text) }],
+          prediction: {
+            type: 'content',
+            content: request.text
+          },
           stream: false,
         });
 
@@ -294,7 +355,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
         }
 
         if (this.isXMLComplete(combinedOutput)) {
-          await this.completeProcessing(request.documentId, combinedOutput);
+          await this.completeProcessing(request.documentId, combinedOutput, request.addToKnowledgeBank, request.filename);
           return combinedOutput;
         } else {
           retries++;

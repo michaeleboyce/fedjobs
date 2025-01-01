@@ -9,7 +9,10 @@ export { eq, and, desc, sql};
 export * from './schema/documents';
 export * from './schema/generations';
 export * from './schema/parsings';
+export * from "./schema/positions"; // Add this line
+
+
 export * from './queries/parsingQueries';
 export * from './queries/documentQueries';
-
+export * from "./queries/positionQueries";
 

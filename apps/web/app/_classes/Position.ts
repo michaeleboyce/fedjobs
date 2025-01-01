@@ -4,19 +4,21 @@ import { Title, TitleObject } from "./Title";
 import { ResumeDate, ResumeDateObject } from "./ResumeDate";
 import { Details, DetailsObject } from "./Details"
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../_utils/Compare";
-export type PositionObject = {
-    organization: OrganizationObject,
-    title: TitleObject,
-    date: ResumeDateObject,
-    details: DetailsObject
-}
+import { Position as PositionType } from "@fedjobs/types";
+import { v4 as uuidv4 } from 'uuid'; // Import UUID
+//TODO: this below line is silly, just refactor the whole thing and move classes to the packages
+export type PositionObject = PositionType;
 export class Position {
+    positionUuid: string;
     organization: Organization;
     title: Title;
     date: ResumeDate;
     details: Details;
+    groupId?: string;
 
-    constructor(organization: Organization, title: Title, date: ResumeDate, details: Details) {
+
+    constructor(organization: Organization, title: Title, date: ResumeDate, details: Details, groupId?: string) {
+        this.positionUuid = uuidv4();
         this.organization = organization;
         this.title = title;
         this.date = date;
@@ -24,7 +26,7 @@ export class Position {
     }
 
     toString(): string {
-        return `Position: [${this.organization.toString()}, ${this.title.toString()}, ${this.date.toString()}, ${this.details.toString()}]`;
+        return `Position: [${this.organization.toString()}, ${this.title.toString()}, ${this.date.toString()}, ${this.details.toString()}, GroupID: ${this.groupId || 'None'}]`;
     }
 
     asyncCompare: AsyncCompareMethod<Position> = async (other) => {
@@ -39,10 +41,12 @@ export class Position {
 
     toJSON(): PositionObject {
         return {
+            positionUuid: this.positionUuid,
             organization: this.organization.toJSON(),
             title: this.title.toJSON(),
             date: this.date.toJSON(),
             details: this.details.toJSON(),
+            groupId: this.groupId,
         };
     }
 
@@ -51,7 +55,11 @@ export class Position {
             Organization.fromJSON(json.organization),
             Title.fromJSON(json.title),
             ResumeDate.fromJSON(json.date),
-            Details.fromJSON(json.details)
+            Details.fromJSON(json.details),
+            json.groupId
+            // Assign groupId if present
         );
     }
 }
+
+

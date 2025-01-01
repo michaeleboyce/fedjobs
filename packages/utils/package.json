@@ -15,7 +15,11 @@
     "@aws-sdk/s3-request-presigner": "^3.717.0",
     "@fedjobs/types": "workspace:*",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
-    "dotenv": "^16.4.7"
+    "@pinecone-database/pinecone": "^4.0.0",
+    "ai": "^4.0.22",
+    "dotenv": "^16.4.7",
+    "uuid": "^11.0.3",
+    "voyage-ai-provider": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

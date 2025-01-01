@@ -1,11 +1,13 @@
 // File path: apps/web/app/(routes)/dashboard/DocumentManager.tsx
-'use client'
+'use client';
 import FileUploadBox from "@/app/(routes)/dashboard/_Components/FileUploadBox";
 import React, { useState, useCallback } from "react";
 import { Document } from '@fedjobs/database';
 import { Documents } from "./documents";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
 import { QueryClient, QueryClientProvider } from 'react-query';
+import Link from 'next/link'; // Import Link
+
 const queryClient = new QueryClient();
 
 type DocumentsProps = {
@@ -25,13 +27,22 @@ export const DocumentManager: React.FC<DocumentsProps> = ({userId, initialDocume
   const removeDocument = useCallback((documentId: number) => {
     setDocuments((prevDocuments) => prevDocuments.filter(doc => doc.id !== documentId));
   }, []);
+
+
   // Pass addDocument and documents to FileUploadBox and Documents components
   return (
     <div>
       <QueryClientProvider client={queryClient}>
+        <div className="flex justify-end mb-4">
+          <Link href="/review-positions" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+            Go to Review Positions
+          </Link>
+        </div>
         <FileUploadBox addDocument={addDocument} processDocumentFromFormData={processDocumentFromFormData}/>
         <Documents documents={documents} removeDocument={removeDocument} />
       </QueryClientProvider>
     </div>
   );
 }
+
+export default DocumentManager;

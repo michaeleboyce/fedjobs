@@ -5,7 +5,7 @@ import axios from 'axios'; // Import Axios for HTTP requests.
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from 'dotenv';
-import { generateKeyFromFileName, getPreSignedUrlforClient } from '@fedjobs/utils';
+import { deleteVectorizedPositions, generateKeyFromFileName, getPreSignedUrlforClient } from '@fedjobs/utils';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db, eq, and } from "@fedjobs/database";
 import { documents as documentsTable, Document } from "@fedjobs/database";
@@ -15,7 +15,7 @@ import { retrieveAndDeleteDocuments, vectorizeDocument } from "../vectorize/vect
 // Removed unused import: import parseDocument from "@/app/defer/parseDocument";
 import { authenticateUser, ALLOWED_FILE_TYPES, MAX_FILE_SIZE, uploadFile } from "@fedjobs/utils";
 import { getParsingsByDocId, insertDocument, insertParsing, updateDocument } from '@fedjobs/database';
-import { DocumentType } from '@fedjobs/types';
+import { DocumentType, ParseRequest } from '@fedjobs/types';
 
 config(); // Initialize dotenv to load environment variables.
 
@@ -143,11 +143,13 @@ export async function processFile(
       if (existingParsings.length === 0) {
         // If not parsed, delegate parsing initiation to the parsing API via HTTP
         
-        const parseRequest = {
+        const parseRequest: ParseRequest = {
           text: content,
           userId: user.id,
           documentId: document.id,
+          filename: file.name,
           streaming: true,
+          addToKnowledgeBank: addToKnowledgeBank
         };
         
         try {
@@ -392,7 +394,7 @@ export async function deleteDocument(documentId: number): Promise<{ success?: st
       .execute();
 
     // Optionally, perform additional cleanup or deletion logic.
-    await retrieveAndDeleteDocuments(`${documentId}#`);
+    await deleteVectorizedPositions(documentId.toString());
     return { success: 'Document deleted successfully' };
   } catch (error) {
     console.error('Error deleting document:', error);

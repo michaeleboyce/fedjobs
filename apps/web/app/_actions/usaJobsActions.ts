@@ -45,7 +45,7 @@ export async function getTCQEssayPrompts(evaluations: string): Promise<string[]>
   Return all strings of Technical core qualification prompts required in the position and provide their prompts back as a JSON string array. Only provide it is an arrray of comma delinated strings, do not wrap it in any other JSON. If you did not find any TCQ prompts, return the empty array '[]' Do not feel the need to return TCQ prompts if there are none.`;
   // Ask OpenAI for a streaming completion given the prompt
   const response = await openai.completions.create({
-    model: "gpt-3.5-turbo-instruct",
+    model: "gpt-4o",
     temperature: 0.0,
     max_tokens: 2048,
     prompt

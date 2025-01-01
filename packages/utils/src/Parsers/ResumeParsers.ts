@@ -1,5 +1,6 @@
 // File path: packages/utils/src/Parsers/ResumeParsers.ts
 import { Resume, Position, Organization, Title, ResumeDate, Details } from '@fedjobs/types/src/ResumeTypes';
+import { v4 as uuidV4} from 'uuid';
 
 const extractTagContent = (text: string, tagName: string): string => {
   const regex = new RegExp(`<${tagName}[^>]*>(.*?)<\/${tagName}>`, 's');
@@ -44,10 +45,11 @@ export const parsePosition = (positionText: string): Position => {
     accomplishments: extractMultipleTagContents(detailsText, "accomplishment"),
   };
 
-  return { organization, title, date, details };
+  const positionUuid = uuidV4();
+  return { positionUuid, organization, title, date, details };
 };
 
-export const parseResumeText = (text: string): Resume | null => {
+export const parseResumeText = (text: string, filename: string): Resume | null => {
   try {
     const positionRegex = /<position>(.*?)<\/position>/gs;
     const positions: Position[] = [];
@@ -61,7 +63,7 @@ export const parseResumeText = (text: string): Resume | null => {
 
     return {
       positions,
-      filename: `Resume-${Date.now()}.json`,
+      filename: filename,
     };
   } catch (err) {
     console.error("Error parsing annotated resume text:", err);

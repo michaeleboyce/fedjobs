@@ -1,5 +1,4 @@
 // File path: apps/web/app/_actions/vectorize/vectorizePositions.ts
-'use server';
 
 import { Resume, Position } from "@fedjobs/types";
 import { voyage } from 'voyage-ai-provider';

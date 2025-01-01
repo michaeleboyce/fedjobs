@@ -5,6 +5,7 @@ import express, { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { processDocumentTextFromBuffer } from '../backend-utils/DocumentParsers';
 import { ApiError } from '../middleware/error';
+import { DocumentParseRequestSchema } from '@fedjobs/types';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -33,27 +34,32 @@ const upload = multer({
 
 // Add error handling for multer errors
 router.post('/', (req: Request, res: Response, next: NextFunction) => {
-  upload.single('file')(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(413).json({
-          message: 'File is too large. Maximum size is 10MB',
+  upload.single('file')(req, res, async (err) => {
+    try {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({
+            message: 'File is too large. Maximum size is 10MB',
+            isInvalidDocType: false
+          });
+        }
+        return res.status(400).json({
+          message: err.message,
           isInvalidDocType: false
         });
+      } else if (err) {
+        return res.status(400).json({
+          message: err.message,
+          isInvalidDocType: true
+        });
       }
-      return res.status(400).json({
-        message: err.message,
-        isInvalidDocType: false
-      });
-    } else if (err) {
-      return res.status(400).json({
-        message: err.message,
-        isInvalidDocType: true
-      });
+      
+
+      // If no error, proceed with file processing
+      handleFileProcessing(req, res, next);
+    } catch (error) {
+      next(error);
     }
-    
-    // If no error, proceed with file processing
-    handleFileProcessing(req, res, next);
   });
 });
 

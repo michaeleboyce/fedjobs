@@ -150,7 +150,7 @@ export abstract class EssayGenerator {
           },
           { role: "user", content: prompt }
         ],
-        temperature: 0.6
+        temperature: 0.3
       });
 
       const documentText = response.choices?.[0]?.message?.content?.trim() ?? "No response generated.";

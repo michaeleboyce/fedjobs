@@ -74,13 +74,11 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
     }, 500);
   
     try {
+      //#region This is the code to upload a document to parse it from word/PDF into text
       const formData = new FormData();
       formData.append('file', file);
-  
+
       const response = await axios.post(`${API_URL}/api/parse/document`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
         // Add timeout and show upload progress
         timeout: 30000,
         onUploadProgress: (progressEvent) => {
@@ -93,6 +91,8 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       });
   
       const data = response.data;
+      //#endregion
+      //#region this code actually processes the text data of the file. TODO: Probably passing the text to and from the client makes no sense and should be saved somewhere. 
       const { text, type } = data;
       const result = await processFile(formData, shouldAddToKnowledgeBank, documentType, description, text);
       
@@ -102,6 +102,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
         //@ts-ignore  
         throw new Error(result.error || 'Failed to process file');
       }
+      //#endregion
     } catch (error) {
       console.error(error);
       console.debug(JSON.stringify(error, null, 2));

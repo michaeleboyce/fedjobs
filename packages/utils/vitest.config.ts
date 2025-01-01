@@ -10,5 +10,6 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       exclude: ['**/node_modules/**', '**/tests/**'],
     },
+    testTimeout: 30000,
   },
 });

@@ -4,11 +4,10 @@ import { Organization } from "./Organization";
 import { Title } from "./Title";
 import { ResumeDate } from "./ResumeDate";
 import { Details } from "./Details";
+import { Resume as ResumeType } from "@fedjobs/types"
+//TODO: this below line is silly, just refactor the whole thing and move classes to the packages
 
-export type ResumeObject = { 
-    positions: PositionObject[],
-    filename: string
-}
+export type ResumeObject = ResumeType;
 export class Resume {
     positions: Position[];
     filename: string;

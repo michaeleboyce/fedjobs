@@ -4,7 +4,8 @@
 import { db } from '../db-connection';
 import { eq, and } from 'drizzle-orm';
 import { documents, type Document, type NewDocument } from '../schema/documents';
-
+import { Pinecone } from '@pinecone-database/pinecone';
+const pc = new Pinecone();
 /**
  * Inserts a new document record.
  */
@@ -56,6 +57,8 @@ export async function deleteDocumentRecord(documentId: number): Promise<void> {
     .delete(documents)
     .where(eq(documents.id, documentId))
     .execute();
+
+
 }
 
 /**

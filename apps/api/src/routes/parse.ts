@@ -18,7 +18,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
     }
 
     // Extract typed data
-    const { text, userId, documentId, streaming = false } = validation.data;
+    const { text, userId, documentId, streaming = false, addToKnowledgeBank } = validation.data;
 
     // Initiate parsing based on the streaming flag
     if (streaming) {
@@ -26,7 +26,9 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
       const parseId = await parsingService.parseWithLoggingAndStreaming({
         text,
         userId,
-        documentId
+        documentId,
+        streaming,
+        addToKnowledgeBank
       });
       // Return parseId so that the client can poll
       // some “GET /api/parse/status/:parseId” endpoint.
@@ -36,7 +38,9 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
       const annotatedText = await parsingService.parseSyncOrNoLog({
         text,
         userId,
-        documentId
+        documentId,
+        streaming,
+        addToKnowledgeBank
       });
       res.status(200).json({ annotatedText, streaming: false });
     }
