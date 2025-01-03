@@ -29,9 +29,12 @@ export const positions = pgTable("positions", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  
+  originalDocumentId: varchar("original_document_id"),
   // New fields for similarity tracking
   similarPositionUuids: json("similar_position_uuids").notNull().default('[]').$type<string[]>(),
   approvedSimilarPositionUuids: json("approved_similar_position_uuids").notNull().default('[]').$type<string[]>(),
   rejectedSimilarPositionUuids: json("rejected_similar_position_uuids").notNull().default('[]').$type<string[]>(),
 });
+
+export type PositionRecord  = typeof positions.$inferSelect;
+export type NewPositionRecord = typeof positions.$inferInsert;

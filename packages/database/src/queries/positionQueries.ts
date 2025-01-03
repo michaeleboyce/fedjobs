@@ -35,16 +35,6 @@ export async function getPositionsByUserId(userId: string): Promise<PositionReco
     .execute();
 }
 
-/**
- * Retrieves all positions within a specific group.
- */
-export async function getPositionsByGroupId(groupId: string): Promise<PositionRecord[]> {
-  return db
-    .select()
-    .from(positions)
-    .where(eq(positions.groupId, groupId))
-    .execute();
-}
 
 /**
  * Updates a position by its UUID.
@@ -68,4 +58,17 @@ export async function deletePositionByUuid(positionUuid: string): Promise<void> 
     .delete(positions)
     .where(eq(positions.positionUuid, positionUuid))
     .execute();
+}
+
+/**
+ * Updates specific fields of a position, including similarity fields.
+ * @param positionUuid - The UUID of the position to update.
+ * @param updateData - The data to update.
+ */
+export async function updatePositionFields(positionUuid: string, updateData: Partial<PositionRecord>): Promise<PositionRecord[]> {
+  return db
+    .update(positions)
+    .set(updateData)
+    .where(eq(positions.positionUuid, positionUuid))
+    .returning();
 }

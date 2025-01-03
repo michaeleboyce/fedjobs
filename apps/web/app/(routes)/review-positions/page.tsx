@@ -1,8 +1,7 @@
 // File path: apps/web/app/(routes)/review-positions/page.tsx
-// apps/web/app/(routes)/review-positions/page.tsx
 
 import React from 'react';
-import { getAllPositions, addToEmploymentHistory, rejectPosition } from '@/app/_actions/positions/reviewPositionActions';
+import { getAllPositions, addToEmploymentHistory, rejectPosition, approveSimilarPosition, rejectSimilarPosition, updatePosition } from '@/app/_actions/positions/reviewPositionActions';
 import ReviewPositions from '@/app/_components/ReviewPositions';
 
 const ReviewPositionsPage: React.FC = async () => {
@@ -25,6 +24,9 @@ const ReviewPositionsPage: React.FC = async () => {
       otherPositions={otherPositions}
       addToEmploymentHistory={addToEmploymentHistory}
       rejectPosition={rejectPosition} 
+      updatePosition={updatePosition}
+      approveSimilarPosition={approveSimilarPosition}
+      rejectSimilarPosition={rejectSimilarPosition}
     />
   );
 };

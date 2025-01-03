@@ -29,6 +29,7 @@ export interface Position {
   similarPositionUuids: string[];
   approvedSimilarPositionUuids: string[];
   rejectedSimilarPositionUuids: string[];
+  originalDocumentId?: string;
 }
 
 export interface Resume {
