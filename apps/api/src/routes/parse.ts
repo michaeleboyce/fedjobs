@@ -18,7 +18,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
     }
 
     // Extract typed data
-    const { text, userId, documentId, streaming = false, addToKnowledgeBank } = validation.data;
+    const { text, userId, documentId, filename, addToKnowledgeBank, streaming = false, } = validation.data;
 
     // Initiate parsing based on the streaming flag
     if (streaming) {
@@ -27,6 +27,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
         text,
         userId,
         documentId,
+        filename,
         streaming,
         addToKnowledgeBank
       });
@@ -39,6 +40,7 @@ router.post('/', async (req: Request<{}, {}, ParseRequest>, res: Response, next:
         text,
         userId,
         documentId,
+        filename,
         streaming,
         addToKnowledgeBank
       });

@@ -15,5 +15,5 @@ export const generations = pgTable("generations", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export type Generation  = typeof generations.$inferSelect;
-export type NewGeneration = typeof generations.$inferInsert;
+export type GenerationRecord  = typeof generations.$inferSelect;
+export type NewGenerationRecord = typeof generations.$inferInsert;

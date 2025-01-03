@@ -17,5 +17,5 @@ export const parsings = pgTable("parsings", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export type Parsing  = typeof parsings.$inferSelect;
-export type NewParsing = typeof parsings.$inferInsert;
+export type ParsingRecord  = typeof parsings.$inferSelect;
+export type NewParsingRecord = typeof parsings.$inferInsert;

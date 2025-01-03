@@ -2,7 +2,7 @@
 'use client';
 import FileUploadBox from "@/app/(routes)/dashboard/_Components/FileUploadBox";
 import React, { useState, useCallback } from "react";
-import { Document } from '@fedjobs/database';
+import { DocumentRecord } from '@fedjobs/database';
 import { Documents } from "./documents";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -12,15 +12,15 @@ const queryClient = new QueryClient();
 
 type DocumentsProps = {
     userId: string;
-    initialDocuments: Document[]
+    initialDocuments: DocumentRecord[]
     processDocumentFromFormData: (formData: FormData) => Promise<ProcessDocumentResponse>;
   };
 
 export const DocumentManager: React.FC<DocumentsProps> = ({userId, initialDocuments, processDocumentFromFormData}) => {
 
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [documents, setDocuments] = useState<DocumentRecord[]>(initialDocuments);
 
-  const addDocument = useCallback((newDocument: Document) => {
+  const addDocument = useCallback((newDocument: DocumentRecord) => {
     setDocuments((prevDocuments) => [...prevDocuments, newDocument]);
   }, []);
 

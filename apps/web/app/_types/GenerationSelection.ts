@@ -2,12 +2,12 @@
 // GenerationSelection.ts
 import { PositionObject } from "@/app/_classes/Position";
 import { DocumentInfo } from "./DocumentInfo";
-import { JobInfo } from "./JobInfo";
+import { JobInfo } from "@fedjobs/types";
 
 export type SelectedPositionData = {
   position: PositionObject;
-  selectedActivities: string[];       // or indexes (number[]) if you prefer
-  selectedAccomplishments: string[];  // or indexes
+  selectedActivities: string[];       
+  selectedAccomplishments: string[];  
 };
 
 export type GenerationSelection = {
@@ -16,4 +16,5 @@ export type GenerationSelection = {
   otherInfo: string;
   jobInfo: JobInfo;
   length: number;
+  lengthUnit: 'words' | 'pages'; 
 };

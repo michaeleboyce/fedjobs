@@ -1,10 +1,9 @@
 // File path: apps/web/app/(routes)/generate/resume/[id]/_Providers/GenerationProvider.tsx
 'use client'
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { JobInfo } from '@/app/_types/JobInfo';
 import { DocumentInfo } from '@/app/_types/DocumentInfo';
 import { DOCUMENT_TYPES } from '@/app/_utils/Constants';
-import { Job } from '@/app/_types/Job';
+import { Job, JobInfo } from '@fedjobs/types';
 import { getTCQEssayPrompts } from '@/app/_actions/usaJobsActions';
 
 type GenerationContextType = {
@@ -46,7 +45,9 @@ export const GenerationProvider: React.FC<GenerationProviderProps> = ({ children
     ecqShortTitle: 'Leading Change',
     essayPrompt: '',
     additionalDocInfo: '',
-    essayPromptSuggestions: []
+    essayPromptSuggestions: [],
+    length: 500, 
+    lengthUnit: 'words'
   })
 
   const [otherInfo, setOtherInfo] = useState<string>('');

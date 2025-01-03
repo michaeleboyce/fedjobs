@@ -3,7 +3,7 @@ import { NextRequest} from 'next/server';
 import { CoverLetterGenerator } from '@/app/_classes/_generationClasses/CoverLetterGenerator';
 import { callApi } from '../../(utils)/callApi';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 export async function POST(request: NextRequest){

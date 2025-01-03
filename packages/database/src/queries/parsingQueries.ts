@@ -3,12 +3,12 @@
 
 import { db } from '../db-connection';
 import { eq, desc } from 'drizzle-orm';
-import { parsings, type Parsing, type NewParsing } from '../schema/parsings';
+import { parsings, type ParsingRecord, type NewParsingRecord } from '../schema/parsings';
 
 /**
  * Retrieves all parsings for a given documentId.
  */
-export async function getParsingsByDocId(documentId: number): Promise<Parsing[]> {
+export async function getParsingsByDocId(documentId: number): Promise<ParsingRecord[]> {
   return db
     .select()
     .from(parsings)
@@ -19,7 +19,7 @@ export async function getParsingsByDocId(documentId: number): Promise<Parsing[]>
 /**
  * Inserts a new parsing record into the parsings table.
  */
-export async function insertParsing(newParsing: NewParsing): Promise<Parsing> {
+export async function insertParsing(newParsing: NewParsingRecord): Promise<ParsingRecord> {
   const [parsing] = await db
     .insert(parsings)
     .values(newParsing)
@@ -30,7 +30,7 @@ export async function insertParsing(newParsing: NewParsing): Promise<Parsing> {
 /**
  * Retrieves the latest parsing for a given document ID (sorted by createdAt desc).
  */
-export async function getLatestParsingByDocId(documentId: number): Promise<Parsing | null> {
+export async function getLatestParsingByDocId(documentId: number): Promise<ParsingRecord | null> {
   const parsingTasks = await db
     .select()
     .from(parsings)
@@ -85,7 +85,7 @@ export async function finalizeParsing(
 /**
  * Retrieves a single parsing record by primary key ID.
  */
-export async function getParsingById(parsingId: number): Promise<Parsing | null> {
+export async function getParsingById(parsingId: number): Promise<ParsingRecord | null> {
   const [p] = await db
     .select()
     .from(parsings)

@@ -8,4 +8,6 @@ export type DocumentInfo = {
     essayPrompt: string;
     essayPromptSuggestions: string[];
     additionalDocInfo: string;
+    length: number; 
+    lengthUnit: 'words' | 'pages'; 
 }

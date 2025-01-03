@@ -10,7 +10,7 @@ export class OtherGenerator extends EssayGenerator {
   }
 
   createPrompt(): string {
-    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
+    const { docInfo, jobInfo, length, lengthUnit, otherInfo, positions } = this._generationSelection;
 
     // Build text for multiple positions
     const positionsText = positions
@@ -31,34 +31,33 @@ export class OtherGenerator extends EssayGenerator {
         `;
       })
       .join("\n\n");
+    const lengthRequirement = this.formatLengthRequirementNOMORETHAN_X_WORDSorPAGES();
 
     const prompt = `
 Please write the following “other” type document as described below: 
 ${docInfo.additionalDocInfo ?? "(No additional doc info provided)"}
 
-${
-  this.jobDescription
-    ? `
+${this.jobDescription
+        ? `
 The document is related to the following job description:
 ${this.jobDescription}
 `
-    : ""
-}
+        : ""
+      }
 
 Use these positions as references/experience:
 ${positionsText}
 
-${
-  otherInfo
-    ? `
+${otherInfo
+        ? `
 Finally, consider the following extra info:
 ${otherInfo}
 `
-    : ""
-}
+        : ""
+      }
 
 ________
-The document must be **NO MORE THAN ${length} WORDS**. Provide only the text of the document.
+The document must be **${lengthRequirement}**. Provide only the text of the document.
 `;
 
     return prompt;
@@ -89,11 +88,10 @@ The document must be **NO MORE THAN ${length} WORDS**. Provide only the text of 
 Consider the following in updating this document: 
 ${docInfo.additionalDocInfo ?? "(none)"}
 
-${
-  this.jobDescription
-    ? `Job description context:\n${this.jobDescription}`
-    : ""
-}
+${this.jobDescription
+        ? `Job description context:\n${this.jobDescription}`
+        : ""
+      }
 
 Positions used as examples:
 ${positionsText}

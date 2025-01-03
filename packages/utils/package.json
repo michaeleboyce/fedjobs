@@ -14,12 +14,12 @@
     "@aws-sdk/client-s3": "^3.717.0",
     "@aws-sdk/s3-request-presigner": "^3.717.0",
     "@fedjobs/types": "workspace:*",
+    "@google/generative-ai": "^0.21.0",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
     "@pinecone-database/pinecone": "^4.0.0",
     "ai": "^4.0.22",
     "dotenv": "^16.4.7",
-    "uuid": "^11.0.3",
-    "voyage-ai-provider": "^1.0.0"
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

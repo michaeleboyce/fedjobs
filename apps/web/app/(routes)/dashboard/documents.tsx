@@ -2,13 +2,13 @@
 'use client';
 import React, { useState, useEffect } from "react";
 import {
-  Document
+  DocumentRecord
 } from "@fedjobs/database";
 import DocumentCard from "./_Components/DocumentCard";
 import { useRouter } from "next/navigation";
 
 type DocumentsProps = { 
-  documents: Document[];
+  documents: DocumentRecord[];
   removeDocument: (documentId: number) => void;
 }
 

@@ -3,13 +3,13 @@
 
 import { db } from '../db-connection';
 import { eq, and } from 'drizzle-orm';
-import { documents, type Document, type NewDocument } from '../schema/documents';
+import { documents, type DocumentRecord, type NewDocumentRecord } from '../schema/documents';
 import { Pinecone } from '@pinecone-database/pinecone';
 const pc = new Pinecone();
 /**
  * Inserts a new document record.
  */
-export async function insertDocument(documentData: NewDocument): Promise<Document> {
+export async function insertDocument(documentData: NewDocumentRecord): Promise<DocumentRecord> {
   const [doc] = await db
     .insert(documents)
     .values(documentData)
@@ -23,8 +23,8 @@ export async function insertDocument(documentData: NewDocument): Promise<Documen
  */
 export async function updateDocument(
   documentId: number, 
-  updateData: Partial<Document>
-): Promise<Document[]> {
+  updateData: Partial<DocumentRecord>
+): Promise<DocumentRecord[]> {
   return db
     .update(documents)
     .set(updateData)
@@ -39,7 +39,7 @@ export async function updateDocument(
 export async function getDocumentById(
     documentId: number,
     userId?: string,
-  ): Promise<Document | undefined> {
+  ): Promise<DocumentRecord | undefined> {
     const results = await db
       .select()                 // Start with db.select()
       .from(documents)         // Then from(documents)
@@ -64,7 +64,7 @@ export async function deleteDocumentRecord(documentId: number): Promise<void> {
 /**
  * (Optional) If you need a function to get all docs for a user:
  */
-export async function getDocsByUserId(userId: string): Promise<Document[]> {
+export async function getDocsByUserId(userId: string): Promise<DocumentRecord[]> {
   return db
     .select()
     .from(documents)

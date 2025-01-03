@@ -10,7 +10,7 @@ export class TCQGenerator extends EssayGenerator {
   }
 
   createPrompt(): string {
-    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
+    const { docInfo, jobInfo, length, lengthUnit, otherInfo, positions } = this._generationSelection;
 
     const positionsText = positions
       .map((posData, i) => {
@@ -31,6 +31,7 @@ export class TCQGenerator extends EssayGenerator {
       })
       .join("\n\n");
 
+    const lengthRequirement = this.formatLengthRequirementNOMORETHAN_X_WORDSorPAGES();
     const prompt = `
 Please write a Technical Core Qualification (TCQ) document based on the following prompt:
 ${docInfo.essayPrompt}
@@ -53,7 +54,7 @@ ${otherInfo}`
 }
 
 ________
-The TCQ must be **NO MORE THAN ${length} WORDS**. 
+The TCQ must be **${lengthRequirement}**. 
 Feel free to add action-oriented steps that logically might have occurred. Given the positions, determine if you want to provide 1-2 examples in the challenge-context-action-result format, or discuss more examples. In either case, your document should have a clear but brief opening and conclusion and show flow clearly from one paragraph to the next. Write directly, objectively, avoid using flowering words. Show don't tell. DO NOT provide any other comments, only the text of the TCQ.
 `;
 

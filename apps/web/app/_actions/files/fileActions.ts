@@ -8,13 +8,12 @@ import { config } from 'dotenv';
 import { deleteVectorizedPositions, generateKeyFromFileName, getPreSignedUrlforClient } from '@fedjobs/utils';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db, eq, and } from "@fedjobs/database";
-import { documents as documentsTable, Document } from "@fedjobs/database";
-import { parsings as parsingsTable, NewParsing } from "@fedjobs/database";
+import { documents as documentsTable, DocumentRecord,
+        parsings as parsingsTable, NewParsingRecord, 
+        getParsingsByDocId, insertDocument, insertParsing, updateDocument} from "@fedjobs/database";
 import { EssayGenerator, SaveDocumentResult } from "@/app/_classes/_generationClasses/EssayGenerator";
 import { retrieveAndDeleteDocuments, vectorizeDocument } from "../vectorize/vectorizeActions";
-// Removed unused import: import parseDocument from "@/app/defer/parseDocument";
 import { authenticateUser, ALLOWED_FILE_TYPES, MAX_FILE_SIZE, uploadFile } from "@fedjobs/utils";
-import { getParsingsByDocId, insertDocument, insertParsing, updateDocument } from '@fedjobs/database';
 import { DocumentType, ParseRequest } from '@fedjobs/types';
 
 config(); // Initialize dotenv to load environment variables.
@@ -25,7 +24,7 @@ type SignedURLResponse =
   | { failure: string; success?: undefined };
 
   type ProcessDocumentResponse =
-  | { failure?: undefined; success: { url: string; document: Document; } }
+  | { failure?: undefined; success: { url: string; document: DocumentRecord; } }
   | { failure: string; success?: undefined };
 
 
@@ -122,7 +121,7 @@ export async function processFile(
     const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
     
     // Insert the document record into the database.
-    let document: Document = await insertDocument({
+    let document: DocumentRecord = await insertDocument({
       type: documentType,
       url: s3Url, // Strip query parameters from the URL.
       userId: user.id,
@@ -203,7 +202,7 @@ async function initiateParsing(payload: {
 }): Promise<{ success?: any; failure?: string }> {
   try {
     // Insert a new parsing record into the parsings table.
-    const newParsing: NewParsing = {
+    const newParsing: NewParsingRecord = {
       userId: payload.userId,
       type: 'resume', // Assuming 'resume' is the only type needing parsing.
       prompt: createPromptXML(payload.text),

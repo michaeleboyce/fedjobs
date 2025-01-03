@@ -46,7 +46,7 @@ export const parsePosition = (positionText: string): Position => {
   };
 
   const positionUuid = uuidV4();
-  return { positionUuid, organization, title, date, details };
+  return { positionUuid, organization, title, date, details, similarPositionUuids: [], approvedSimilarPositionUuids: [], rejectedSimilarPositionUuids: []};
 };
 
 export const parseResumeText = (text: string, filename: string): Resume | null => {

@@ -2,7 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import { processFile } from "../../../_actions/files/fileActions";
-import { Document } from "@fedjobs/database";
+import { DocumentRecord } from "@fedjobs/database";
 import { ProcessDocumentResponse } from "@/app/_types/FunctionReturns";
 import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
@@ -11,7 +11,7 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
 
 type FileUploaderProps = {
-  addDocument: (newDocument: Document) => void;
+  addDocument: (newDocument: DocumentRecord) => void;
   processDocumentFromFormData: (
     formData: FormData
   ) => Promise<ProcessDocumentResponse>;

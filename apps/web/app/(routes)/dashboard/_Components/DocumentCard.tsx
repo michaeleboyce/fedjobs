@@ -2,7 +2,7 @@
 'use client'
 import React, { useRef, useState } from 'react';
 import { deleteDocument, getDocumentSignedURL, getUpdatedDocumentStatus } from '../../../_actions/files/fileActions';
-import { Document } from '@fedjobs/database';
+import { DocumentRecord } from '@fedjobs/database';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faChevronDown, faChevronUp, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { useDocumentPolling } from '@/app/_hooks/useDocumentPolling';
 
 
 interface DocumentCardProps  {
-  document: Document;
+  document: DocumentRecord;
   selectionMode: boolean;
   onSelect: (id: number) => void;
   isSelected: boolean;

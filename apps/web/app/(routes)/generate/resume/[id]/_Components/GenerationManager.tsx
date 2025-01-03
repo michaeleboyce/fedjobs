@@ -88,7 +88,8 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
       otherInfo: otherInfo,
       jobInfo: jobInfo,
       docInfo: docInfo,
-      length: 500,
+      length: docInfo.length, // Add this line
+      lengthUnit: docInfo.lengthUnit, // Add this line
     };
     //TODO: make sure everything is either res or result, req or request
     let reader;

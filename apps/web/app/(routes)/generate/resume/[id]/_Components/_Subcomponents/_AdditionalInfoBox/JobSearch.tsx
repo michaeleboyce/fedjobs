@@ -1,6 +1,6 @@
 // File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/_AdditionalInfoBox/JobSearch.tsx
 import { searchUSAJobsAPI } from '@/app/_actions/usaJobsActions';
-import { Job } from '@/app/_types/Job';
+import { Job } from '@fedjobs/types';
 import { formatDateMMDDYYYY } from '@/app/_utils/DateUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';

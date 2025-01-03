@@ -6,7 +6,7 @@ import { GenerationSelection } from '@/app/_types/GenerationSelection';
 import { callAndStreamAIResponse } from '../(utils)/callAndStream';
 import { callApi } from '../(utils)/callApi';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest){
     return callApi(request, (generationSelection) => new CoverLetterGenerator(generationSelection), false);

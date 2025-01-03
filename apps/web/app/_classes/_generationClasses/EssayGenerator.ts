@@ -209,5 +209,16 @@ export abstract class EssayGenerator {
 
     return { id: result[0].id, name: result[0].name };
   }
+
+  protected formatLengthRequirementNOMORETHAN_X_WORDSorPAGES(): string {
+    const { length, lengthUnit } = this._generationSelection;
+    if (lengthUnit === 'words') {
+      return `NO MORE THAN ${length} WORDS`;
+    } else if (lengthUnit === 'pages') {
+      return `NO MORE THAN ${length} PAGES`;
+    }
+    return '';
+  }
+  
 }
 

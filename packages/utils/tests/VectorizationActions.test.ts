@@ -1,4 +1,4 @@
-// File path: packages/utils/tests/VectorizationService.test.ts
+// File path: packages/utils/tests/VectorizationActions.test.ts
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import path from 'path';
@@ -7,7 +7,7 @@ import {
   vectorizePositions,
   vectorizePosition,
   deleteVectorizedPositions,
-} from '../src/Services/VectorizationService';
+} from '../src/ServerActions/VectorizationActions';
 import { Resume, Position } from "@fedjobs/types";
 import { Pinecone } from '@pinecone-database/pinecone';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
@@ -18,7 +18,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 // Initialize Pinecone client for cleanup and testing
 let pineconeClient: Pinecone;
 const INDEX_NAME = 'fedjobs-test'; // Use the test index
-const SLEEP_TIME = 1000;
+const SLEEP_TIME = 1500; // Increased to 5 seconds for clarity
 // Store inserted IDs for cleanup
 const insertedIds: string[] = [];
 
@@ -30,7 +30,7 @@ const insertedIds: string[] = [];
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 beforeAll(() => {
-  const requiredEnvVars = ['PINECONE_API_KEY', 'VOYAGE_API_KEY'];
+  const requiredEnvVars = ['PINECONE_API_KEY', 'GEMINI_API_KEY'];
   requiredEnvVars.forEach((varName) => {
     if (!process.env[varName]) {
       throw new Error(`${varName} environment variable is not set`);
@@ -69,7 +69,7 @@ afterAll(async () => {
 
 describe('VectorizationService Integration Tests', () => {
   it('should load environment variables correctly', () => {
-    expect(process.env.VOYAGE_API_KEY).toBeDefined();
+    expect(process.env.GEMINI_API_KEY).toBeDefined();
     expect(process.env.PINECONE_API_KEY).toBeDefined();
   });
 
@@ -101,6 +101,9 @@ describe('VectorizationService Integration Tests', () => {
           title: {
             title: 'Software Engineer',
           },
+          similarPositionUuids: [],
+          approvedSimilarPositionUuids: [],
+          rejectedSimilarPositionUuids: []
         },
         {
           positionUuid: positionUuid2,
@@ -119,23 +122,33 @@ describe('VectorizationService Integration Tests', () => {
           title: {
             title: 'Software Developer',
           },
+          similarPositionUuids: [],
+          approvedSimilarPositionUuids: [],
+          rejectedSimilarPositionUuids: []
         },
       ],
-      filename: 'resume_integration_test.pdf',
+      filename: 'resume_integration_test.pdf', // Included to satisfy Resume type
       // Add other necessary fields based on your Resume type
     };
 
     // Execute the vectorization process with specified indexName
-    await vectorizePositions(mockResume, docId, userId, INDEX_NAME);
+    await vectorizePositions(mockResume, userId, docId, INDEX_NAME);
     console.log('Upserted Positions:', insertedIds.join(', '));
 
+    // Collect inserted IDs for verification and cleanup
+    mockResume.positions.forEach((p) => {
+      const insertedId = `${docId}#${p.positionUuid}`;
+      insertedIds.push(insertedId);
+    });
+
     // Introduce a delay to allow Pinecone to process the upsert
+    await sleep(SLEEP_TIME); // Wait for 5 seconds
+
     // Verify that data is upserted into Pinecone
     const index = pineconeClient.index(INDEX_NAME);
 
     // Fetch the records to verify insertion
     console.log('Fetching Records:', insertedIds.join(', '));
-    mockResume.positions.forEach((p) => insertedIds.push(`${docId}#${p.positionUuid}`));
     const fetchResponse = await index.fetch(insertedIds);
     console.log('Fetched Records:', JSON.stringify(fetchResponse.records, null, 2));
 
@@ -145,7 +158,6 @@ describe('VectorizationService Integration Tests', () => {
       console.log(`Verifying Record ID: ${id}`);
       expect(record).toBeDefined();
       if (record && record.metadata) {
-        expect(record.metadata.filename).toBe(mockResume.filename);
         expect(record.metadata.userId).toBe(userId);
         expect(record.metadata.content).toBe(JSON.stringify(position));
         expect(record.metadata.type).toBe('position');
@@ -202,11 +214,16 @@ describe('VectorizationService Integration Tests', () => {
       title: {
         title: 'Product Manager',
       },
+      similarPositionUuids: [],
+      approvedSimilarPositionUuids: [],
+      rejectedSimilarPositionUuids: []
     };
-    const filename = 'resume_jane_doe_integration.pdf';
+
+    // Mock Resume Data for type consistency (if necessary)
+    // If vectorizePosition doesn't require the full Resume, it's unnecessary. Otherwise, include it.
 
     // Execute the vectorization process with specified indexName
-    await vectorizePosition(mockPosition, filename, docId, userId, INDEX_NAME);
+    await vectorizePosition(mockPosition, userId, docId, INDEX_NAME);
     console.log(`Upserted Single Position ID: ${docId}#${positionUuid}`);
 
     // Collect inserted ID for cleanup
@@ -227,7 +244,6 @@ describe('VectorizationService Integration Tests', () => {
     console.log(`Verifying Single Record ID: ${insertedId}`);
     expect(record).toBeDefined();
     if (record && record.metadata) {
-      expect(record.metadata.filename).toBe(filename);
       expect(record.metadata.userId).toBe(userId);
       expect(record.metadata.content).toBe(JSON.stringify(mockPosition));
       expect(record.metadata.type).toBe('position');
@@ -284,6 +300,9 @@ describe('VectorizationService Integration Tests', () => {
             title: {
               title: 'Team Lead',
             },
+            similarPositionUuids: [],
+            approvedSimilarPositionUuids: [],
+            rejectedSimilarPositionUuids: []
           },
           {
             positionUuid: positionUuid2,
@@ -302,23 +321,30 @@ describe('VectorizationService Integration Tests', () => {
             title: {
               title: 'Coordinator',
             },
+            similarPositionUuids: [],
+            approvedSimilarPositionUuids: [],
+            rejectedSimilarPositionUuids: []
           },
         ],
-        filename: 'resume_delete_test.pdf',
+        filename: 'resume_delete_test.pdf', // Included to satisfy Resume type
         // Add other necessary fields based on your Resume type
       };
 
       // Execute the vectorization process with specified indexName
-      await vectorizePositions(mockResume, docId, userId, INDEX_NAME);
+      await vectorizePositions(mockResume, userId, docId, INDEX_NAME);
       console.log('Upserted Positions for Deletion Test:', insertedIds.join(', '));
+
+      // Collect inserted IDs for verification and cleanup
+      mockResume.positions.forEach((p) => {
+        const insertedId = `${docId}#${p.positionUuid}`;
+        insertedIds.push(insertedId);
+      });
 
       // Introduce a delay to allow Pinecone to process the upsert
       await sleep(SLEEP_TIME); // Wait for 5 seconds
 
       // Verify that data is upserted into Pinecone
       const index = pineconeClient.index(INDEX_NAME);
-      mockResume.positions.forEach((p) => insertedIds.push(`${docId}#${p.positionUuid}`));
-
       console.log('Fetching Records for Deletion Test:', insertedIds.join(', '));
       const fetchResponse = await index.fetch(insertedIds);
 
@@ -328,7 +354,6 @@ describe('VectorizationService Integration Tests', () => {
         console.log(`Verifying Record ID for Deletion Test: ${id}`);
         expect(record).toBeDefined();
         if (record && record.metadata) {
-          expect(record.metadata.filename).toBe(mockResume.filename);
           expect(record.metadata.userId).toBe(userId);
           expect(record.metadata.content).toBe(JSON.stringify(position));
           expect(record.metadata.type).toBe('position');
@@ -345,9 +370,12 @@ describe('VectorizationService Integration Tests', () => {
 
       // Introduce a short delay to allow Pinecone to process the deletion
       await sleep(SLEEP_TIME); // Wait for 5 seconds
+
+      // Verify that records are deleted
       if (insertedIds.length > 0){
-        // Verify that records are deleted
+        // Fetch the records to confirm deletion
         const postDeleteFetch = await index.fetch(insertedIds);
+        console.log('Post-Delete Fetched Records:', JSON.stringify(postDeleteFetch.records, null, 2));
 
         insertedIds.forEach((id) => {
           console.log(`Verifying Deletion of Record ID: ${id}`);

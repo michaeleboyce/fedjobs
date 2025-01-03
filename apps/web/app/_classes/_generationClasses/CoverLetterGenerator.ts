@@ -10,7 +10,7 @@ export class CoverLetterGenerator extends EssayGenerator {
   }
 
   createPrompt(): string {
-    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
+    const { docInfo, jobInfo, length, lengthUnit, otherInfo, positions } = this._generationSelection;
 
     // Build a string describing all selected positions
     const positionsText = positions
@@ -37,11 +37,7 @@ export class CoverLetterGenerator extends EssayGenerator {
 [Your Name]
 [Your Address]
 [City, State ZIP]
-${new Intl.DateTimeFormat("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "2-digit",
-}).format(Date.now())}
+[Today's Date, i.e. September 23rd, 2024]
 [Recipient Name]
 [Recipient Organization]
 [Recipient Address]
@@ -85,7 +81,7 @@ your consideration. I look forward to hearing from you soon.
 Sincerely,
 Your Name
 `.trim();
-
+    const lengthRequirement = this.formatLengthRequirementNOMORETHAN_X_WORDSorPAGES();
     const prompt = `
 Please write a cover letter based on the following details${
       docInfo.additionalDocInfo
@@ -115,7 +111,7 @@ ${otherInfo}
 }
 
 ________
-When writing the Cover Letter, **IT MUST BE NO MORE THAN ${length} WORDS**. 
+When writing the Cover Letter, **IT MUST BE ${lengthRequirement}**. 
 Feel free to add any additional relevant or logical information to provide a more action-oriented letter. Only respond with the letter, DO NOT provide any other comments.
 `;
     return prompt;

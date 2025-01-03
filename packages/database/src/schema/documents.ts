@@ -21,5 +21,5 @@ export const documents = pgTable("documents", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export type Document = typeof documents.$inferSelect;
-export type NewDocument = typeof documents.$inferInsert;
+export type DocumentRecord = typeof documents.$inferSelect;
+export type NewDocumentRecord = typeof documents.$inferInsert;

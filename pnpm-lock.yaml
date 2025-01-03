@@ -307,9 +307,15 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.717.0
         version: 3.717.0
+      '@fedjobs/database':
+        specifier: workspace:*
+        version: link:../database
       '@fedjobs/types':
         specifier: workspace:*
         version: link:../types
+      '@google/generative-ai':
+        specifier: ^0.21.0
+        version: 0.21.0
       '@kinde-oss/kinde-auth-nextjs':
         specifier: ^2.4.6
         version: 2.4.6(@babel/core@7.26.0)(next@15.1.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -325,9 +331,6 @@ importers:
       uuid:
         specifier: ^11.0.3
         version: 11.0.3
-      voyage-ai-provider:
-        specifier: ^1.0.0
-        version: 1.0.0(zod@3.24.1)
     devDependencies:
       typescript:
         specifier: ^5.7.2
@@ -1719,6 +1722,10 @@ packages:
     peerDependencies:
       '@fortawesome/fontawesome-svg-core': ~1 || ~6
       react: '>=16.3'
+
+  '@google/generative-ai@0.21.0':
+    resolution: {integrity: sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg==}
+    engines: {node: '>=18.0.0'}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -7042,6 +7049,8 @@ snapshots:
       '@fortawesome/fontawesome-svg-core': 6.7.2
       prop-types: 15.8.1
       react: 19.0.0
+
+  '@google/generative-ai@0.21.0': {}
 
   '@humanfs/core@0.19.1': {}
 

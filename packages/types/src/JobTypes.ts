@@ -1,4 +1,10 @@
-// File path: apps/web/app/_types/Job.ts
+// File path: packages/types/src/JobTypes.ts
+export type JobInfo = {
+    jobPostingURL: string;
+    jobDescription: string;
+    job?: Job;
+  };
+
 export type Job = {
     MatchedObjectId: string;
     MatchedObjectDescriptor: {

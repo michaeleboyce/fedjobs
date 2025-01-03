@@ -25,10 +25,13 @@ export interface Position {
   title: Title;
   date: ResumeDate;
   details: Details;
-  groupId?: string; // Optional field for grouping positions
+  originalPositionUuid?: string; 
+  similarPositionUuids: string[];
+  approvedSimilarPositionUuids: string[];
+  rejectedSimilarPositionUuids: string[];
 }
 
 export interface Resume {
-  positions: Position[];
+  positions: Position[]; 
   filename: string;
 }

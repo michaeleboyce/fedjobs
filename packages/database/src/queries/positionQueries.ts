@@ -1,12 +1,12 @@
 // File path: packages/database/src/queries/positionQueries.ts
 import { db } from "../db-connection";
 import { eq } from "drizzle-orm";
-import { positions, type Position, type NewPosition } from "../schema/positions";
+import { positions, type PositionRecord, type NewPositionRecord } from "../schema/positions";
 
 /**
  * Inserts a new position record.
  */
-export async function insertPosition(positionData: NewPosition): Promise<Position> {
+export async function insertPosition(positionData: NewPositionRecord): Promise<PositionRecord> {
   const [pos] = await db.insert(positions).values(positionData).returning();
   return pos;
 }
@@ -14,7 +14,7 @@ export async function insertPosition(positionData: NewPosition): Promise<Positio
 /**
  * Retrieves a position by its UUID.
  */
-export async function getPositionByUuid(positionUuid: string): Promise<Position | undefined> {
+export async function getPositionByUuid(positionUuid: string): Promise<PositionRecord | undefined> {
   const results = await db
     .select()
     .from(positions)
@@ -27,7 +27,7 @@ export async function getPositionByUuid(positionUuid: string): Promise<Position 
 /**
  * Retrieves all positions for a given user.
  */
-export async function getPositionsByUserId(userId: string): Promise<Position[]> {
+export async function getPositionsByUserId(userId: string): Promise<PositionRecord[]> {
   return db
     .select()
     .from(positions)
@@ -38,7 +38,7 @@ export async function getPositionsByUserId(userId: string): Promise<Position[]> 
 /**
  * Retrieves all positions within a specific group.
  */
-export async function getPositionsByGroupId(groupId: string): Promise<Position[]> {
+export async function getPositionsByGroupId(groupId: string): Promise<PositionRecord[]> {
   return db
     .select()
     .from(positions)
@@ -51,8 +51,8 @@ export async function getPositionsByGroupId(groupId: string): Promise<Position[]
  */
 export async function updatePositionByUuid(
   positionUuid: string,
-  updateData: Partial<Position>
-): Promise<Position[]> {
+  updateData: Partial<PositionRecord>
+): Promise<PositionRecord[]> {
   return db
     .update(positions)
     .set(updateData)

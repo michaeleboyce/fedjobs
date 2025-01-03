@@ -1,7 +1,7 @@
 // File path: apps/api/tests/services/parsingService.test.ts
 import { Anthropic } from '@anthropic-ai/sdk';
 import { db } from '@fedjobs/database';
-import { parsings as parsingsTable, type NewParsing } from '@fedjobs/database/src/schema/parsings';
+import { parsings as parsingsTable, type NewParsingRecord } from '@fedjobs/database/src/schema/parsings';
 import { parseResumeText } from '@fedjobs/utils';
 import { eq } from '@fedjobs/database';
 import type { ParseRequest } from '@fedjobs/types';
@@ -44,7 +44,7 @@ export class ParsingService {
     return parsing.id;
   }
 
-  private async createParsingRecord(request: ParseRequest): Promise<NewParsing> {
+  private async createParsingRecord(request: ParseRequest): Promise<NewParsingRecord> {
     const [parsing] = await db
       .insert(parsingsTable)
       .values({

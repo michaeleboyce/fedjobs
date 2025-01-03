@@ -2,13 +2,11 @@
 // apps/api/src/services/parsingService.ts
 
 import OpenAI from "openai";
-import { db, eq } from "@fedjobs/database";
-import { parsings as parsingsTable, documents as documentsTable} from "@fedjobs/database";
-import { parseResumeText, vectorizePositions } from "@fedjobs/utils";
-import { ParseRequest, Resume } from "@fedjobs/types";
+import { db, eq, positions as positionsTable } from "@fedjobs/database";
+import { insertPosition, parsings as parsingsTable, documents as documentsTable } from "@fedjobs/database";
+import { parseResumeText, vectorizePositions, querySimilarPositions } from "@fedjobs/utils";
+import { ParseRequest, Resume, Position } from "@fedjobs/types";
 import { DOMParser } from "xmldom";
-import { insertPosition } from "@fedjobs/database/src/queries/positionQueries"; // Import position insertion
-import { Position } from "@fedjobs/types"; // Ensure Position includes positionUuid
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -117,7 +115,7 @@ Please follow this structure for the entire resume, maintaining the integrity of
       try {
         // Request streaming from GPT-4 (model name can vary).
         const stream = await this.openai.chat.completions.create({
-          model: "gpt-4o", 
+          model: "gpt-4o",
           messages: [{ role: "user", content: this.createPromptXML(text) }],
           prediction: {
             type: 'content',
@@ -134,12 +132,13 @@ Please follow this structure for the entire resume, maintaining the integrity of
           if (message) {
             combinedOutput += message;
             // Estimate progress — in this example, up to 85% for raw annotation.
-            const progress = Math.round(
-              (combinedOutput.length / (text.length || 1)) * 85
-            );
-            if (progress - lastReportedProgress >= 10) {
-              await this.updateProgress(parsingId, progress);
-              lastReportedProgress = progress;
+            const progress = (combinedOutput.length / (text.length || 1)) * 50;
+            const flooredProgress = this.floorToNearestTen(progress);
+            const updatedProgress = this.shouldUpdateProgress(flooredProgress, lastReportedProgress, 50);
+
+            if (updatedProgress !== null) {
+              await this.updateProgress(parsingId, updatedProgress);
+              lastReportedProgress = updatedProgress;
             }
           }
 
@@ -190,107 +189,133 @@ Please follow this structure for the entire resume, maintaining the integrity of
    * - store that JSON + mark isParsed in the documents table,
    * - finalize the parsings table record.
    */
- // File path: apps/api/src/services/parsingService.ts
+  // File path: apps/api/src/services/parsingService.ts
 
-private async completeProcessing(parsingId: number, annotatedXML: string, addToKnowledgeBank: boolean, filename: string): Promise<void> {
-  // 1) Convert XML -> JSON (which will follow your Resume schema).
-  const parsedResume = parseResumeText(annotatedXML, filename);
+  private async completeProcessing(parsingId: number, annotatedXML: string, addToKnowledgeBank: boolean, filename: string): Promise<void> {
+    // 1) Convert XML -> JSON (which will follow your Resume schema).
+    const parsedResume = parseResumeText(annotatedXML, filename);
 
-  // 2) If parse returns null/undefined, log an error and update accordingly.
-  if (!parsedResume) {
-    console.warn("XML->JSON parsing returned invalid data; marking as error.");
-    await db
-      .update(parsingsTable)
-      .set({ completion: "Error", isComplete: true })
-      .where(eq(parsingsTable.id, parsingId))
-      .execute();
-    return;
-  }
-
-  // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
-  await db
-    .update(parsingsTable)
-    .set({
-      completion: annotatedXML,
-      analysisPercent: 100,
-      isComplete: true,
-    })
-    .where(eq(parsingsTable.id, parsingId))
-    .execute();
-
-  // 4) Retrieve the documentId from the parsings record so we can update 
-  //    the related document row.
-  const [parsingRecord] = await db
-    .select()
-    .from(parsingsTable)
-    .where(eq(parsingsTable.id, parsingId))
-    .execute();
-
-  if (!parsingRecord?.documentId) {
-    console.error("No associated documentId for this parsing. Cannot update Document row.");
-    return;
-  }
-
-  // 5) Insert each position into the 'positions' table with isApproved = false
-  try {
-    for (const position of parsedResume.positions) {
-      await insertPosition({
-        positionUuid: position.positionUuid, // Unique UUID
-        userId: parsingRecord.userId,
-        documentId: parsingRecord.documentId,
-        organization: position.organization.name,
-        title: position.title.title,
-        startDate: position.date.startDate,
-        endDate: position.date.endDate,
-        present: position.date.present,
-        activities: position.details.activities,
-        accomplishments: position.details.accomplishments,
-        isApproved: false, // New field
-      });
-    }
-  } catch (error) {
-    console.error("Error inserting positions into the database:", error);
-    // Optionally, mark parsing as error or handle accordingly
-    await db
-      .update(parsingsTable)
-      .set({ completion: "Error inserting positions", isComplete: true })
-      .where(eq(parsingsTable.id, parsingId))
-      .execute();
-    return;
-  }
-
-  // 6) Update the Document row with parsed JSON + `isParsed = true`.
-  await db
-    .update(documentsTable)
-    .set({
-      data: parsedResume,   // storing the final JSON object
-      isParsed: true,
-      inKnowledgeBank: addToKnowledgeBank, // Update based on the flag
-    })
-    .where(eq(documentsTable.id, parsingRecord.documentId))
-    .execute();
-
-  // 7) Vectorize the positions if required
-  if (addToKnowledgeBank) {
-    try {
-      // Retrieve updated document with fresh data
-      const [updatedDoc] = await db
-        .select()
-        .from(documentsTable)
-        .where(eq(documentsTable.id, parsingRecord.documentId))
+    // 2) If parse returns null/undefined, log an error and update accordingly.
+    if (!parsedResume) {
+      console.warn("XML->JSON parsing returned invalid data; marking as error.");
+      await db
+        .update(parsingsTable)
+        .set({ completion: "Error", isComplete: true })
+        .where(eq(parsingsTable.id, parsingId))
         .execute();
+      return;
+    }
 
-      // The JSON should be in updatedDoc.data; cast to your local Resume type
-      const resumeData = updatedDoc.data as Resume; // Ensure proper typing
+    // 3) Mark the parsing record as complete, store the annotated XML in `completion`.
+    await db
+      .update(parsingsTable)
+      .set({
+        completion: annotatedXML,
+        analysisPercent: 100,
+        isComplete: true,
+      })
+      .where(eq(parsingsTable.id, parsingId))
+      .execute();
 
-      // Now call your vectorization
-      await vectorizePositions(resumeData, String(updatedDoc.id) ,updatedDoc.userId);
-    } catch (e) {
-      console.error("Error vectorizing positions:", e);
-      // Optionally, set a flag or record an error in the DB
+    // 4) Retrieve the documentId from the parsings record so we can update 
+    //    the related document row.
+    const [parsingRecord] = await db
+      .select()
+      .from(parsingsTable)
+      .where(eq(parsingsTable.id, parsingId))
+      .execute();
+
+    if (!parsingRecord?.documentId) {
+      console.error("No associated documentId for this parsing. Cannot update Document row.");
+      return;
+    }
+
+    // 5) Insert each position into the 'positions' table with isApproved = false
+    try {
+      for (const position of parsedResume.positions) {
+        await insertPosition({
+          positionUuid: position.positionUuid, // Unique UUID
+          userId: parsingRecord.userId,
+          documentId: parsingRecord.documentId,
+          organization: position.organization.name,
+          title: position.title.title,
+          startDate: position.date.startDate,
+          endDate: position.date.endDate,
+          present: position.date.present,
+          activities: position.details.activities,
+          accomplishments: position.details.accomplishments,
+        });
+      }
+    } catch (error) {
+      console.error("Error inserting positions into the database:", error);
+      // Optionally, mark parsing as error or handle accordingly
+      await db
+        .update(parsingsTable)
+        .set({ completion: "Error inserting positions", isComplete: true })
+        .where(eq(parsingsTable.id, parsingId))
+        .execute();
+      return;
+    }
+
+    // 6) Update the Document row with parsed JSON + `isParsed = true`.
+    await db
+      .update(documentsTable)
+      .set({
+        data: parsedResume,   // storing the final JSON object
+        isParsed: true,
+        inKnowledgeBank: addToKnowledgeBank, // Update based on the flag
+      })
+      .where(eq(documentsTable.id, parsingRecord.documentId))
+      .execute();
+
+    // 7) Vectorize the positions if required
+    if (addToKnowledgeBank) {
+      try {
+        // Retrieve updated document with fresh data
+        const [updatedDoc] = await db
+          .select()
+          .from(documentsTable)
+          .where(eq(documentsTable.id, parsingRecord.documentId))
+          .execute();
+
+        // The JSON should be in updatedDoc.data; cast to your local Resume type
+        const resumeData = updatedDoc.data as Resume; // Ensure proper typing
+
+        // Now call your vectorization
+        await vectorizePositions(resumeData, updatedDoc.userId, String(updatedDoc.id));
+
+        const totalPositions = resumeData.positions.length;
+        let processedPositions = 0;
+        let lastReportedProgress = 50; // Initialize to 50%
+        if (totalPositions === 0) {
+          // No positions to process, set progress to 100%
+          await this.updateProgress(parsingId, 100);
+        } else {
+          for (const p of resumeData.positions) {
+            const similarMatches = await querySimilarPositions(updatedDoc.id.toString(), p.positionUuid, 0.9);
+            await this.updateSimilarPositions(p, similarMatches);
+            processedPositions++;
+            const similarityProgress = (processedPositions / totalPositions) * 50;
+            const overallProgress = similarityProgress + 50;
+            const flooredProgress = this.floorToNearestTen(overallProgress);
+            const updatedProgress = this.shouldUpdateProgress(flooredProgress, lastReportedProgress, 100);
+
+            if (updatedProgress !== null) {
+              await this.updateProgress(parsingId, updatedProgress);
+              lastReportedProgress = updatedProgress;
+            }
+          }
+                    // Ensure final progress reaches 100%
+          if (lastReportedProgress < 100) {
+            await this.updateProgress(parsingId, 100);
+          }
+        }
+      } catch (e) {
+        console.error("Error vectorizing positions:", e);
+        // Optionally, set a flag or record an error in the DB
+      }
     }
   }
-}
 
 
   /**
@@ -369,6 +394,96 @@ private async completeProcessing(parsingId: number, annotatedXML: string, addToK
 
     return combinedOutput; // Possibly incomplete, but we've exhausted retries.
   }
+
+
+  /**
+   * Extracts the positionUuid from a Pinecone record ID.
+   * @param fullId - The full ID in the format 'docId#positionUuid'.
+   * @returns The extracted positionUuid.
+   */
+  private extractPositionUuid(fullId: string): string {
+    return fullId.split('#')[1];
+  }
+  /**
+ * Updates the positions table with similar positions.
+ * @param currentPosition - The current position being processed.
+ * @param similarMatches - Array of similar position IDs and scores.
+ */
+  private async updateSimilarPositions(currentPosition: Position, similarMatches: { id: string; score: number }[]): Promise<void> {
+    const similarUuids: string[] = [];
+
+    for (const match of similarMatches) {
+      const similarUuid = this.extractPositionUuid(match.id);
+
+      // Skip if the similarUuid is already approved or rejected, or the same as the position
+      if (
+        currentPosition.approvedSimilarPositionUuids.includes(similarUuid) ||
+        currentPosition.rejectedSimilarPositionUuids.includes(similarUuid) ||
+        currentPosition.positionUuid === similarUuid
+      ) {
+        continue;
+      }
+
+      similarUuids.push(similarUuid);
+
+      // Also, update the matched position to include this position as similar
+      const [matchedPosition] = await db
+        .select()
+        .from(positionsTable)
+        .where(eq(positionsTable.positionUuid, similarUuid))
+        .execute();
+
+      if (matchedPosition) {
+        // Avoid duplicates
+        const updatedSimilar = new Set(matchedPosition.similarPositionUuids);
+        updatedSimilar.add(currentPosition.positionUuid);
+
+        await db
+          .update(positionsTable)
+          .set({ similarPositionUuids: Array.from(updatedSimilar) })
+          .where(eq(positionsTable.id, matchedPosition.id))
+          .execute();
+      }
+    }
+
+    // Update the current position with new similar positions
+    const updatedSimilar = new Set(currentPosition.similarPositionUuids);
+    similarUuids.forEach(uuid => updatedSimilar.add(uuid));
+
+    await db
+      .update(positionsTable)
+      .set({ similarPositionUuids: Array.from(updatedSimilar) })
+      .where(eq(positionsTable.positionUuid, currentPosition.positionUuid))
+      .execute();
+  }
+
+  /**
+ * Floors a given progress to the nearest 10%.
+ * @param progress - The current progress percentage.
+ * @returns The floored progress.
+ */
+  private floorToNearestTen(progress: number): number {
+    return Math.floor(progress / 10) * 10;
+  }
+
+  /**
+   * Determines whether to update progress based on the new progress and the last reported progress.
+   * @param newProgress - The newly calculated progress percentage.
+   * @param lastProgress - The last reported progress percentage.
+   * @param maxProgress - The maximum progress cap (e.g., 50 or 100).
+   * @returns The updated progress percentage if an update should occur, else null.
+   */
+  private shouldUpdateProgress(newProgress: number, lastProgress: number, maxProgress: number): number | null {
+    const flooredProgress = this.floorToNearestTen(newProgress);
+    if (flooredProgress > lastProgress && flooredProgress <= maxProgress) {
+      return flooredProgress;
+    }
+    return null;
+  }
+
+
+
+
 }
 
 // Export a singleton instance:

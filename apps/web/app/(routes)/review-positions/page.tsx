@@ -1,13 +1,12 @@
 // File path: apps/web/app/(routes)/review-positions/page.tsx
+// apps/web/app/(routes)/review-positions/page.tsx
 
 import React from 'react';
-import { getUnapprovedPositions, approvePosition, rejectPosition } from '@/app/_actions/positions/reviewPositionActions';
+import { getAllPositions, addToEmploymentHistory, rejectPosition } from '@/app/_actions/positions/reviewPositionActions';
 import ReviewPositions from '@/app/_components/ReviewPositions';
 
-
-
 const ReviewPositionsPage: React.FC = async () => {
-  const positionsResponse = await getUnapprovedPositions();
+  const positionsResponse = await getAllPositions();
 
   if (!positionsResponse.success) {
     // Handle error, possibly render an error component or message
@@ -18,12 +17,13 @@ const ReviewPositionsPage: React.FC = async () => {
     );
   }
 
-  const positions = positionsResponse.positions;
+  const { employmentHistory, otherPositions } = positionsResponse;
 
   return (
     <ReviewPositions 
-      positions={positions} 
-      approvePosition={approvePosition} 
+      employmentHistory={employmentHistory}
+      otherPositions={otherPositions}
+      addToEmploymentHistory={addToEmploymentHistory}
       rejectPosition={rejectPosition} 
     />
   );

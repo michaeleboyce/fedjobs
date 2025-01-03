@@ -4,7 +4,7 @@ import { PositionObject } from "../Position";
 import { EssayGenerator } from "./EssayGenerator";
 import { ECQCompetency } from "@/app/_types/ECQCompetencies";
 import { ECQ_COMPENTENCIES } from "@/app/_utils/Constants";
-import { JobInfo } from "@/app/_types/JobInfo";
+import { JobInfo } from "@fedjobs/types";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
 
@@ -30,7 +30,7 @@ export class ECQGenerator extends EssayGenerator {
    * Creates the main prompt for OpenAI
    */
   createPrompt(): string {
-    const { docInfo, jobInfo, length, otherInfo, positions } = this._generationSelection;
+    const { docInfo, jobInfo, length, lengthUnit, otherInfo, positions } = this._generationSelection;
 
     // Build a string describing all user-selected positions
     const positionsText = positions
@@ -58,6 +58,8 @@ Position #${i + 1}: ${pos.title.title} at ${pos.organization.name},
       })
       .join("\n\n");
 
+    const lengthRequirement = this.formatLengthRequirementNOMORETHAN_X_WORDSorPAGES();
+
     // Build the final prompt string
     const prompt = `
 Please write an Executive Core Qualification (ECQ) narrative based on the following details:
@@ -74,34 +76,32 @@ ${this.jobDescription}
 ---
 The ECQ MUST RELATE TO THE CATEGORY: ${this.ecq.shortTitle.toUpperCase()}
 
-${
-  docInfo.additionalDocInfo
-    ? `Additionally, consider:\n${docInfo.additionalDocInfo}`
-    : ""
-}
+${docInfo.additionalDocInfo
+        ? `Additionally, consider:\n${docInfo.additionalDocInfo}`
+        : ""
+      }
 
 In generating this ECQ, you MUST weave in the competencies below, but do NOT just list them. Incorporate them in a narrative style:
 ${this.ecq.attributes
-  .map((attr) => `${attr.title}: ${attr.description}`)
-  .join("\n")}
+        .map((attr) => `${attr.title}: ${attr.description}`)
+        .join("\n")}
 
 ---
 Base the ECQ on the following positions/accomplishments:
 ${positionsText}
 
-${
-  otherInfo
-    ? `
+${otherInfo
+        ? `
 ---
 Finally consider the following additional information:
 ${otherInfo}
 `
-    : ""
-}
+        : ""
+      }
 
 ---
 YOUR TASK:
-Write the ECQ narrative in no more than ${length.toString()} words. Be action-oriented and concise, quantifying achievements where possible. Provide only the final essay text with no extra commentary.
+Write the ECQ narrative in ${lengthRequirement}. Be action-oriented and concise, quantifying achievements where possible. Provide only the final essay text with no extra commentary.
 `;
 
     return prompt;
@@ -127,18 +127,17 @@ ${this.jobDescription}
 
 It must incorporate:
 ${positions
-  .map((posData) => {
-    const p = posData.position;
-    return `${p.title.title} at ${p.organization.name}`;
-  })
-  .join("\n")}
+        .map((posData) => {
+          const p = posData.position;
+          return `${p.title.title} at ${p.organization.name}`;
+        })
+        .join("\n")}
   
 Additional info:
-${
-  docInfo.additionalDocInfo
-    ? docInfo.additionalDocInfo
-    : "(No additional doc info)"
-}
+${docInfo.additionalDocInfo
+        ? docInfo.additionalDocInfo
+        : "(No additional doc info)"
+      }
 
 ${otherInfo ? `Other user info: ${otherInfo}` : ""}
 

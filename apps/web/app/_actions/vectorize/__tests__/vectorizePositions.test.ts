@@ -1,7 +1,6 @@
 // File path: apps/web/app/_actions/vectorize/__tests__/vectorizePositions.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { vectorizePositions, generatePositionEmbeddings, createPineconeRecords, EmbeddingResult } from '../vectorizePositions';
-import { voyage } from 'voyage-ai-provider';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { Position } from '@fedjobs/types';
 
@@ -26,6 +25,7 @@ vi.mock('@pinecone-database/pinecone', () => ({
 describe('vectorize position functions', () => {
   const userId = 'kp_03ed91010b5448968dda04746a370830';
   const mockPosition: Position = {
+    positionUuid: 'test-uuid-123',
     organization: { name: "Department of Homeland Security" },
     title: { title: "Director of the Artificial Intelligence Corps" },
     details: { activities: ["Founded and led the largest civilian AI team"],
@@ -35,7 +35,10 @@ describe('vectorize position functions', () => {
         startDate: '1-1-2024',
         endDate: '',
         present: true
-    } 
+    },
+    similarPositionUuids: [],
+    approvedSimilarPositionUuids: [],
+    rejectedSimilarPositionUuids: []
   };
 
   const mockResume = {
