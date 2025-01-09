@@ -52,7 +52,9 @@
   color: rgb(var(--foreground-rgb));
   font-family: 'Arial', sans-serif;
 } */
-
+html {
+  scroll-behavior: smooth;
+}
 /* Main Container */
 .main-container {
   text-align: center;

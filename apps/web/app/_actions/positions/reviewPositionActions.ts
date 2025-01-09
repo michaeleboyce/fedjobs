@@ -31,6 +31,10 @@ type RejectPositionResponse =
   | { success: true; message: string }
   | { success: false; error: string };
 
+  type RemoveFromEmploymentHistoryResponse =
+  | { success: true; message: string }
+  | { success: false; error: string };
+
 /**
  * Helper function to map PositionRecord to Position
  */
@@ -128,6 +132,38 @@ export async function addToEmploymentHistory(positionUuid: string): Promise<AddT
   } catch (error: any) {
     console.error("Error adding position to employment history:", error);
     return { success: false, error: "Failed to add position to employment history." };
+  }
+}
+/**
+ * Removes a position from employment history by its UUID.
+ * @param positionUuid - The UUID of the position to remove.
+ */
+export async function removeFromEmploymentHistory(positionUuid: string): Promise<RemoveFromEmploymentHistoryResponse> {
+  const user = await authenticateUser();
+
+  if (!user) {
+    return { success: false, error: "User authentication failed." };
+  }
+
+  try {
+    // Fetch the position to verify its existence and ownership
+    const position = await getPositionByUuid(positionUuid);
+    if (!position) {
+      return { success: false, error: "Position not found." };
+    }
+
+    // Ensure the position is part of Employment History
+    if (!position.isEmploymentHistory) {
+      return { success: false, error: "Position is not part of Employment History." };
+    }
+
+    // Delete the position
+    await deletePositionByUuid(positionUuid);
+
+    return { success: true, message: "Position removed from Employment History." };
+  } catch (error: any) {
+    console.error("Error removing position from employment history:", error);
+    return { success: false, error: "Failed to remove position from Employment History." };
   }
 }
 
