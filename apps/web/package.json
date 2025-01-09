@@ -43,6 +43,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^19.0.0",
     "react-query": "^3.39.3",
+    "react-scrollspy": "^3.4.3",
     "react-toastify": "^11.0.2",
     "uuid": "^11.0.3",
     "voyage-ai-provider": "^1.0.0"
@@ -53,6 +54,7 @@
     "@types/react": "^19.0.2",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^19.0.2",
+    "@types/react-scrollspy": "^3.3.9",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.30.1",
     "eslint": "^9.17.0",
