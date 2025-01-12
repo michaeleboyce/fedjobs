@@ -1,9 +1,9 @@
-// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/AdditionalInfoBox.tsx
+// File path: apps/web/app/(routes)/generate/_Components/AdditionalInfoBox.tsx
 'use client';
 import React from 'react';
 import { DocumentInfo } from './_Subcomponents/_AdditionalInfoBox/DocumentInfo';
 import { JobInfoInput } from './_Subcomponents/_AdditionalInfoBox/JobInfoInput';
-import { useGenerationContext } from '../../../_Providers/GenerationProvider';
+import { useGenerationContext } from '../_Providers/GenerationProvider';
 
 type AdditionalInfoBoxProps = {
     showIsDummy: boolean;

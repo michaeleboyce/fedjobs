@@ -22,6 +22,7 @@
   @apply max-w-lg my-4 pl-4;
 }
 
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -55,6 +56,20 @@
 html {
   scroll-behavior: smooth;
 }
+
+.breadcrumb {
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: ">";
+  padding: 0 8px;
+  color: #6c757d;
+}
+
 /* Main Container */
 .main-container {
   text-align: center;

@@ -22,6 +22,7 @@ const buttonClasses = {
 interface PositionHeaderProps {
   isEditing: boolean;
   isEmploymentHistory: boolean;
+  isGenerationView: boolean;
   isLoading: boolean;
   isExpanded: boolean;
   position: any;
@@ -36,6 +37,7 @@ interface PositionHeaderProps {
 export const PositionHeader: React.FC<PositionHeaderProps> = ({
   isEditing,
   isEmploymentHistory,
+  isGenerationView,
   isLoading,
   isExpanded,
   position,
@@ -69,7 +71,7 @@ export const PositionHeader: React.FC<PositionHeaderProps> = ({
                 <span>Create Employment History Position</span>
               </button>
             )}
-            {!isEditing && isEmploymentHistory && (
+            {!isEditing && isEmploymentHistory && !isGenerationView &&(
               <button
                 onClick={onRemoveFromEmploymentHistory}
                 disabled={isLoading}

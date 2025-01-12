@@ -14,7 +14,7 @@ import { GenerationSelection } from '@/app/_types/GenerationSelection';
 import StreamingDocumentViewer from './StreamingDocumentViewer';
 import { createMockReader } from '@/app/_utils/mockReader';
 import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
-import { useGenerationContext } from '../_Providers/GenerationProvider';
+import { useGenerationContext } from '../../../_Providers/GenerationProvider';
 
 type SelectedStateType = {
   positions: {

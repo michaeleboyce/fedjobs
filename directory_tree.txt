@@ -1,0 +1,223 @@
+.
+├── add-file-path-comments.js
+├── apps
+│   ├── api
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── backend-utils
+│   │   │   │   ├── DocumentParsers.ts
+│   │   │   │   └── pdf-parse.d.ts
+│   │   │   ├── config.ts
+│   │   │   ├── index.ts
+│   │   │   ├── middleware
+│   │   │   │   └── error.ts
+│   │   │   ├── queues
+│   │   │   ├── routes
+│   │   │   │   ├── documentParse.ts
+│   │   │   │   ├── generate.ts
+│   │   │   │   ├── parse.ts
+│   │   │   │   └── parsingStatus.ts
+│   │   │   ├── services
+│   │   │   │   └── parsingService.ts
+│   │   │   └── types
+│   │   │       └── index.ts
+│   │   ├── tests
+│   │   │   └── services
+│   │   │       └── parsingService.test.ts
+│   │   └── tsconfig.json
+│   └── web
+│       ├── app
+│       │   ├── (routes)
+│       │   │   ├── api
+│       │   │   │   ├── ai
+│       │   │   │   │   ├── generate
+│       │   │   │   │   └── vectorize
+│       │   │   │   └── auth
+│       │   │   │       └── [kindeAuth]
+│       │   │   ├── dashboard
+│       │   │   │   ├── DocumentManager.tsx
+│       │   │   │   ├── _Components
+│       │   │   │   │   ├── DocumentCard.tsx
+│       │   │   │   │   └── FileUploadBox.tsx
+│       │   │   │   ├── documents.tsx
+│       │   │   │   └── page.tsx
+│       │   │   ├── generate
+│       │   │   │   └── resume
+│       │   │   │       └── [id]
+│       │   │   ├── resume
+│       │   │   │   └── [id]
+│       │   │   │       ├── _Components
+│       │   │   │       └── page.tsx
+│       │   │   └── review-positions
+│       │   │       └── page.tsx
+│       │   ├── _actions
+│       │   │   ├── files
+│       │   │   │   └── fileActions.ts
+│       │   │   ├── parsings
+│       │   │   │   └── parsingStatusActions.ts
+│       │   │   ├── positions
+│       │   │   │   ├── positionActions.ts
+│       │   │   │   └── reviewPositionActions.ts
+│       │   │   ├── usaJobsActions.ts
+│       │   │   ├── utilActions.ts
+│       │   │   └── vectorize
+│       │   │       ├── __tests__
+│       │   │       │   └── vectorizePositions.test.ts
+│       │   │       ├── vectorizeActions.ts
+│       │   │       └── vectorizePositions.ts
+│       │   ├── _classes
+│       │   │   ├── Details.ts
+│       │   │   ├── Organization.ts
+│       │   │   ├── Position.ts
+│       │   │   ├── Resume.ts
+│       │   │   ├── ResumeDate.ts
+│       │   │   ├── Title.ts
+│       │   │   └── _generationClasses
+│       │   │       ├── CoverLetterGenerator.ts
+│       │   │       ├── ECQGenerator.ts
+│       │   │       ├── EssayGenerator.ts
+│       │   │       ├── OtherGenerator.ts
+│       │   │       └── TCQGenerator.ts
+│       │   ├── _components
+│       │   │   ├── PositionCard
+│       │   │   │   ├── Context
+│       │   │   │   │   └── PositionsContext.tsx
+│       │   │   │   ├── PositionDetails.tsx
+│       │   │   │   ├── PositionEditForm.tsx
+│       │   │   │   ├── PositionHeader.tsx
+│       │   │   │   ├── SimilarPositionsSections.tsx
+│       │   │   │   └── index.tsx
+│       │   │   ├── Resume
+│       │   │   │   ├── components
+│       │   │   │   │   ├── DetailsToggle
+│       │   │   │   │   ├── PositionCard
+│       │   │   │   │   ├── PositionDetails
+│       │   │   │   │   ├── SelectionControls
+│       │   │   │   │   └── SimilarPositionCard
+│       │   │   │   ├── hooks
+│       │   │   │   │   └── usePositionSelections.ts
+│       │   │   │   ├── index.tsx
+│       │   │   │   ├── types
+│       │   │   │   │   └── resume.types.ts
+│       │   │   │   └── utils
+│       │   │   │       └── selectionUtils.ts
+│       │   │   ├── ReviewPositions
+│       │   │   │   ├── ColumnToggle.tsx
+│       │   │   │   ├── EditPositionsForm.tsx
+│       │   │   │   ├── PositionsSection.tsx
+│       │   │   │   └── index.tsx
+│       │   │   ├── SearchBar.tsx
+│       │   │   ├── SimilarPositionCard
+│       │   │   │   └── index.tsx
+│       │   │   ├── TopBar.tsx
+│       │   │   └── YearSidebar.tsx
+│       │   ├── _hooks
+│       │   │   ├── useDocumentPolling.ts
+│       │   │   └── usePageVisibility.ts
+│       │   ├── _types
+│       │   │   ├── AnalysisStatus.ts
+│       │   │   ├── DocumentInfo.ts
+│       │   │   ├── ECQCompetencies.ts
+│       │   │   ├── FunctionReturns.ts
+│       │   │   ├── GeneratedDocumentInformation.ts
+│       │   │   ├── GenerationSelection.ts
+│       │   │   ├── ParseResponse.ts
+│       │   │   └── StreamingTextArray.ts
+│       │   ├── _utils
+│       │   │   ├── Compare.ts
+│       │   │   ├── Constants
+│       │   │   │   ├── ECQConstants.ts
+│       │   │   │   └── index.ts
+│       │   │   ├── DateUtils.ts
+│       │   │   ├── accomplishmentProcessor.ts
+│       │   │   ├── documentParsing.ts
+│       │   │   ├── fileHelpers.ts
+│       │   │   ├── mockReader.ts
+│       │   │   ├── resumeProcessor.ts
+│       │   │   └── textUtils.ts
+│       │   ├── error.tsx
+│       │   ├── images
+│       │   ├── layout.tsx
+│       │   └── page.tsx
+│       ├── drizzle.config.ts
+│       ├── next-env.d.ts
+│       ├── next.config.js
+│       ├── package.json
+│       ├── pdf-parse.d.ts
+│       ├── postcss.config.js
+│       ├── public
+│       ├── tailwind.config.ts
+│       └── tsconfig.json
+├── package.json
+├── packages
+│   ├── database
+│   │   ├── drizzle
+│   │   │   └── meta
+│   │   ├── drizzle.config.ts
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── _depricated_old)dbService.ts
+│   │   │   ├── db-connection.ts
+│   │   │   ├── index.ts
+│   │   │   ├── queries
+│   │   │   │   ├── documentQueries.ts
+│   │   │   │   ├── parsingQueries.ts
+│   │   │   │   ├── positionQueries.ts
+│   │   │   │   └── query.ts
+│   │   │   └── schema
+│   │   │       ├── documents.ts
+│   │   │       ├── generations.ts
+│   │   │       ├── parsings.ts
+│   │   │       └── positions.ts
+│   │   └── tsconfig.json
+│   ├── types
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── APIResponseTypes.ts
+│   │   │   ├── DocumentTypes.ts
+│   │   │   ├── ECQCompetencies.ts
+│   │   │   ├── JobTypes.ts
+│   │   │   ├── ParseTypes.ts
+│   │   │   ├── ResumeTypes.ts
+│   │   │   └── index.ts
+│   │   └── tsconfig.json
+│   └── utils
+│       ├── package.json
+│       ├── src
+│       │   ├── Constants
+│       │   │   ├── DocumentConstants.ts
+│       │   │   ├── ECQConstants.ts
+│       │   │   └── index.ts
+│       │   ├── Helpers
+│       │   │   ├── groupHelper.ts
+│       │   │   ├── index.ts
+│       │   │   └── positionHelper.ts
+│       │   ├── Parsers
+│       │   │   ├── ResumeParsers.ts
+│       │   │   └── index.ts
+│       │   ├── ServerActions
+│       │   │   ├── VectorizationActions.ts
+│       │   │   └── index.ts
+│       │   ├── Services
+│       │   │   ├── AuthService.ts
+│       │   │   ├── KeyGenerationService.ts
+│       │   │   ├── S3Service
+│       │   │   │   ├── Config.ts
+│       │   │   │   └── index.ts
+│       │   │   └── index.ts
+│       │   ├── index.ts
+│       │   └── retry.ts
+│       ├── tests
+│       │   ├── Parsers
+│       │   │   ├── __fixtures__
+│       │   │   │   └── resumeXML.ts
+│       │   │   └── resumeParser.test.ts
+│       │   └── VectorizationActions.test.ts
+│       ├── tsconfig.json
+│       └── vitest.config.ts
+├── pnmp
+│   └── _
+├── tsconfig.json
+└── turbo.json
+
+81 directories, 140 files

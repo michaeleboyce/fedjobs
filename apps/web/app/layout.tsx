@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import TopBar from "./_components/TopBar";
+import { Breadcrumbs } from "./_components/Breadcrumbs";  // Import the Breadcrumbs component
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -12,15 +14,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <link rel="icon" href="/fedjobssimpleimage.png" />
-
       <body className={inter.className}>
         <TopBar />
+        <Breadcrumbs />  {/* Add Breadcrumbs below the TopBar */}
         <div>{children}</div>
       </body>
     </html>

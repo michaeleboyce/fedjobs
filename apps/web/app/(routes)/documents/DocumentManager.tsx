@@ -1,6 +1,6 @@
-// File path: apps/web/app/(routes)/dashboard/DocumentManager.tsx
+// File path: apps/web/app/(routes)/documents/DocumentManager.tsx
 'use client';
-import FileUploadBox from "@/app/(routes)/dashboard/_Components/FileUploadBox";
+import FileUploadBox from "./_Components/FileUploadBox";
 import React, { useState, useCallback } from "react";
 import { DocumentRecord } from '@fedjobs/database';
 import { Documents } from "./documents";

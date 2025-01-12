@@ -1,4 +1,4 @@
-// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/_AdditionalInfoBox/JobInfoInput.tsx
+// File path: apps/web/app/(routes)/generate/_Components/_Subcomponents/_AdditionalInfoBox/JobInfoInput.tsx
 import React from 'react';
 import { JobSearch } from '@/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/_AdditionalInfoBox/JobSearch';
 import { useGenerationContext } from '@/app/(routes)/generate/_Providers/GenerationProvider'; // Adjust the import path as needed

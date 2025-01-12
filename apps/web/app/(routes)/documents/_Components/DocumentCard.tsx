@@ -1,4 +1,4 @@
-// File path: apps/web/app/(routes)/dashboard/_Components/DocumentCard.tsx
+// File path: apps/web/app/(routes)/documents/_Components/DocumentCard.tsx
 'use client'
 import React, { useRef, useState } from 'react';
 import { deleteDocument, getDocumentSignedURL, getUpdatedDocumentStatus } from '../../../_actions/files/fileActions';

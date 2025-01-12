@@ -1,11 +1,11 @@
-// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/_AdditionalInfoBox/DocumentInfo.tsx
+// File path: apps/web/app/(routes)/generate/_Components/_Subcomponents/_AdditionalInfoBox/DocumentInfo.tsx
 import React, { useState, useEffect } from "react";
 import {
   DOCUMENT_TYPES,
   ECQ_NAMES,
   getPrettyPrintType,
 } from "@/app/_utils/Constants";
-import { useGenerationContext } from "../../../../../_Providers/GenerationProvider";
+import { useGenerationContext } from "../../../_Providers/GenerationProvider";
 import { ECQNamesType } from "@/app/_types/ECQCompetencies";
 
 type DocumentInfoProps = {

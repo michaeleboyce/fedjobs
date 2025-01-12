@@ -1,4 +1,4 @@
-// File path: apps/web/app/(routes)/dashboard/documents.tsx
+// File path: apps/web/app/(routes)/documents/documents.tsx
 'use client';
 import React, { useState, useEffect } from "react";
 import {

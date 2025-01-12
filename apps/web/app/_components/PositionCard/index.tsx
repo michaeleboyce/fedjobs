@@ -10,34 +10,52 @@ import { SimilarPositionsSections } from "./SimilarPositionsSections";
 interface PositionCardProps {
   position: Position;
   isEmploymentHistory: boolean;
+  /** If true => we hide any remove/edit/approve UI for generation context. */
+  isGenerationView?: boolean;
+  /** If true => show checkboxes to select items. */
+  selectionMode?: boolean;
+  selectedActivities?: number[];
+  selectedAccomplishments?: number[];
+  onCheckboxChange?: (type: "activities" | "accomplishments", idx: number) => void;
+  onSelectAll?: () => void;
+  onClearAll?: () => void;
 }
 
 export const PositionCard: React.FC<PositionCardProps> = ({
   position,
   isEmploymentHistory,
+  isGenerationView = false,
+  selectionMode = false,
+  selectedActivities = [],
+  selectedAccomplishments = [],
+  onCheckboxChange,
+  onSelectAll,
+  onClearAll,
 }) => {
-  const { 
-    loadingPositions, 
-    handleUpdatePosition, 
+  const {
+    loadingPositions,
+    handleUpdatePosition,
     handleAddToEmploymentHistory,
     handleRemoveFromEmploymentHistory,
     handleApproveSimilar,
     handleRejectSimilar,
     handleRemoveApprovedSimilar,
-    handleRemoveRejectedSimilar
+    handleRemoveRejectedSimilar,
   } = usePositions();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Edit state
+  // Local “edit” state
   const [tempTitle, setTempTitle] = useState(position.title.title);
   const [tempOrg, setTempOrg] = useState(position.organization.name);
   const [tempStartDate, setTempStartDate] = useState(position.date.startDate);
   const [tempEndDate, setTempEndDate] = useState(position.date.endDate);
   const [tempPresent, setTempPresent] = useState(position.date.present);
   const [tempActivities, setTempActivities] = useState([...position.details.activities]);
-  const [tempAccomplishments, setTempAccomplishments] = useState([...position.details.accomplishments]);
+  const [tempAccomplishments, setTempAccomplishments] = useState([
+    ...position.details.accomplishments,
+  ]);
 
   const isLoading = loadingPositions.has(position.positionUuid);
 
@@ -61,29 +79,58 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   const similarCount = position.similarPositionUuids?.length ?? 0;
 
   return (
-    <div id={`position-${position.positionUuid}`} className="border p-4 rounded mb-4 shadow-sm bg-white">
+    <div
+      id={`position-${position.positionUuid}`}
+      className="border p-4 rounded mb-4 shadow-sm bg-white"
+    >
       <PositionHeader
+        position={position}
         isEditing={isEditing}
         isEmploymentHistory={isEmploymentHistory}
+        isGenerationView={isGenerationView}
         isLoading={isLoading}
         isExpanded={isExpanded}
-        position={position}
+        /** Hide remove-from-history if isGenerationView is true */
         onAddToEmploymentHistory={() => handleAddToEmploymentHistory(position.positionUuid)}
-        onRemoveFromEmploymentHistory={() => handleRemoveFromEmploymentHistory(position.positionUuid)}
+        onRemoveFromEmploymentHistory={() =>
+          handleRemoveFromEmploymentHistory(position.positionUuid)
+        }
         onEditToggle={() => setIsEditing(!isEditing)}
         onExpandToggle={() => setIsExpanded(!isExpanded)}
         onSaveEdit={saveEdit}
         onCancelEdit={() => setIsEditing(false)}
       />
+
+      {/* If selectionMode => show “Select All” + “Clear All” */}
+      {selectionMode && (
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            className="bg-green-500 text-white px-2 py-1 rounded"
+            onClick={onSelectAll}
+          >
+            Select All
+          </button>
+          <button
+            className="bg-gray-400 text-white px-2 py-1 rounded"
+            onClick={onClearAll}
+          >
+            Clear All
+          </button>
+        </div>
+      )}
+
+      {/* If not expanded => minimal details */}
       {!isExpanded && (
-        <PositionDetails 
-          position={position} 
-          isExpanded={isExpanded} 
-          similarCount={similarCount} 
+        <PositionDetails
+          position={position}
+          isExpanded={isExpanded}
+          similarCount={similarCount}
           isEmploymentHistory={isEmploymentHistory}
           onExpandToggle={() => setIsExpanded(!isExpanded)}
         />
       )}
+
+      {/* If expanded => either editing form or read-only details + similar positions */}
       {isExpanded && (
         <>
           {isEditing ? (
@@ -108,24 +155,52 @@ export const PositionCard: React.FC<PositionCardProps> = ({
               <div className="mt-4">
                 <strong>Activities:</strong>
                 <ul className="list-disc ml-5 mt-1">
-                  {position.details.activities.map((act, idx) => (
-                    <li key={idx}>{act}</li>
-                  ))}
+                  {position.details.activities.map((act, idx) => {
+                    const isChecked = selectedActivities.includes(idx);
+                    return (
+                      <li key={idx} className="flex items-center gap-2">
+                        {selectionMode && onCheckboxChange && (
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => onCheckboxChange("activities", idx)}
+                          />
+                        )}
+                        <span>{act}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               <div className="mt-3">
                 <strong>Accomplishments:</strong>
                 <ul className="list-disc ml-5 mt-1">
-                  {position.details.accomplishments.map((acc, idx) => (
-                    <li key={idx}>{acc}</li>
-                  ))}
+                  {position.details.accomplishments.map((acc, idx) => {
+                    const isChecked = selectedAccomplishments.includes(idx);
+                    return (
+                      <li key={idx} className="flex items-center gap-2">
+                        {selectionMode && onCheckboxChange && (
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => onCheckboxChange("accomplishments", idx)}
+                          />
+                        )}
+                        <span>{acc}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </>
           )}
+
+          {/* Similar Positions */}
           <SimilarPositionsSections
             position={position}
             isEmploymentHistory={isEmploymentHistory}
+            /** Pass the new prop so it hides “remove” or “approve/reject” for generation */
+            isGenerationView={isGenerationView}
             loadingPositions={loadingPositions}
             handleApproveSimilar={handleApproveSimilar}
             handleRejectSimilar={handleRejectSimilar}
