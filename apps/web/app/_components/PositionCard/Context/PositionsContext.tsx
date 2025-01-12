@@ -1,5 +1,4 @@
 // File path: apps/web/app/_components/PositionCard/Context/PositionsContext.tsx
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -12,31 +11,29 @@ import {
   approveSimilarPosition,
   rejectSimilarPosition,
   rejectPosition,
+  // Removed getPositionByUuid and updatePositionFields from here
 } from "@/app/_actions/positions/reviewPositionActions";
+import { getPosition, updatePositionFieldsByUuid } from "@/app/_actions/positions/positionActions"; 
 import { toast } from "react-toastify";
 
-/**
- * Define the shape of our PositionsContext
- */
 type PositionsContextType = {
   employmentHistory: Position[];
   otherPositions: Position[];
-  loadingPositions: Set<string>; // Track loading states by UUID
+  loadingPositions: Set<string>;
   fetchPositions: () => Promise<void>;
 
-  // Action methods
   handleAddToEmploymentHistory: (uuid: string) => Promise<void>;
   handleRemoveFromEmploymentHistory: (uuid: string) => Promise<void>;
   handleRejectPosition: (uuid: string) => Promise<void>;
   handleApproveSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleRejectSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleUpdatePosition: (uuid: string, updatedFields: Partial<Position>) => Promise<void>;
+  handleRemoveApprovedSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
+  handleRemoveRejectedSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
 };
 
-/** Create the context **/
 const PositionsContext = createContext<PositionsContextType | null>(null);
 
-/** Hook for components to consume the context data **/
 export function usePositions() {
   const ctx = useContext(PositionsContext);
   if (!ctx) {
@@ -50,10 +47,7 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [otherPositions, setOtherPositions] = useState<Position[]>([]);
   const [loadingPositions, setLoadingPositions] = useState<Set<string>>(new Set());
 
-  /**
-   * Fetch all positions initially
-   */
-  async function fetchPositions() {
+  async function fetchPositions(): Promise<void> {
     try {
       const response = await getAllPositions();
       if (response.success) {
@@ -72,13 +66,11 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     fetchPositions();
   }, []);
 
-  /**
-   * Shared helper to set loading state
-   */
-  function startLoading(uuid: string) {
+  function startLoading(uuid: string): void {
     setLoadingPositions((prev) => new Set(prev).add(uuid));
   }
-  function stopLoading(uuid: string) {
+  
+  function stopLoading(uuid: string): void {
     setLoadingPositions((prev) => {
       const newSet = new Set(prev);
       newSet.delete(uuid);
@@ -86,20 +78,13 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   }
 
-  /**
-   * Action: Add to Employment History
-   */
-  async function handleAddToEmploymentHistory(uuid: string) {
+  async function handleAddToEmploymentHistory(uuid: string): Promise<void> {
     startLoading(uuid);
     try {
       const response = await addToEmploymentHistory(uuid);
       if (response.success && response.position) {
         toast.success("Position added to Employment History.");
-        // Move that position from otherPositions to employmentHistory
         setEmploymentHistory((prev) => [...prev, response.position]);
-        setOtherPositions((prev) =>
-          prev.filter((pos) => pos.positionUuid !== uuid)
-        );
       } else {
         toast.error("Failed to add to Employment History.");
       }
@@ -110,16 +95,12 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  /**
-   * Action: Remove from Employment History
-   */
-  async function handleRemoveFromEmploymentHistory(uuid: string) {
+  async function handleRemoveFromEmploymentHistory(uuid: string): Promise<void> {
     startLoading(uuid);
     try {
       const response = await removeFromEmploymentHistory(uuid);
       if (response.success) {
         toast.success(response.message || "Position removed from Employment History.");
-        // Filter it out from employmentHistory
         setEmploymentHistory((prev) => prev.filter((pos) => pos.positionUuid !== uuid));
       } else {
         toast.error(response.error || "Failed to remove from Employment History.");
@@ -131,16 +112,12 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  /**
-   * Action: Reject (delete) a position
-   */
-  async function handleRejectPosition(uuid: string) {
+  async function handleRejectPosition(uuid: string): Promise<void> {
     startLoading(uuid);
     try {
       const response = await rejectPosition(uuid);
       if (response.success) {
         toast.success(response.message || "Position rejected and deleted.");
-        // Remove from both arrays if present
         setEmploymentHistory((prev) => prev.filter((pos) => pos.positionUuid !== uuid));
         setOtherPositions((prev) => prev.filter((pos) => pos.positionUuid !== uuid));
       } else {
@@ -153,18 +130,13 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  /**
-   * Action: Approve Similar
-   */
-  async function handleApproveSimilar(currentUuid: string, similarUuid: string) {
+  async function handleApproveSimilar(currentUuid: string, similarUuid: string): Promise<void> {
     startLoading(similarUuid);
     try {
       const response = await approveSimilarPosition(currentUuid, similarUuid);
       if (response.success) {
         toast.success("Similar position approved.");
 
-        // Local state updates:
-        // 1) Update employmentHistory array
         setEmploymentHistory((prev) =>
           prev.map((pos) => {
             if (pos.positionUuid === currentUuid) {
@@ -194,7 +166,6 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             return pos;
           })
         );
-        // 2) Update otherPositions array
         setOtherPositions((prev) =>
           prev.map((pos) => {
             if (pos.positionUuid === currentUuid) {
@@ -234,17 +205,13 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  /**
-   * Action: Reject Similar
-   */
-  async function handleRejectSimilar(currentUuid: string, similarUuid: string) {
+  async function handleRejectSimilar(currentUuid: string, similarUuid: string): Promise<void> {
     startLoading(similarUuid);
     try {
       const response = await rejectSimilarPosition(currentUuid, similarUuid);
       if (response.success) {
         toast.success("Similar position rejected.");
 
-        // Local state updates:
         setEmploymentHistory((prev) =>
           prev.map((pos) => {
             if (pos.positionUuid === currentUuid) {
@@ -313,20 +280,14 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  /**
-   * Action: Update a position (inline edit)
-   */
-  async function handleUpdatePosition(uuid: string, updatedFields: Partial<Position>) {
+  async function handleUpdatePosition(uuid: string, updatedFields: Partial<Position>): Promise<void> {
     startLoading(uuid);
     try {
       const response = await updatePosition(uuid, updatedFields);
       if (response.success) {
         toast.success("Position updated successfully.");
-        // Update local state
-        // Just replicate the logic for both arrays
         const updatePos = (pos: Position) => {
           if (pos.positionUuid !== uuid) return pos;
-          // Merge old and new data
           return { ...pos, ...updatedFields };
         };
         setEmploymentHistory((prev) => prev.map(updatePos));
@@ -341,7 +302,135 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }
 
-  const value = {
+  async function handleRemoveApprovedSimilar(currentUuid: string, similarUuid: string): Promise<void> {
+    startLoading(similarUuid);
+    try {
+      const currentPosResponse = await getPosition(currentUuid);
+      const similarPosResponse = await getPosition(similarUuid);
+      if (!currentPosResponse.success || !similarPosResponse.success) {
+        throw new Error("Positions not found");
+      }
+  
+      const currentPos = currentPosResponse.position;
+      const similarPos = similarPosResponse.position;
+  
+      // Remove the similarUuid/currentUuid from approved lists
+      const updatedCurrentApproved = currentPos.approvedSimilarPositionUuids.filter(uuid => uuid !== similarUuid);
+      const updatedSimilarApproved = similarPos.approvedSimilarPositionUuids.filter(uuid => uuid !== currentUuid);
+  
+      // Add the uuids back to the general similar bucket if not already present
+      const currentSimilarSet = new Set(currentPos.similarPositionUuids);
+      currentSimilarSet.add(similarUuid);
+      const updatedCurrentSimilar = Array.from(currentSimilarSet);
+  
+      const similarSimilarSet = new Set(similarPos.similarPositionUuids);
+      similarSimilarSet.add(currentUuid);
+      const updatedSimilarSimilar = Array.from(similarSimilarSet);
+  
+      // Update the database for both positions
+      await updatePositionFieldsByUuid(currentUuid, { 
+        approvedSimilarPositionUuids: updatedCurrentApproved,
+        similarPositionUuids: updatedCurrentSimilar
+      });
+      await updatePositionFieldsByUuid(similarUuid, { 
+        approvedSimilarPositionUuids: updatedSimilarApproved,
+        similarPositionUuids: updatedSimilarSimilar
+      });
+  
+      // Update local state to reflect changes
+      setEmploymentHistory(prev => 
+        prev.map(pos => {
+          if (pos.positionUuid === currentUuid) {
+            return {
+              ...pos,
+              approvedSimilarPositionUuids: pos.approvedSimilarPositionUuids.filter(id => id !== similarUuid),
+              similarPositionUuids: Array.from(new Set([...(pos.similarPositionUuids || []), similarUuid]))
+            };
+          }
+          if (pos.positionUuid === similarUuid) {
+            return {
+              ...pos,
+              approvedSimilarPositionUuids: pos.approvedSimilarPositionUuids.filter(id => id !== currentUuid),
+              similarPositionUuids: Array.from(new Set([...(pos.similarPositionUuids || []), currentUuid]))
+            };
+          }
+          return pos;
+        })
+      );
+      toast.success("Approved similar position removed.");
+    } catch(e: any) {
+      toast.error(e.message || "Failed to remove approved similar position.");
+    } finally {
+      stopLoading(similarUuid);
+    }
+  }
+  
+
+  async function handleRemoveRejectedSimilar(currentUuid: string, similarUuid: string): Promise<void> {
+    startLoading(similarUuid);
+    try {
+      const currentPosResponse = await getPosition(currentUuid);
+      const similarPosResponse = await getPosition(similarUuid);
+      if (!currentPosResponse.success || !similarPosResponse.success) {
+        throw new Error("Positions not found");
+      }
+  
+      const currentPos = currentPosResponse.position;
+      const similarPos = similarPosResponse.position;
+  
+      // Remove the similarUuid/currentUuid from rejected lists
+      const updatedCurrentRejected = currentPos.rejectedSimilarPositionUuids.filter(uuid => uuid !== similarUuid);
+      const updatedSimilarRejected = similarPos.rejectedSimilarPositionUuids.filter(uuid => uuid !== currentUuid);
+  
+      // Add the uuids back to the general similar bucket if not already present
+      const currentSimilarSet = new Set(currentPos.similarPositionUuids);
+      currentSimilarSet.add(similarUuid);
+      const updatedCurrentSimilar = Array.from(currentSimilarSet);
+  
+      const similarSimilarSet = new Set(similarPos.similarPositionUuids);
+      similarSimilarSet.add(currentUuid);
+      const updatedSimilarSimilar = Array.from(similarSimilarSet);
+  
+      // Update the database for both positions
+      await updatePositionFieldsByUuid(currentUuid, { 
+        rejectedSimilarPositionUuids: updatedCurrentRejected,
+        similarPositionUuids: updatedCurrentSimilar
+      });
+      await updatePositionFieldsByUuid(similarUuid, { 
+        rejectedSimilarPositionUuids: updatedSimilarRejected,
+        similarPositionUuids: updatedSimilarSimilar
+      });
+  
+      // Update local state to reflect changes
+      setEmploymentHistory(prev => 
+        prev.map(pos => {
+          if (pos.positionUuid === currentUuid) {
+            return {
+              ...pos,
+              rejectedSimilarPositionUuids: pos.rejectedSimilarPositionUuids.filter(id => id !== similarUuid),
+              similarPositionUuids: Array.from(new Set([...(pos.similarPositionUuids || []), similarUuid]))
+            };
+          }
+          if (pos.positionUuid === similarUuid) {
+            return {
+              ...pos,
+              rejectedSimilarPositionUuids: pos.rejectedSimilarPositionUuids.filter(id => id !== currentUuid),
+              similarPositionUuids: Array.from(new Set([...(pos.similarPositionUuids || []), currentUuid]))
+            };
+          }
+          return pos;
+        })
+      );
+      toast.success("Rejected similar position removed.");
+    } catch(e: any) {
+      toast.error(e.message || "Failed to remove rejected similar position.");
+    } finally {
+      stopLoading(similarUuid);
+    }
+  }
+  
+
+  const value: PositionsContextType = {
     employmentHistory,
     otherPositions,
     loadingPositions,
@@ -352,6 +441,8 @@ export const PositionsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     handleApproveSimilar,
     handleRejectSimilar,
     handleUpdatePosition,
+    handleRemoveApprovedSimilar,
+    handleRemoveRejectedSimilar
   };
 
   return (

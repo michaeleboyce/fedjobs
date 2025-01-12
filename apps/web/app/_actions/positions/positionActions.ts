@@ -3,16 +3,19 @@
 'use server';
 
 import { authenticateUser } from "@fedjobs/utils";
-import { getPositionByUuid } from '@fedjobs/database';
+import { getPositionByUuid, updatePositionFields } from '@fedjobs/database';
 import { Position } from "@fedjobs/types";
 
 type GetPositionResponse = 
   | { success: true; position: Position }
   | { success: false; error: string };
 
+type UpdatePositionResponse = 
+  | { success: true; position: Position }
+  | { success: false; error: string };
+
 export async function getPosition(uuid: string): Promise<GetPositionResponse> {
   const user = await authenticateUser();
-
   if (!user) {
     return { success: false, error: "User authentication failed." };
   }
@@ -23,7 +26,6 @@ export async function getPosition(uuid: string): Promise<GetPositionResponse> {
       return { success: false, error: "Position not found." };
     }
 
-    // Map to Position type
     const mappedPosition: Position = {
       positionUuid: position.positionUuid,
       organization: { name: position.organization },
@@ -48,5 +50,52 @@ export async function getPosition(uuid: string): Promise<GetPositionResponse> {
   } catch (error: any) {
     console.error("Error fetching position:", error);
     return { success: false, error: "Failed to fetch position details." };
+  }
+}
+
+export async function updatePositionFieldsByUuid(
+  uuid: string, 
+  updates: Partial<Position>
+): Promise<UpdatePositionResponse> {
+  const user = await authenticateUser();
+  if (!user) {
+    return { success: false, error: "User authentication failed." };
+  }
+
+  try {
+    const [updatedPosition] = await updatePositionFields(uuid, {
+      similarPositionUuids: updates.similarPositionUuids,
+      approvedSimilarPositionUuids: updates.approvedSimilarPositionUuids,
+      rejectedSimilarPositionUuids: updates.rejectedSimilarPositionUuids,
+    });
+
+    if (!updatedPosition) {
+      return { success: false, error: "Position not found." };
+    }
+
+    const mappedPosition: Position = {
+      positionUuid: updatedPosition.positionUuid,
+      organization: { name: updatedPosition.organization },
+      title: { title: updatedPosition.title },
+      date: {
+        startDate: updatedPosition.startDate,
+        endDate: updatedPosition.endDate,
+        present: updatedPosition.present,
+      },
+      details: {
+        activities: updatedPosition.activities,
+        accomplishments: updatedPosition.accomplishments,
+      },
+      originalPositionUuid: updatedPosition.originalPositionUuid ?? undefined,
+      similarPositionUuids: updatedPosition.similarPositionUuids || [],
+      approvedSimilarPositionUuids: updatedPosition.approvedSimilarPositionUuids || [],
+      rejectedSimilarPositionUuids: updatedPosition.rejectedSimilarPositionUuids || [],
+      originalDocumentId: updatedPosition.documentId?.toString()
+    };
+
+    return { success: true, position: mappedPosition };
+  } catch (error: any) {
+    console.error("Error updating position:", error);
+    return { success: false, error: "Failed to update position." };
   }
 }

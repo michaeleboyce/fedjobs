@@ -12,6 +12,9 @@ interface SimilarPositionCardProps {
   isEmploymentHistory: boolean;
   onViewOriginal: () => void;
   isLoading: boolean;
+  onApprove?: () => void;
+  onReject?: () => void;
+  onRemove?: () => void;  // New optional prop for removal
 }
 
 export const SimilarPositionCard: React.FC<SimilarPositionCardProps> = ({
@@ -19,13 +22,15 @@ export const SimilarPositionCard: React.FC<SimilarPositionCardProps> = ({
   currentPosition,
   isEmploymentHistory,
   onViewOriginal,
-  isLoading
+  isLoading,
+  onApprove,
+  onReject,
+  onRemove  // Destructure new prop
 }) => {
   const [position, setPosition] = useState<Position | null>(null);
   const [isLoadingPosition, setIsLoadingPosition] = useState(true);
   const { employmentHistory } = usePositions();
 
-  // Check if this position is in employment history
   const isInEmploymentHistory = employmentHistory.some(
     p => p.positionUuid === similarId
   );
@@ -65,22 +70,49 @@ export const SimilarPositionCard: React.FC<SimilarPositionCardProps> = ({
               </span>
             )}
           </div>
-          <p className="text-gray-600">
-            {position.organization.name}
-          </p>
+          <p className="text-gray-600">{position.organization.name}</p>
           <p className="text-sm text-gray-500">
             {position.date.startDate} - {position.date.present ? 'Present' : position.date.endDate}
           </p>
         </div>
 
-        <button
-          onClick={onViewOriginal}
-          className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1"
-          title="View position"
-        >
-          <FontAwesomeIcon icon={faEye} className="h-4 w-4" />
-          <span>View</span>
-        </button>
+        <div className="flex flex-col space-y-2">
+          {onApprove && (
+            <button
+              onClick={onApprove}
+              disabled={isLoading}
+              className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+            >
+              Approve
+            </button>
+          )}
+          {onReject && (
+            <button
+              onClick={onReject}
+              disabled={isLoading}
+              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+            >
+              Reject
+            </button>
+          )}
+          {onRemove && (
+            <button
+              onClick={onRemove}
+              disabled={isLoading}
+              className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+            >
+              Remove
+            </button>
+          )}
+          <button
+            onClick={onViewOriginal}
+            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1 text-sm"
+            title="View position"
+          >
+            <FontAwesomeIcon icon={faEye} className="h-4 w-4" />
+            <span>View</span>
+          </button>
+        </div>
       </div>
     </div>
   );

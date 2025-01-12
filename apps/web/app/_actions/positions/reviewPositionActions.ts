@@ -127,8 +127,8 @@ export async function addToEmploymentHistory(positionUuid: string): Promise<AddT
 
     // Map to Position
     const sharedPosition: Position = mapPositionRecordToPosition(newPosition);
-
-    return { success: true, position: sharedPosition };
+;
+    return { success: true, position: sharedPosition }
   } catch (error: any) {
     console.error("Error adding position to employment history:", error);
     return { success: false, error: "Failed to add position to employment history." };

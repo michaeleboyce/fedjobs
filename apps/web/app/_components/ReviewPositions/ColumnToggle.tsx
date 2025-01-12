@@ -1,3 +1,4 @@
+// File path: apps/web/app/_components/ReviewPositions/ColumnToggle.tsx
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExpandAlt, faCompressAlt } from "@fortawesome/free-solid-svg-icons";
