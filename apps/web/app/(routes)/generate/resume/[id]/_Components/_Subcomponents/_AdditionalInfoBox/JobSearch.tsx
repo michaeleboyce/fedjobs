@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
 import React, { useState, useEffect } from 'react';
-import { useGenerationContext } from '../../../../../_Providers/GenerationProvider';
+import { useGenerationContext } from '@/app/(routes)/generate/_Providers/GenerationProvider';
   // Define the props for JobSearch
   interface JobSearchProps {
   }

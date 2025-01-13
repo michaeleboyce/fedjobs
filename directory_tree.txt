@@ -35,6 +35,8 @@
 │       │   │   │   └── auth
 │       │   │   │       └── [kindeAuth]
 │       │   │   ├── dashboard
+│       │   │   │   └── page.tsx
+│       │   │   ├── documents
 │       │   │   │   ├── DocumentManager.tsx
 │       │   │   │   ├── _Components
 │       │   │   │   │   ├── DocumentCard.tsx
@@ -42,6 +44,17 @@
 │       │   │   │   ├── documents.tsx
 │       │   │   │   └── page.tsx
 │       │   │   ├── generate
+│       │   │   │   ├── UnifiedGenerationManager.tsx
+│       │   │   │   ├── _Components
+│       │   │   │   │   ├── AdditionalInfoBox.tsx
+│       │   │   │   │   ├── GenerateBottomBar.tsx
+│       │   │   │   │   ├── GeneratePositions.tsx
+│       │   │   │   │   ├── GeneratedDocumentCard.tsx
+│       │   │   │   │   ├── StreamingDocumentViewer.tsx
+│       │   │   │   │   └── _Subcomponents
+│       │   │   │   ├── _Providers
+│       │   │   │   │   └── GenerationProvider.tsx
+│       │   │   │   ├── page.tsx
 │       │   │   │   └── resume
 │       │   │   │       └── [id]
 │       │   │   ├── resume
@@ -79,6 +92,7 @@
 │       │   │       ├── OtherGenerator.ts
 │       │   │       └── TCQGenerator.ts
 │       │   ├── _components
+│       │   │   ├── Breadcrumbs.tsx
 │       │   │   ├── PositionCard
 │       │   │   │   ├── Context
 │       │   │   │   │   └── PositionsContext.tsx
@@ -188,10 +202,6 @@
 │       │   │   ├── DocumentConstants.ts
 │       │   │   ├── ECQConstants.ts
 │       │   │   └── index.ts
-│       │   ├── Helpers
-│       │   │   ├── groupHelper.ts
-│       │   │   ├── index.ts
-│       │   │   └── positionHelper.ts
 │       │   ├── Parsers
 │       │   │   ├── ResumeParsers.ts
 │       │   │   └── index.ts
@@ -220,4 +230,4 @@
 ├── tsconfig.json
 └── turbo.json
 
-81 directories, 140 files
+84 directories, 147 files

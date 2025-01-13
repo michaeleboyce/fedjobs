@@ -1,6 +1,6 @@
 // File path: apps/web/app/_actions/usaJobsActions.ts
 'use server'
-import { Job } from "@/app/_types/Job";
+import { Job } from "@fedjobs/types";
 
 import OpenAI from 'openai';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';

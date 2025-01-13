@@ -1,32 +1,54 @@
 // File path: apps/web/app/_classes/Position.ts
+
 import { Organization, OrganizationObject } from "./Organization";
 import { Title, TitleObject } from "./Title";
 import { ResumeDate, ResumeDateObject } from "./ResumeDate";
-import { Details, DetailsObject } from "./Details"
+import { Details, DetailsObject } from "./Details";
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../_utils/Compare";
 import { Position as PositionType } from "@fedjobs/types";
 import { v4 as uuidv4 } from 'uuid'; // Import UUID
-//TODO: this below line is silly, just refactor the whole thing and move classes to the packages
+
 export type PositionObject = PositionType;
+
 export class Position {
     positionUuid: string;
     organization: Organization;
     title: Title;
     date: ResumeDate;
     details: Details;
-    groupId?: string;
+    originalPositionUuid?: string;
+    similarPositionUuids: string[];
+    approvedSimilarPositionUuids: string[];
+    rejectedSimilarPositionUuids: string[];
+    originalDocumentId?: string;
 
-
-    constructor(organization: Organization, title: Title, date: ResumeDate, details: Details, groupId?: string) {
+    constructor(
+        organization: Organization,
+        title: Title,
+        date: ResumeDate,
+        details: Details,
+        options?: {
+            originalPositionUuid?: string;
+            similarPositionUuids?: string[];
+            approvedSimilarPositionUuids?: string[];
+            rejectedSimilarPositionUuids?: string[];
+            originalDocumentId?: string;
+        }
+    ) {
         this.positionUuid = uuidv4();
         this.organization = organization;
         this.title = title;
         this.date = date;
         this.details = details;
+        this.originalPositionUuid = options?.originalPositionUuid;
+        this.similarPositionUuids = options?.similarPositionUuids || [];
+        this.approvedSimilarPositionUuids = options?.approvedSimilarPositionUuids || [];
+        this.rejectedSimilarPositionUuids = options?.rejectedSimilarPositionUuids || [];
+        this.originalDocumentId = options?.originalDocumentId;
     }
 
     toString(): string {
-        return `Position: [${this.organization.toString()}, ${this.title.toString()}, ${this.date.toString()}, ${this.details.toString()}, GroupID: ${this.groupId || 'None'}]`;
+        return `Position: [${this.organization.toString()}, ${this.title.toString()}, ${this.date.toString()}, ${this.details.toString()}, OriginalPositionUUID: ${this.originalPositionUuid || 'None'}, OriginalDocumentID: ${this.originalDocumentId || 'None'}]`;
     }
 
     asyncCompare: AsyncCompareMethod<Position> = async (other) => {
@@ -46,7 +68,11 @@ export class Position {
             title: this.title.toJSON(),
             date: this.date.toJSON(),
             details: this.details.toJSON(),
-            groupId: this.groupId,
+            originalPositionUuid: this.originalPositionUuid,
+            similarPositionUuids: this.similarPositionUuids,
+            approvedSimilarPositionUuids: this.approvedSimilarPositionUuids,
+            rejectedSimilarPositionUuids: this.rejectedSimilarPositionUuids,
+            originalDocumentId: this.originalDocumentId,
         };
     }
 
@@ -56,10 +82,13 @@ export class Position {
             Title.fromJSON(json.title),
             ResumeDate.fromJSON(json.date),
             Details.fromJSON(json.details),
-            json.groupId
-            // Assign groupId if present
+            {
+                originalPositionUuid: json.originalPositionUuid,
+                similarPositionUuids: json.similarPositionUuids,
+                approvedSimilarPositionUuids: json.approvedSimilarPositionUuids,
+                rejectedSimilarPositionUuids: json.rejectedSimilarPositionUuids,
+                originalDocumentId: json.originalDocumentId,
+            }
         );
     }
 }
-
-
