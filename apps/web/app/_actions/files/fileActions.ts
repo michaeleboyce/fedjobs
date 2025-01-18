@@ -153,8 +153,8 @@ export async function processFile(
         
         try {
           // Determine the API base URL from environment variables or use a default.
-          console.log("process.env.VERCEL_ENV", process.env.VERCEL_ENV);
-          const API_URL = process.env.VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
+          console.log("process.env.NEXT_PUBLIC_VERCEL_ENV", process.env.NEXT_PUBLIC_VERCEL_ENV);
+          const API_URL = process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
 ; // Adjust port as needed
           console.log("API_URL", API_URL);
 

@@ -8,8 +8,8 @@ import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
 
 //TODO: Ensure that the API_URL is standard across the application
-console.log("process.env.VERCEL_ENV", process.env.VERCEL_ENV);
-const API_URL = process.env.VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
+console.log("process.env.NEXT_PUBLIC_VERCEL_ENV", process.env.NEXT_PUBLIC_VERCEL_ENV);
+const API_URL = process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
 
 type FileUploaderProps = {
   addDocument: (newDocument: DocumentRecord) => void;
@@ -75,8 +75,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       setUploadStatus(`Uploading${".".repeat(dotCount)}`);
     }, 500);
     console.log("Reached past setInterval")
-    console.debug(process.env);
-    console.log(process.env);
+
     try {
       //#region This is the code to upload a document to parse it from word/PDF into text
       const formData = new FormData();
