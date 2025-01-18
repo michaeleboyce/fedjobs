@@ -75,6 +75,8 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       setUploadStatus(`Uploading${".".repeat(dotCount)}`);
     }, 500);
     console.log("Reached past setInterval")
+    console.debug(process.env);
+    console.log(process.env);
     try {
       //#region This is the code to upload a document to parse it from word/PDF into text
       const formData = new FormData();
