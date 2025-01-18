@@ -12,8 +12,8 @@ COPY . .
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build only what API needs (this will build required dependencies too)
-RUN pnpm build --filter=@fedjobs/api...
+# Build the API and its dependencies
+RUN npx turbo run build --filter=@fedjobs/api...
 
 EXPOSE 3001
 CMD ["pnpm", "--filter", "@fedjobs/api", "start"]

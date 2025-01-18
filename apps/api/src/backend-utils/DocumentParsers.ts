@@ -1,6 +1,7 @@
 // File path: apps/api/src/backend-utils/DocumentParsers.ts
 import mammoth from 'mammoth';
-import pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/pdf';
 
 export interface ProcessDocumentTextResponse {
   success?: {
@@ -111,7 +112,7 @@ export async function extractTextFromWordBuffer(
  * @param options Text extraction options
  */
 async function* extractPDFTextStream(
-  pdfDocument: pdfjsLib.PDFDocumentProxy,
+  pdfDocument: PDFDocumentProxy,
   options: TextExtractionOptions
 ): AsyncGenerator<string> {
   for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {

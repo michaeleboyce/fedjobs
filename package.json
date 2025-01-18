@@ -1,7 +1,7 @@
 {
   "name": "fedjobs-monorepo",
   "private": true,
-  "packageManager": "@pnpm@9.10.0",
+  "packageManager": "pnpm@9.10.0",
   "scripts": {
     "add-file-names": "node add-file-path-comments.js",
     "test": "turbo run test",
