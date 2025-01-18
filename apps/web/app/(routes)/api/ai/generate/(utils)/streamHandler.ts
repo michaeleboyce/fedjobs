@@ -1,7 +1,6 @@
 // File path: apps/web/app/(routes)/api/ai/generate/(utils)/streamHandler.ts
 // /apps/web/app/(routes)/api/ai/generate/(utils)/streamHandler.ts
 
-import { ReadableStream } from "web-streams-polyfill/ponyfill"; // Ensure compatibility
 import { db } from "@fedjobs/database";
 import { generations as generationsTable } from "@fedjobs/database";
 import { DocumentType } from "@fedjobs/types";
