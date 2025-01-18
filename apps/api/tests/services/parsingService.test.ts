@@ -97,7 +97,7 @@ export class ParsingService {
   }
 
   private async completeProcessing(parsingId: number, output: string): Promise<void> {
-    const json = parseResumeText(output);
+    const json = parseResumeText(output, 'TestFile.docx');
     if (!json) {
       return;
     }

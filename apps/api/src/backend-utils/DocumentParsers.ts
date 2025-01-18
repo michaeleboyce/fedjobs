@@ -1,7 +1,6 @@
 // File path: apps/api/src/backend-utils/DocumentParsers.ts
 import mammoth from 'mammoth';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
-import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/pdf';
+import pdf from 'pdf-parse';
 
 export interface ProcessDocumentTextResponse {
   success?: {
@@ -14,9 +13,14 @@ export interface ProcessDocumentTextResponse {
   };
 }
 
+/**
+ * If you no longer need text items or positions for PDF, 
+ * you can remove these interfaces. They are no longer used
+ * by the `pdf-parse` approach.
+ */
 export interface TextItem {
   str: string;
-  transform: number[];  // Contains positioning information
+  transform: number[];  
   width: number;
   height: number;
   dir: string;
@@ -32,9 +36,9 @@ export interface TextContent {
  */
 export interface TextExtractionOptions {
   preserveFormatting?: boolean;
-  maintainTextPosition?: boolean;
-  streamPages?: boolean;
-  maxBufferSize?: number;  // in MB
+  maintainTextPosition?: boolean; // No longer used by pdf-parse
+  streamPages?: boolean;          // No longer used by pdf-parse
+  maxBufferSize?: number;         // You could do manual checks if desired
 }
 
 /**
@@ -60,26 +64,9 @@ export function cleanUpText(text: string, preserveFormatting = false): string {
 }
 
 /**
- * Sorts text items based on their position on the page
- * @param items Array of text items with position information
- * @returns Sorted array of text items
- */
-function sortTextItemsByPosition(items: TextItem[]): TextItem[] {
-  return [...items].sort((a, b) => {
-    // First sort by y position (top to bottom)
-    const yDiff = b.transform[5] - a.transform[5];
-    if (Math.abs(yDiff) > 5) { // Small threshold for same-line text
-      return yDiff;
-    }
-    // Then by x position (left to right) for items on the same line
-    return a.transform[4] - b.transform[4];
-  });
-}
-
-/**
  * Extracts raw text from a Word document buffer with enhanced options.
  * @param buffer The buffer containing the Word document.
- * @param options Text extraction options.
+ * @param options TextExtractionOptions.
  * @returns Extracted text.
  */
 export async function extractTextFromWordBuffer(
@@ -91,11 +78,13 @@ export async function extractTextFromWordBuffer(
       buffer,
       convertCharacters: true,
       preserveCharacterStyle: options.preserveFormatting,
-      styleMap: options.preserveFormatting ? [
-        "p[style-name='Heading 1'] => h1:fresh",
-        "p[style-name='Heading 2'] => h2:fresh",
-        "p[style-name='Heading 3'] => h3:fresh"
-      ] : undefined
+      styleMap: options.preserveFormatting
+        ? [
+            "p[style-name='Heading 1'] => h1:fresh",
+            "p[style-name='Heading 2'] => h2:fresh",
+            "p[style-name='Heading 3'] => h3:fresh"
+          ]
+        : undefined
     };
 
     const result = await mammoth.extractRawText(mammothOptions);
@@ -107,34 +96,9 @@ export async function extractTextFromWordBuffer(
 }
 
 /**
- * Generator function for streaming PDF text extraction
- * @param pdfDocument The PDF document to process
- * @param options Text extraction options
- */
-async function* extractPDFTextStream(
-  pdfDocument: PDFDocumentProxy,
-  options: TextExtractionOptions
-): AsyncGenerator<string> {
-  for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-    const page = await pdfDocument.getPage(pageNum);
-    const textContent = await page.getTextContent() as TextContent;
-    
-    let pageText: string;
-    if (options.maintainTextPosition) {
-      const sortedItems = sortTextItemsByPosition(textContent.items);
-      pageText = sortedItems.map(item => item.str).join(' ');
-    } else {
-      pageText = textContent.items.map(item => item.str).join(' ');
-    }
-    
-    yield cleanUpText(pageText, options.preserveFormatting);
-  }
-}
-
-/**
- * Extracts text from a PDF buffer using pdf.js with enhanced positioning and streaming support.
+ * Extracts text from a PDF buffer using `pdf-parse`.
  * @param buffer The buffer containing the PDF document.
- * @param options Text extraction options.
+ * @param options TextExtractionOptions.
  * @returns Extracted text.
  */
 export async function extractTextFromPDFBuffer(
@@ -142,42 +106,23 @@ export async function extractTextFromPDFBuffer(
   options: TextExtractionOptions = {}
 ): Promise<string> {
   try {
-    // Check buffer size if maxBufferSize is specified
-    if (options.maxBufferSize && buffer.length > options.maxBufferSize * 1024 * 1024) {
-      throw new Error(`PDF file size exceeds maximum allowed size of ${options.maxBufferSize}MB`);
+    // Optional: check the buffer size if maxBufferSize is set
+    if (
+      options.maxBufferSize &&
+      buffer.length > options.maxBufferSize * 1024 * 1024
+    ) {
+      throw new Error(
+        `PDF file size exceeds maximum allowed size of ${options.maxBufferSize}MB`
+      );
     }
 
-    const loadingTask = pdfjsLib.getDocument({ data: buffer });
-    const pdfDocument = await loadingTask.promise;
-
-    if (options.streamPages) {
-      // Use streaming approach for large documents
-      let fullText = '';
-      for await (const pageText of extractPDFTextStream(pdfDocument, options)) {
-        fullText += pageText + '\n\n';
-      }
-      return cleanUpText(fullText, options.preserveFormatting);
-    } else {
-      // Regular approach for smaller documents
-      let fullText = '';
-      for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-        const page = await pdfDocument.getPage(pageNum);
-        const textContent = await page.getTextContent() as TextContent;
-        
-        let pageText: string;
-        if (options.maintainTextPosition) {
-          const sortedItems = sortTextItemsByPosition(textContent.items);
-          pageText = sortedItems.map(item => item.str).join(' ');
-        } else {
-          pageText = textContent.items.map(item => item.str).join(' ');
-        }
-        
-        fullText += pageText + '\n\n';
-      }
-      return cleanUpText(fullText, options.preserveFormatting);
-    }
+    // pdf-parse usage:
+    // If you only have a Buffer, pass { data: buffer }:
+    const parsed = await pdf(buffer);
+    // `parsed.text` is the extracted text
+    return cleanUpText(parsed.text, options.preserveFormatting);
   } catch (error) {
-    console.error("Error parsing PDF document with pdf.js:", error);
+    console.error("Error parsing PDF document with pdf-parse:", error);
     throw error;
   }
 }
@@ -186,7 +131,7 @@ export async function extractTextFromPDFBuffer(
  * Processes a document from a buffer and its MIME type with enhanced options.
  * @param buffer The buffer containing the document.
  * @param mimeType The MIME type of the document.
- * @param options Text extraction options.
+ * @param options TextExtractionOptions.
  * @returns Processed document response.
  */
 export async function processDocumentTextFromBuffer(
@@ -199,18 +144,21 @@ export async function processDocumentTextFromBuffer(
     let type: 'pdf' | 'docx' | 'doc';
 
     switch (mimeType) {
-      case 'application/pdf':
+      case 'application/pdf': {
         text = await extractTextFromPDFBuffer(buffer, options);
         type = 'pdf';
         break;
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      }
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
         text = await extractTextFromWordBuffer(buffer, options);
         type = 'docx';
         break;
-      case 'application/msword':
+      }
+      case 'application/msword': {
         text = await extractTextFromWordBuffer(buffer, options);
         type = 'doc';
         break;
+      }
       default:
         throw new Error('Unsupported file type');
     }
@@ -226,20 +174,3 @@ export async function processDocumentTextFromBuffer(
     };
   }
 }
-
-// Example usage:
-/*
-const options: TextExtractionOptions = {
-  preserveFormatting: true,
-  maintainTextPosition: true,
-  streamPages: true,
-  maxBufferSize: 50  // 50MB limit
-};
-
-const result = await processDocumentTextFromBuffer(fileBuffer, fileMimeType, options);
-if (result.success) {
-  console.log(`Extracted text from ${result.success.type} file:`, result.success.text);
-} else {
-  console.error('Failed to extract text:', result.failure?.message);
-}
-*/
