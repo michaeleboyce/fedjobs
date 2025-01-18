@@ -154,7 +154,8 @@ export async function processFile(
         try {
           // Determine the API base URL from environment variables or use a default.
           const API_URL = process.env.FEDJOBS_API_URL; // Adjust port as needed
-          
+          console.log("API_URL", API_URL);
+
           // Make a POST request to the /api/parse endpoint.
           const response = await axios.post(`${API_URL}/api/parse`, parseRequest, {
             headers: {

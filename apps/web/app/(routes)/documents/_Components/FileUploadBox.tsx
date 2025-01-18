@@ -60,6 +60,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
   };
   async function handleUpload(event: React.MouseEvent) {
     event.preventDefault();
+    console.log("Uploading file...");
   
     if (!file) {
       alert("Please select a file first");
@@ -72,7 +73,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       dotCount = (dotCount + 1) % 4;
       setUploadStatus(`Uploading${".".repeat(dotCount)}`);
     }, 500);
-  
+    console.log("Reached past setInterval")
     try {
       //#region This is the code to upload a document to parse it from word/PDF into text
       const formData = new FormData();
