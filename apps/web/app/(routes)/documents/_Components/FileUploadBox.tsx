@@ -67,6 +67,8 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       alert("Please select a file first");
       return;
     }
+    console.log("process.env.NEXT_PUBLIC_VERCEL_ENV", process.env.NEXT_PUBLIC_VERCEL_ENV);
+
   
     setIsLoading(true);
     let dotCount = 0;
