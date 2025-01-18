@@ -153,7 +153,7 @@ export async function processFile(
         
         try {
           // Determine the API base URL from environment variables or use a default.
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
+          const API_URL = process.env.API_URL || 'http://localhost:3001'; // Adjust port as needed
           
           // Make a POST request to the /api/parse endpoint.
           const response = await axios.post(`${API_URL}/api/parse`, parseRequest, {
@@ -230,7 +230,7 @@ async function initiateParsing(payload: {
 
     // Determine the API base URL from environment variables or use a relative path.
     //TODO: Unify all of these default urls
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // Adjust port as needed
+    const API_URL = process.env.API_URL || 'http://localhost:3001'; // Adjust port as needed
 
     // Make a POST request to the /api/parse endpoint.
     const response = await axios.post(`${API_URL}/api/parse`, parseApiPayload, {
