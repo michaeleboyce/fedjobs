@@ -16,4 +16,4 @@ RUN pnpm install --frozen-lockfile
 RUN npx turbo run build --filter=@fedjobs/api...
 
 EXPOSE 3001
-CMD ["pnpm", "--filter", "@fedjobs/api", "start"]
+CMD ["sh", "-c", "echo GEMINI_API_KEY is: $GEMINI_API_KEY && pnpm --filter @fedjobs/api start"]
