@@ -8,7 +8,8 @@ import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
 
 //TODO: Ensure that the API_URL is standard across the application
-const API_URL = process.env.FEDJOBS_API_URL; // Adjust port as needed
+console.log("process.env.VERCEL_ENV", process.env.VERCEL_ENV);
+const API_URL = process.env.VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
 
 type FileUploaderProps = {
   addDocument: (newDocument: DocumentRecord) => void;
