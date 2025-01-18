@@ -8,7 +8,7 @@ import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
 
 //TODO: Ensure that the API_URL is standard across the application
-const API_URL = process.env.API_URL || 'http://localhost:3001'; // Adjust port as needed
+const API_URL = process.env.FEDJOBS_API_URL; // Adjust port as needed
 
 type FileUploaderProps = {
   addDocument: (newDocument: DocumentRecord) => void;
