@@ -77,7 +77,7 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       //#region This is the code to upload a document to parse it from word/PDF into text
       const formData = new FormData();
       formData.append('file', file);
-
+      console.log("API_URL", API_URL);
       const response = await axios.post(`${API_URL}/api/parse/document`, formData, {
         // Add timeout and show upload progress
         timeout: 30000,
