@@ -1,32 +1,21 @@
-// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callApi.ts
-import { CoverLetterGenerator } from "@/app/_classes/_generationClasses/CoverLetterGenerator";
+// File: apps/web/app/(routes)/api/ai/generate/(utils)/callApi.ts
+
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { callAndStreamAIResponse } from "./callAndStream";
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
-import { callAndStreamAIResponse } from "../(utils)/callAndStream";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { EssayGenerator } from "@/app/_classes/_generationClasses/EssayGenerator";
 
-// Import your custom streams
-import { OpenAIStream } from "../(utils)/OpenAIStream";
-import { ClaudeStream } from "../(utils)/ClaudeStream";
+import { OpenAIStream } from "./OpenAIStream";
+import { ClaudeStream } from "./ClaudeStream";
 
 export const runtime = "edge";
 
-type ProviderType = "openai" | "anthropic";
-
-/**
- * Calls AI API and streams the response.
- * @param request - The incoming Next.js request
- * @param createEssayGenerator - A factory function to create your generator
- * @param isParagraph - Whether we are generating a paragraph or entire document
- * @param defaultProvider - Which provider to default to if none is given in the JSON body
- */
 export async function callApi(
   request: NextRequest,
   createEssayGenerator: (selection: GenerationSelection) => EssayGenerator,
-  isParagraph: boolean,
-  defaultProvider: ProviderType = "anthropic" // Defaults to Claude
+  isParagraph: boolean
 ) {
   const { isAuthenticated, getUser } = await getKindeServerSession();
   if (!(await isAuthenticated())) return NextResponse.error();
@@ -34,60 +23,77 @@ export async function callApi(
   const user = await getUser();
   if (!user) return NextResponse.error();
 
-  // 1. Parse out body
+  // 1. Parse body
   const {
     generationSelection,
     streamingTextArray,
     paragraphId,
     regenerationText,
-    // Optional 'provider' in case the user wants something other than Claude
-    provider,
+    model, // e.g. "o1-mini", "o1", "gpt-4o", "claude-3-5-sonnet-20241022", etc.
   }: {
     generationSelection: GenerationSelection;
     streamingTextArray: StreamingTextArray;
     paragraphId: number;
     regenerationText: string;
-    provider?: ProviderType;
+    model?: string;
   } = await request.json();
 
-  // 2. Determine which provider to use (default to Anthropic/Claude)
-  const chosenProvider: ProviderType = provider ?? defaultProvider;
-
-  // 3. Build the prompt with your generator
+  // 2. Build your prompt
   const generator = createEssayGenerator(generationSelection);
   const prompt = isParagraph
     ? generator.createParagraphPrompt(paragraphId, regenerationText, streamingTextArray)
     : generator.createPrompt();
 
-  // 4. Instantiate the correct provider stream
+  // 3. Decide which model stream to create
+  //    We'll handle "o1" or "o1-mini" differently since they need max_completion_tokens, no temperature, etc.
   let providerStream;
-  if (chosenProvider === "openai") {
-    // Use OpenAI
+  let usedModel = model ?? "claude-3-5-sonnet-20241022"; // default to Claude if nothing passed
+
+  if (usedModel === "o1" || usedModel === "o1-mini") {
+    // o1-series: use max_completion_tokens, no 'temperature', etc.
     providerStream = new OpenAIStream({
-      model: "gpt-4o",
+      model: usedModel,
+      prompt,
+      // remove or omit 'temperature'
+      // remove or omit 'top_p', 'presence_penalty', 'frequency_penalty', etc.
+      max_completion_tokens: 10000, // set a sensible limit to ensure reasoning tokens have room
+    });
+  } else if (usedModel === "gpt-4o" || usedModel === "o1-preview") {
+    // Old style models that still accept max_tokens
+    providerStream = new OpenAIStream({
+      model: usedModel,
+      prompt,
+      temperature: 0.0, // these older GPT-based models can still use temperature
+      max_tokens: 4096,
+    });
+  } else if (usedModel.startsWith("claude")) {
+    // If it’s a Claude model
+    providerStream = new ClaudeStream({
+      model: usedModel,
       prompt,
       temperature: 0.0,
       max_tokens: 4096,
     });
   } else {
-    // Default: Anthropic/Claude
+    // Fallback or unrecognized => default to Claude
+    usedModel = "claude-3-5-sonnet-20241022";
     providerStream = new ClaudeStream({
-      model: "claude-3-5-sonnet-20241022",
+      model: usedModel,
       prompt,
       temperature: 0.0,
       max_tokens: 4096,
     });
   }
 
-  // 5. Call the streaming function with both the AI provider stream AND options
+  // 4. Stream the response
   return await callAndStreamAIResponse(providerStream, {
     prompt,
     userId: user.id,
-    type: generator.documentType, // Must match what Drizzle expects
+    type: generator.documentType,
     isParagraph,
+    // We'll pass temperature=0 for non-o1 models
     temperature: 0.0,
     max_tokens: 4096,
-    // Optionally track which provider was used
-    provider: chosenProvider, 
+    provider: usedModel.includes("claude") ? "anthropic" : "openai",
   });
 }

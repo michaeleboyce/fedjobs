@@ -122,6 +122,10 @@ Please follow this structure for the entire resume, maintaining the integrity of
             content: text
           },
           stream: true,
+          store: true,
+          metadata: {
+            type: "parsing"
+          }
         });
 
         // Read each chunk from the streaming response.
@@ -368,6 +372,10 @@ Please follow this structure for the entire resume, maintaining the integrity of
             content: request.text
           },
           stream: false,
+          store: true,
+          metadata: {
+            type: "parsing"
+          }
         });
 
         combinedOutput = response.choices[0].message?.content || "";

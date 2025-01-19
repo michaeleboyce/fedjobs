@@ -30,7 +30,6 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({ onClick, isDisabled }) 
 
 
   return (
-    <div className="floating-bar">
       <button 
         className="generate-button" 
         onClick={handleGenerateClick} 
@@ -38,7 +37,6 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({ onClick, isDisabled }) 
       >
         {generateStatus || 'Generate'}
       </button>
-    </div>
   );
 };
 

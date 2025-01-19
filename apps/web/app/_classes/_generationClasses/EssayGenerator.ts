@@ -141,7 +141,7 @@ export abstract class EssayGenerator {
     try {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY_35 || "" });
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "o1-mini",
         messages: [
           {
             role: "system",
@@ -150,7 +150,12 @@ export abstract class EssayGenerator {
           },
           { role: "user", content: prompt }
         ],
-        temperature: 0.3
+        temperature: 0.3,
+        store: true,
+        metadata: {
+          type: "generation",
+          subType: this._documentType
+        }
       });
 
       const documentText = response.choices?.[0]?.message?.content?.trim() ?? "No response generated.";

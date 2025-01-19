@@ -27,9 +27,11 @@ export interface ChatCompletionChunk {
 interface OpenAIStreamOptions {
   model: string;
   prompt: string;
-  temperature: number;
-  max_tokens: number;
+  temperature?: number;
+  max_tokens?: number;
+  max_completion_tokens?: number; // <-- add this line
 }
+
 
 export class OpenAIStream implements AIProviderStream {
   private client: OpenAI;
@@ -44,38 +46,57 @@ export class OpenAIStream implements AIProviderStream {
     this.abortController = new AbortController();
   }
 
+  // Our new cleanup() method
+  cleanup(): void {
+    this.abortController.abort();
+  }
+  
   async startStreaming(onToken: (token: string) => void): Promise<void> {
     try {
-      const response = await this.client.chat.completions.create(
-        {
-          model: this.options.model,
+      // Build the request body
+      const requestBody: any = {
+        model: this.options.model,
+        // If you plan to omit temperature for certain models,
+        // only add it if it's defined
+        ...(typeof this.options.temperature === "number" && {
           temperature: this.options.temperature,
-          max_tokens: this.options.max_tokens,
-          stream: true,
-          messages: [
-            {
-              role: "user",
-              content: this.options.prompt,
-            },
-          ],
-        },
+        }),
+        messages: [
+          {
+            role: "user",
+            content: this.options.prompt,
+          },
+        ],
+        stream: true,
+        store: true,
+      };
+  
+      // If it's a GPT-based model
+      if (typeof this.options.max_tokens === "number") {
+        requestBody.max_tokens = this.options.max_tokens;
+      }
+  
+      // If it's an o1-based model
+      if (typeof this.options.max_completion_tokens === "number") {
+        requestBody.max_completion_tokens = this.options.max_completion_tokens;
+      }
+  
+      // Now call the API
+      const response = await this.client.chat.completions.create(
+        requestBody,
         {
           signal: this.abortController.signal,
         }
       );
-
-      // response is an async iterable of chunk objects (ChatCompletionChunk)
-      // We'll cast it as an AsyncIterable<ChatCompletionChunk>
+  
       return new Promise<void>(async (resolve, reject) => {
         try {
-          for await (const chunk of response as AsyncIterable<ChatCompletionChunk>) {
-            // Each chunk might contain partial text in chunk.choices[0].delta.content
+          // If we know response is actually an async iterable:
+          for await (const chunk of (response as unknown as AsyncIterable<any>)) {
             const content = chunk?.choices?.[0]?.delta?.content;
             if (content) {
               onToken(content);
             }
-            // If you want to stop early on finish_reason:
-            // if (chunk.choices[0].finish_reason) { resolve(); return; }
           }
           resolve();
         } catch (err) {
@@ -85,9 +106,5 @@ export class OpenAIStream implements AIProviderStream {
     } catch (error) {
       throw error;
     }
-  }
-
-  cleanup(): void {
-    this.abortController.abort();
   }
 }

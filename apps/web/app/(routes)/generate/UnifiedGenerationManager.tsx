@@ -1,5 +1,5 @@
-// File path: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 // File: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
+
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -17,7 +17,10 @@ import { DUMMY_FULL_ECQ_TEXT } from "@/app/_utils/Constants";
 import { processNewECQDocument } from "@/app/_actions/files/fileActions";
 
 import type { StreamingTextArray } from "@/app/_types/StreamingTextArray";
-import type { GenerationSelection, SelectedPositionData } from "@/app/_types/GenerationSelection";
+import type {
+  GenerationSelection,
+  SelectedPositionData,
+} from "@/app/_types/GenerationSelection";
 import type { GeneratedDocumentInformation } from "@/app/_types/GeneratedDocumentInformation";
 
 interface UnifiedGenerationManagerProps {
@@ -31,15 +34,22 @@ export function UnifiedGenerationManager({
   otherPositions,
   userEmail,
 }: UnifiedGenerationManagerProps) {
-  // A map of { positionUuid: { selectedActivities: number[], selectedAccomplishments: number[] }}
+  // Tracks position selections
   const [selectedState, setSelectedState] = useState<Record<
     string,
     { selectedActivities: number[]; selectedAccomplishments: number[] }
-  > >({});
+  >>({});
 
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false);
 
-  // Streaming states
+  // **Check if email is "wizrb47@gmail.com". If yes, show a model dropdown.**
+  const showModelSelector = userEmail === "wizrb47@gmail.com";
+
+  // **We keep the chosen model in state** (so it doesn't reset on paragraph regeneration).
+  // Default to "o1-mini" or whichever you want as a fallback.
+  const [model, setModel] = useState("claude-3-5-sonnet-20241022");
+
+  // AI streaming states
   const [streamingTextArray, setStreamingTextArray] = useState<StreamingTextArray>([]);
   const [isStreamingComplete, setIsStreamingComplete] = useState(false);
   const [saveResult, setSaveResult] = useState({ url: "", message: "" });
@@ -48,34 +58,36 @@ export function UnifiedGenerationManager({
   // Access docInfo, jobInfo, otherInfo from context
   const { docInfo, jobInfo, otherInfo } = useGenerationContext();
 
+  // Called whenever the user picks/deselects any "activities" or "accomplishments"
   const handleSelectionChange = useCallback((newSelected: typeof selectedState) => {
     setSelectedState(newSelected);
 
-    // If any position has a selection
+    // If any position has at least one selection, enable "Generate"
     const hasSelections = Object.values(newSelected).some(
       (pos) => pos.selectedActivities.length > 0 || pos.selectedAccomplishments.length > 0
     );
     setIsGenerateEnabled(hasSelections);
   }, []);
 
+  // Called when user clicks "Generate" or "Regenerate Paragraph"
   async function handleGenerateClick(paragraphId?: number, regenerationText?: string) {
-    // Convert your selectedState to an array of SelectedPositionData
+    // Build array of the user’s chosen positions/activities/accomplishments
     const selectedPositions: SelectedPositionData[] = Object.entries(selectedState).flatMap(
       ([positionUuid, selections]) => {
-        const positionObj =
+        const posObj =
           employmentHistory.find((p) => p.positionUuid === positionUuid) ||
           otherPositions.find((p) => p.positionUuid === positionUuid);
 
-        if (!positionObj) return []; // skip if not found
+        if (!posObj) return []; // skip if not found
 
         return [
           {
-            position: positionObj, 
+            position: posObj,
             selectedActivities: selections.selectedActivities.map(
-              (idx) => positionObj.details.activities[idx]
+              (i) => posObj.details.activities[i]
             ),
             selectedAccomplishments: selections.selectedAccomplishments.map(
-              (idx) => positionObj.details.accomplishments[idx]
+              (i) => posObj.details.accomplishments[i]
             ),
           },
         ];
@@ -83,53 +95,72 @@ export function UnifiedGenerationManager({
     );
 
     if (!selectedPositions.length) {
-      console.error("No positions selected!");
+      console.warn("No positions selected!");
       return;
     }
 
-    // Prepare a GenerationSelection
     const generationSelection: GenerationSelection = {
       positions: selectedPositions,
-      docInfo,        // from context
-      jobInfo,        // from context
-      otherInfo,      // from context
+      docInfo,
+      jobInfo,
+      otherInfo,
       length: docInfo.length,
       lengthUnit: docInfo.lengthUnit,
     };
 
-    // streaming logic
-    let reader;
+    // Decide which provider to call based on the chosen model
+    // - If model is "claude-...", then provider = "anthropic"
+    // - Else provider = "openai"
+    let provider: "openai" | "anthropic";
+    if (model.startsWith("claude")) {
+      provider = "anthropic";
+    } else {
+      provider = "openai";
+    }
+
+    // If docInfo.isDummy is set, we skip the fetch call and just fake a streaming response
+    let reader: ReadableStreamDefaultReader<Uint8Array>;
     let combinedOutput = "";
     let iterationCount = 0;
 
     if (docInfo.isDummy) {
-      // mock
-      reader = createMockReader(DUMMY_FULL_ECQ_TEXT, [5, 15]);
+      // Just mock a streaming response
+// In UnifiedGenerationManager (or wherever you do createMockReader)
+      reader = createMockReader(DUMMY_FULL_ECQ_TEXT, [5, 15]) as ReadableStreamDefaultReader<Uint8Array>;
     } else {
+      // Actually call the Next.js route
       const res = await fetch(`/api/ai/generate/${docInfo.type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ generationSelection, streamingTextArray, paragraphId, regenerationText }),
+        body: JSON.stringify({
+          generationSelection,
+          streamingTextArray,
+          paragraphId,
+          regenerationText,
+          model
+        }),
       });
       if (!res.ok || !res.body) {
-        console.error("No response or not OK");
+        console.error("Error from AI route. Possibly invalid response.");
         return;
       }
       reader = res.body.getReader();
     }
+
+    // Reset streaming states
     setStreamingTextArray([]);
     setIsStreamingComplete(false);
 
-    const decoder = new TextDecoder("utf8");
+    // Stream the text in a loop
+    const decoder = new TextDecoder();
     while (true) {
-      const result = await reader.read();
-      if (result.done) {
+      const { value, done } = await reader.read();
+      if (done) {
         convertToParagraphs(combinedOutput, paragraphId);
         setIsStreamingComplete(true);
         break;
       }
-      const chunk = decoder.decode(result.value, { stream: true });
-      combinedOutput += chunk;
+      combinedOutput += decoder.decode(value, { stream: true });
       iterationCount++;
       if (iterationCount % 5 === 0) {
         convertToParagraphs(combinedOutput, paragraphId);
@@ -137,6 +168,7 @@ export function UnifiedGenerationManager({
     }
   }
 
+  // Splits text into paragraphs, or updates a single paragraph (if regenerating)
   function convertToParagraphs(text: string, paragraphId?: number) {
     if (paragraphId !== undefined) {
       setStreamingTextArray((prev) =>
@@ -144,15 +176,17 @@ export function UnifiedGenerationManager({
       );
     } else {
       const paragraphs = text
-        .split(/(?:\r\n|\r|\n){2,}/)
+        .split(/\n\s*\n+/) // or your own logic
         .map((txt, idx) => ({ id: idx, text: txt }));
       setStreamingTextArray(paragraphs);
     }
   }
 
+  // Example "save" handler
   async function handleOnSave(paragraphs: string[]) {
+    const joinedText = paragraphs.join("\n\n");
     // Example: store doc in DB
-    const result = await processNewECQDocument(paragraphs.join("\n\n"), "ECQ Title");
+    const result = await processNewECQDocument(joinedText, "ECQ Title");
     if (result.status === "ok") {
       setSaveResult({
         url: result.body.url,
@@ -165,10 +199,8 @@ export function UnifiedGenerationManager({
 
   return (
     <div className="p-4">
-      {/* Provide Additional Info (docInfo, jobInfo, otherInfo) */}
       <AdditionalInfoBox showIsDummy={docInfo.isDummy} />
 
-      {/* The streaming output viewer */}
       <StreamingDocumentViewer
         documentName="Generated Document"
         streamingTextArray={streamingTextArray}
@@ -183,7 +215,6 @@ export function UnifiedGenerationManager({
         onParagraphTextUpdate={() => {}}
       />
 
-      {/* The user picks which positions/accomplishments to include */}
       <GeneratePositions
         employmentHistory={employmentHistory}
         otherPositions={otherPositions}
@@ -191,12 +222,15 @@ export function UnifiedGenerationManager({
         onSelectionChange={handleSelectionChange}
       />
 
-      {/* Bottom bar with “Generate” button */}
       <GenerateBottomBar
         onGenerateClick={handleGenerateClick}
         isGenerateDisabled={!isGenerateEnabled}
         generatedDocuments={generatedDocuments}
         onViewDocument={(docId) => window.open(`/document/${docId}`, "_blank")}
+        // Pass the new props
+        showModelSelector={showModelSelector}
+        model={model}
+        setModel={setModel}
       />
     </div>
   );
