@@ -1,11 +1,9 @@
-// File path: apps/web/app/(routes)/generate/resume/[id]/_Components/GenerationManager.tsx
 'use client'
 import React, { useState, useCallback } from 'react';
 import { Resume as ResumeComponent } from '@/app/_components/Resume';
 import { AdditionalInfoBox } from './AdditionalInfoBox';
 import { ResumeObject } from '@/app/_classes/Resume';
-//import { generate GenerationSelection } from '@/app/_actions/generate';
-import {  DUMMY_ECQ_PARAGRAPH_TEXT, DUMMY_FULL_ECQ_TEXT } from '@/app/_utils/Constants';
+import { DUMMY_ECQ_PARAGRAPH_TEXT, DUMMY_FULL_ECQ_TEXT } from '@/app/_utils/Constants';
 import { PositionObject } from '@/app/_classes/Position';
 import { getDocumentSignedURL, processNewECQDocument } from '@/app/_actions/files/fileActions';
 import { GeneratedDocumentInformation } from '@/app/_types/GeneratedDocumentInformation';
@@ -29,10 +27,13 @@ type GenerationManagerProps = {
   userEmail: string;
 };
 
-const appUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://fedjobs.vercel.app';
+const appUrl = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:3000'
+  : 'https://fedjobs.vercel.app';
 
-const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail}) => {
-  const {jobInfo, docInfo, otherInfo} = useGenerationContext();
+const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail }) => {
+  const { jobInfo, docInfo, otherInfo } = useGenerationContext();
+
   const [selectedState, setSelectedState] = useState<SelectedStateType>({
     positions: []
   });
@@ -41,10 +42,18 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
   const [generatedDocuments, setGeneratedDocuments] = useState<GeneratedDocumentInformation[]>([]);
   const [streamingTextArray, setStreamingTextArray] = useState<StreamingTextArray>([]);
   const [isStreamingComplete, setIsStreamingComplete] = useState(false);
-  const [documentName, setDocumentName] = useState(''); // Set this based on your document type
+  const [documentName, setDocumentName] = useState(''); 
   const [saveResult, setSaveResult] = useState({ url: '', message: '' });
 
-  const showIsDummy = userEmail === "wizrb47@gmail.com";
+  /**
+   * ---- Add these lines so you can pass them to GenerateBottomBar ----
+   */
+  // 1) Decide if we show the model selector
+  const showModelSelector = userEmail === "wizrb47@gmail.com";
+
+  // 2) Track which model is chosen, default to Claude
+  const [model, setModel] = useState("claude-3-5-sonnet-20241022");
+
   const handleSelectionChange = useCallback((newSelectedState: {
     positions: {
       position: PositionObject;
@@ -59,23 +68,21 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
   }, []);
 
   const handleViewClick = async (documentId: number) => {
-        // Call getDocumentSignedURL and handle the result
-        const response = await getDocumentSignedURL(documentId);
-        if (response.success) {
-            window.open(response.success.url, '_blank');
-        } else {
-            alert('Error retrieving document: ' + response.failure);
-        }
-    };
+    const response = await getDocumentSignedURL(documentId);
+    if (response.success) {
+      window.open(response.success.url, '_blank');
+    } else {
+      alert('Error retrieving document: ' + response.failure);
+    }
+  };
 
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
     if (!selectedState.positions.length) {
       console.error("No positions selected");
       return;
     }
-  
+
     const generationSelection: GenerationSelection = {
-      // Transform each “positionData” into text or keep indexes, etc.
       positions: selectedState.positions.map((posData) => ({
         position: posData.position,
         selectedActivities: posData.selectedActivities.map(
@@ -85,26 +92,39 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
           (idx) => posData.position.details.accomplishments[idx]
         ),
       })),
-      otherInfo: otherInfo,
-      jobInfo: jobInfo,
-      docInfo: docInfo,
-      length: docInfo.length, // Add this line
-      lengthUnit: docInfo.lengthUnit, // Add this line
+      otherInfo,
+      jobInfo,
+      docInfo,
+      length: docInfo.length,
+      lengthUnit: docInfo.lengthUnit,
     };
-    //TODO: make sure everything is either res or result, req or request
+
     let reader;
-    
     if (docInfo.isDummy) {
-      reader = createMockReader(paragraphId !== undefined?  DUMMY_ECQ_PARAGRAPH_TEXT :  DUMMY_FULL_ECQ_TEXT, [5, 15]);
+      reader = createMockReader(
+        paragraphId !== undefined ? DUMMY_ECQ_PARAGRAPH_TEXT : DUMMY_FULL_ECQ_TEXT,
+        [5, 15]
+      );
     } else {
-      const res = await fetch(`${appUrl}/api/ai/generate/${generationSelection.docInfo.type}${paragraphId !== undefined? `/paragraph` : ``}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({generationSelection, streamingTextArray, paragraphId, regenerationText: regenerationText ?? ''})
-      });
-  
+      const res = await fetch(
+        `${appUrl}/api/ai/generate/${generationSelection.docInfo.type}${
+          paragraphId !== undefined ? `/paragraph` : ``
+        }`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            generationSelection,
+            streamingTextArray,
+            paragraphId,
+            regenerationText: regenerationText ?? '',
+            model, // pass your chosen model from state
+          }),
+        }
+      );
+
       if (!res.ok) {
         console.error('Response was not OK.');
         return;
@@ -113,13 +133,18 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
         console.error('No response body.');
         return;
       }
-  
+
       reader = res.body.getReader();
     }
+
     let result;
-    let decoder = new TextDecoder('utf8');
+    const decoder = new TextDecoder('utf8');
     let combinedOutput = '';
     let iterationCount = 0;
+
+    // Reset streaming
+    setStreamingTextArray([]);
+    setIsStreamingComplete(false);
 
     while (true) {
       result = await reader.read();
@@ -137,9 +162,10 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
       }
     }
   };
-  const convertStreamingTextToParagraphs = (combinedOutput: string, paragraphId?: number ) => {
+
+  const convertStreamingTextToParagraphs = (combinedOutput: string, paragraphId?: number) => {
     let paragraphs = streamingTextArray;
-    if (paragraphId !== undefined){
+    if (paragraphId !== undefined) {
       paragraphs = paragraphs.map(paragraph => {
         if (paragraph.id === paragraphId) {
           return { ...paragraph, text: combinedOutput };
@@ -148,56 +174,72 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
       });
     } else {
       paragraphs = combinedOutput.split(/(?:\r\n|\r|\n){2,}/).map((text, index) => ({
-      id: index,  // Unique ID for each paragraph
-      text: text,
+        id: index, 
+        text: text,
       }));
     }
     setStreamingTextArray(paragraphs);
-  } 
+  };
+
   const handleOnSave = async (paragraphs: string[]) => {
-    const result = await processNewECQDocument(paragraphs.join('\n\n'), docInfo.ecqShortTitle || '');
-    if (result.status === 'ok'){
-      // Assuming result contains the signed URL
-      setSaveResult({ url: result.body.url, message: "Document Successfully Saved - Click here to view" });
+    const result = await processNewECQDocument(
+      paragraphs.join('\n\n'),
+      docInfo.ecqShortTitle || ''
+    );
+    if (result.status === 'ok') {
+      setSaveResult({
+        url: result.body.url,
+        message: "Document Successfully Saved - Click here to view"
+      });
     } else {
       setSaveResult({ url: '', message: "Save error occurred" });
     }
   };
+
   const handleParagraphTextUpdate = useCallback((paragraphId: number, newText: string) => {
-    setStreamingTextArray(currentArray => 
-      currentArray.map(paragraph => 
-        paragraph.id === paragraphId ? { ...paragraph, text: newText } : paragraph
+    setStreamingTextArray(currentArray =>
+      currentArray.map(paragraph =>
+        paragraph.id === paragraphId
+          ? { ...paragraph, text: newText }
+          : paragraph
       )
     );
   }, []);
+
   const handleParagraphDelete = useCallback((id: number) => {
     setStreamingTextArray(prevArray => prevArray.filter(paragraph => paragraph.id !== id));
     setSelectedParagraph(null);
   }, []);
 
-  const moveParagraph = useCallback((index: number, direction: 'up' | 'down') => {
-    setStreamingTextArray(prevArray => {
-      const newArray = [...prevArray];
-      if (index === 0 && direction === 'up' || index === newArray.length - 1 && direction === 'down') {
+  const moveParagraph = useCallback(
+    (index: number, direction: 'up' | 'down') => {
+      setStreamingTextArray(prevArray => {
+        const newArray = [...prevArray];
+        if (
+          (index === 0 && direction === 'up') ||
+          (index === newArray.length - 1 && direction === 'down')
+        ) {
+          return newArray;
+        }
+        const swapIndex = direction === 'up' ? index - 1 : index + 1;
+        [newArray[index], newArray[swapIndex]] = [newArray[swapIndex], newArray[index]];
         return newArray;
+      });
+      if (selectedParagraph === index) {
+        setSelectedParagraph(direction === 'up' ? index - 1 : index + 1);
+      } else if (direction === 'up' && selectedParagraph === index - 1) {
+        setSelectedParagraph(index);
+      } else if (direction === 'down' && selectedParagraph === index + 1) {
+        setSelectedParagraph(index);
       }
-      const swapIndex = direction === 'up' ? index - 1 : index + 1;
-      [newArray[index], newArray[swapIndex]] = [newArray[swapIndex], newArray[index]];
-      return newArray;
-    });
-    if (selectedParagraph === index) {
-      setSelectedParagraph(direction === 'up' ? index - 1 : index + 1);
-    } else if (direction === 'up' && selectedParagraph === index - 1) {
-      setSelectedParagraph(index);
-    } else if (direction === 'down' && selectedParagraph === index + 1) {
-      setSelectedParagraph(index);
-    }
-  }, [selectedParagraph]);
-
+    },
+    [selectedParagraph]
+  );
 
   return (
     <div className="main-container">
-      <AdditionalInfoBox showIsDummy={showIsDummy}/>
+      <AdditionalInfoBox showIsDummy={showModelSelector} />
+
       <StreamingDocumentViewer
         documentName={documentName}
         streamingTextArray={streamingTextArray}
@@ -211,17 +253,26 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
         onSelectParagraph={setSelectedParagraph}
         onParagraphTextUpdate={handleParagraphTextUpdate}
       />
-      <ResumeComponent resume={resume} onSelectionChange={handleSelectionChange} isViewOnly={false} />
+
+      <ResumeComponent
+        resume={resume}
+        onSelectionChange={handleSelectionChange}
+        isViewOnly={false}
+      />
+
       <GenerateBottomBar
         onGenerateClick={handleGenerateClick}
         isGenerateDisabled={!isGenerateEnabled}
         generatedDocuments={generatedDocuments}
         onViewDocument={handleViewClick}
-        
-    />
+
+        // **Now we pass these props**:
+        showModelSelector={showModelSelector}
+        model={model}
+        setModel={setModel}
+      />
     </div>
   );
 };
 
 export default GenerationManager;
-
