@@ -1,5 +1,4 @@
 // File path: apps/api/src/services/parsingService.ts
-// apps/api/src/services/parsingService.ts
 
 import OpenAI from "openai";
 import { db, eq, positions as positionsTable } from "@fedjobs/database";

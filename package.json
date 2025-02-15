@@ -1,8 +1,10 @@
+
 {
   "name": "fedjobs-monorepo",
   "private": true,
   "packageManager": "pnpm@9.10.0",
   "scripts": {
+    "generate-tree": "./generate-directory-tree.sh",
     "add-file-names": "node add-file-path-comments.js",
     "test": "turbo run test",
     "dev": "turbo run dev",
@@ -10,7 +12,8 @@
     "lint": "turbo run lint",
     "web:dev": "pnpm --filter @fedjobs/web dev",
     "api:deploy": "railway up --service fedjobs-api --environment production",
-    "web:deploy": "vercel --prod"
+    "web:deploy": "vercel --prod",
+    "export-key-contents": "bash projectRefactor.sh"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

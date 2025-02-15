@@ -31,9 +31,16 @@
 │       │   │   ├── api
 │       │   │   │   ├── ai
 │       │   │   │   │   ├── generate
+│       │   │   │   │   │   ├── (utils)
+│       │   │   │   │   │   ├── cover_letter
+│       │   │   │   │   │   ├── ecq
+│       │   │   │   │   │   ├── other
+│       │   │   │   │   │   └── tcq
 │       │   │   │   │   └── vectorize
+│       │   │   │   │       └── route.ts
 │       │   │   │   └── auth
 │       │   │   │       └── [kindeAuth]
+│       │   │   │           └── route.ts
 │       │   │   ├── dashboard
 │       │   │   │   └── page.tsx
 │       │   │   ├── documents
@@ -52,14 +59,23 @@
 │       │   │   │   │   ├── GeneratedDocumentCard.tsx
 │       │   │   │   │   ├── StreamingDocumentViewer.tsx
 │       │   │   │   │   └── _Subcomponents
+│       │   │   │   │       ├── GenerateButton.tsx
+│       │   │   │   │       ├── ParagraphControls.tsx
+│       │   │   │   │       ├── RegenerationTools.tsx
+│       │   │   │   │       ├── SaveSuccessMessage.tsx
+│       │   │   │   │       └── _AdditionalInfoBox
 │       │   │   │   ├── _Providers
 │       │   │   │   │   └── GenerationProvider.tsx
 │       │   │   │   ├── page.tsx
 │       │   │   │   └── resume
 │       │   │   │       └── [id]
+│       │   │   │           ├── PageClient.tsx
+│       │   │   │           ├── _Components
+│       │   │   │           └── page.tsx
 │       │   │   ├── resume
 │       │   │   │   └── [id]
 │       │   │   │       ├── _Components
+│       │   │   │       │   └── ResumePageManager.tsx
 │       │   │   │       └── page.tsx
 │       │   │   └── review-positions
 │       │   │       └── page.tsx
@@ -104,10 +120,17 @@
 │       │   │   ├── Resume
 │       │   │   │   ├── components
 │       │   │   │   │   ├── DetailsToggle
+│       │   │   │   │   │   └── index.tsx
 │       │   │   │   │   ├── PositionCard
+│       │   │   │   │   │   ├── index.tsx
+│       │   │   │   │   │   └── styles.ts
 │       │   │   │   │   ├── PositionDetails
+│       │   │   │   │   │   ├── PositionDetailsSection.tsx
+│       │   │   │   │   │   └── index.tsx
 │       │   │   │   │   ├── SelectionControls
+│       │   │   │   │   │   └── index.tsx
 │       │   │   │   │   └── SimilarPositionCard
+│       │   │   │   │       └── index.tsx
 │       │   │   │   ├── hooks
 │       │   │   │   │   └── usePositionSelections.ts
 │       │   │   │   ├── index.tsx
@@ -161,7 +184,8 @@
 │       ├── postcss.config.js
 │       ├── public
 │       ├── tailwind.config.ts
-│       └── tsconfig.json
+│       ├── tsconfig.json
+│       └── turbo.json
 ├── package.json
 ├── packages
 │   ├── database
@@ -228,6 +252,7 @@
 ├── pnmp
 │   └── _
 ├── tsconfig.json
-└── turbo.json
+├── turbo.json
+└── vitest.config.ts
 
-84 directories, 147 files
+91 directories, 165 files

@@ -84,6 +84,9 @@ debug.log
 *.bak
 *.backup
 .history
+directory_tree.txt
+key-contents.txt
+
 
 # Optional npm cache directory
 .npm

@@ -4,6 +4,15 @@ import { vectorizePositions, generatePositionEmbeddings, createPineconeRecords, 
 import { Pinecone } from '@pinecone-database/pinecone';
 import { Position } from '@fedjobs/types';
 
+process.removeAllListeners('warning');
+process.on('warning', (warning) => {
+  if (warning.name === 'DeprecationWarning' && 
+      warning.message.includes('The `punycode` module is deprecated')) {
+    return;
+  }
+  console.warn(warning);
+});
+
 vi.mock('voyage-ai-provider', () => ({
   voyage: {
     textEmbeddingModel: vi.fn().mockReturnValue({
