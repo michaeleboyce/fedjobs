@@ -16,7 +16,10 @@ interface PositionCardProps {
   selectionMode?: boolean;
   selectedActivities?: number[];
   selectedAccomplishments?: number[];
-  onCheckboxChange?: (type: "activities" | "accomplishments", idx: number) => void;
+  onCheckboxChange?: (
+    type: "activities" | "accomplishments",
+    idx: number
+  ) => void;
   onSelectAll?: () => void;
   onClearAll?: () => void;
 }
@@ -52,7 +55,9 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   const [tempStartDate, setTempStartDate] = useState(position.date.startDate);
   const [tempEndDate, setTempEndDate] = useState(position.date.endDate);
   const [tempPresent, setTempPresent] = useState(position.date.present);
-  const [tempActivities, setTempActivities] = useState([...position.details.activities]);
+  const [tempActivities, setTempActivities] = useState([
+    ...position.details.activities,
+  ]);
   const [tempAccomplishments, setTempAccomplishments] = useState([
     ...position.details.accomplishments,
   ]);
@@ -91,7 +96,9 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         isLoading={isLoading}
         isExpanded={isExpanded}
         /** Hide remove-from-history if isGenerationView is true */
-        onAddToEmploymentHistory={() => handleAddToEmploymentHistory(position.positionUuid)}
+        onAddToEmploymentHistory={() =>
+          handleAddToEmploymentHistory(position.positionUuid)
+        }
         onRemoveFromEmploymentHistory={() =>
           handleRemoveFromEmploymentHistory(position.positionUuid)
         }
@@ -120,95 +127,91 @@ export const PositionCard: React.FC<PositionCardProps> = ({
       )}
 
       {/* If not expanded => minimal details */}
-      {!isExpanded && (
-        <PositionDetails
-          position={position}
-          isExpanded={isExpanded}
-          similarCount={similarCount}
-          isEmploymentHistory={isEmploymentHistory}
-          onExpandToggle={() => setIsExpanded(!isExpanded)}
+      <PositionDetails
+        position={position}
+        similarCount={similarCount}
+        isEmploymentHistory={isEmploymentHistory}
+        onExpandToggle={() => setIsExpanded(!isExpanded)}
+      />
+
+      {isEditing && (
+        <PositionEditForm
+          tempTitle={tempTitle}
+          setTempTitle={setTempTitle}
+          tempOrg={tempOrg}
+          setTempOrg={setTempOrg}
+          tempStartDate={tempStartDate}
+          setTempStartDate={setTempStartDate}
+          tempEndDate={tempEndDate}
+          setTempEndDate={setTempEndDate}
+          tempPresent={tempPresent}
+          setTempPresent={setTempPresent}
+          tempActivities={tempActivities}
+          setTempActivities={setTempActivities}
+          tempAccomplishments={tempAccomplishments}
+          setTempAccomplishments={setTempAccomplishments}
         />
       )}
-
       {/* If expanded => either editing form or read-only details + similar positions */}
-      {isExpanded && (
+      {isExpanded && !isEditing && (
         <>
-          {isEditing ? (
-            <PositionEditForm
-              tempTitle={tempTitle}
-              setTempTitle={setTempTitle}
-              tempOrg={tempOrg}
-              setTempOrg={setTempOrg}
-              tempStartDate={tempStartDate}
-              setTempStartDate={setTempStartDate}
-              tempEndDate={tempEndDate}
-              setTempEndDate={setTempEndDate}
-              tempPresent={tempPresent}
-              setTempPresent={setTempPresent}
-              tempActivities={tempActivities}
-              setTempActivities={setTempActivities}
-              tempAccomplishments={tempAccomplishments}
-              setTempAccomplishments={setTempAccomplishments}
-            />
-          ) : (
-            <>
-              <div className="mt-4">
-                <strong>Activities:</strong>
-                <ul className="list-disc ml-5 mt-1">
-                  {position.details.activities.map((act, idx) => {
-                    const isChecked = selectedActivities.includes(idx);
-                    return (
-                      <li key={idx} className="flex items-center gap-2">
-                        {selectionMode && onCheckboxChange && (
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => onCheckboxChange("activities", idx)}
-                          />
-                        )}
-                        <span>{act}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-              <div className="mt-3">
-                <strong>Accomplishments:</strong>
-                <ul className="list-disc ml-5 mt-1">
-                  {position.details.accomplishments.map((acc, idx) => {
-                    const isChecked = selectedAccomplishments.includes(idx);
-                    return (
-                      <li key={idx} className="flex items-center gap-2">
-                        {selectionMode && onCheckboxChange && (
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => onCheckboxChange("accomplishments", idx)}
-                          />
-                        )}
-                        <span>{acc}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </>
-          )}
-
-          {/* Similar Positions */}
-          <SimilarPositionsSections
-            position={position}
-            isEmploymentHistory={isEmploymentHistory}
-            /** Pass the new prop so it hides “remove” or “approve/reject” for generation */
-            isGenerationView={isGenerationView}
-            loadingPositions={loadingPositions}
-            handleApproveSimilar={handleApproveSimilar}
-            handleRejectSimilar={handleRejectSimilar}
-            handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
-            handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
-          />
+          <div className="mt-4">
+            <strong>Activities:</strong>
+            <ul className="list-disc ml-5 mt-1">
+              {position.details.activities.map((act, idx) => {
+                const isChecked = selectedActivities.includes(idx);
+                return (
+                  <li key={idx} className="flex items-center gap-2">
+                    {selectionMode && onCheckboxChange && (
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => onCheckboxChange("activities", idx)}
+                      />
+                    )}
+                    <span>{act}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div className="mt-3">
+            <strong>Accomplishments:</strong>
+            <ul className="list-disc ml-5 mt-1">
+              {position.details.accomplishments.map((acc, idx) => {
+                const isChecked = selectedAccomplishments.includes(idx);
+                return (
+                  <li key={idx} className="flex items-center gap-2">
+                    {selectionMode && onCheckboxChange && (
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() =>
+                          onCheckboxChange("accomplishments", idx)
+                        }
+                      />
+                    )}
+                    <span>{acc}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </>
       )}
+
+      {/* Similar Positions */}
+      <SimilarPositionsSections
+        position={position}
+        isEmploymentHistory={isEmploymentHistory}
+        /** Pass the new prop so it hides “remove” or “approve/reject” for generation */
+        isGenerationView={isGenerationView}
+        loadingPositions={loadingPositions}
+        handleApproveSimilar={handleApproveSimilar}
+        handleRejectSimilar={handleRejectSimilar}
+        handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
+        handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
+      />
     </div>
   );
 };

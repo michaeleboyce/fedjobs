@@ -1,13 +1,14 @@
-// File path: apps/web/app/_classes/_generationClasses/EssayGenerator.ts
+// apps/web/app/_classes/_generationClasses/EssayGenerator.ts
+// Refactored to use DocumentRepository for saving generated documents.
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { db } from "@fedjobs/database";
-import { documents as documentsTable } from "@fedjobs/database";
-import { OpenAI } from "openai";
+import { DocumentType } from "@fedjobs/types";
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { formatDateMMDDYYYY } from "@/app/_utils/DateUtils";
-import { DocumentType } from "@fedjobs/types";
-import { uploadFile, generateKeyFromFileName} from "@fedjobs/utils";
+import { uploadFile, generateKeyFromFileName } from "@fedjobs/utils";
+// Import DocumentRepository from our repository layer.
+import { DocumentRepository } from "@fedjobs/database";
+import { OpenAI } from 'openai';
 
 export type SaveDocumentResult =
   | {
@@ -25,7 +26,7 @@ export type SaveDocumentResult =
     };
 
 export abstract class EssayGenerator {
-  abstract createPrompt(): string;  
+  abstract createPrompt(): string;
   abstract createParagraphPrompt(
     paragraphId: number,
     regenerationText: string,
@@ -59,9 +60,7 @@ export abstract class EssayGenerator {
       `SubAgency: ${details.SubAgency}`,
       `Grade: ${details.JobGrade?.[0]?.Code ?? ""}`,
       `Schedule: ${details.PositionSchedule?.[0]?.Name ?? ""}`,
-      `Open Period: ${formatDateMMDDYYYY(details.PositionStartDate)} - ${formatDateMMDDYYYY(
-        details.PositionEndDate
-      )}`,
+      `Open Period: ${formatDateMMDDYYYY(details.PositionStartDate)} - ${formatDateMMDDYYYY(details.PositionEndDate)}`,
       `Qualifications: ${details.QualificationSummary}`,
       `Agency Marketing Statement: ${details.UserArea.Details.AgencyMarketingStatement}`,
       `Major Duties: ${details.UserArea.Details.MajorDuties.join(" ")}`,
@@ -82,17 +81,22 @@ export abstract class EssayGenerator {
     return generatedText;
   }
 
+  /**
+   * Saves the generated document by creating a Word document,
+   * uploading it to S3, and saving the record via the DocumentRepository.
+   */
   static async SaveDocument(
     userId: string,
     generatedText: string,
     description: string
   ): Promise<SaveDocumentResult> {
     try {
+      // Create the Word document buffer.
       const buffer = await EssayGenerator.createWordDocumentBuffer(generatedText);
       const originalName = `GeneratedDocument.docx`;
       const s3Key = generateKeyFromFileName(originalName);
-      
-      // Upload the buffer directly to S3
+
+      // Upload the document buffer to S3.
       const uploadResponse = await uploadFile(
         s3Key,
         originalName,
@@ -101,29 +105,36 @@ export abstract class EssayGenerator {
         buffer.length
       );
 
-      if (uploadResponse.status === 'failure') {
-        return {
-          status: "error",
-          body: { message: uploadResponse.message }
-        };
+      if (uploadResponse.status === "failure") {
+        return { status: "error", body: { message: uploadResponse.message } };
       }
 
-      const { id, name } = await EssayGenerator.saveToDatabase(
-        userId,
-        uploadResponse.url,
-        generatedText,
-        originalName,
-        s3Key,
-        description
-      );
+      // Use DocumentRepository to save the document record.
+      const documentRepo = new DocumentRepository();
+      const result = await documentRepo.insert({
+        userId: userId,
+        type: "ecq", // Ensure this is a valid DocumentType value.
+        source: "APPLICATION_GENERATED",
+        url: uploadResponse.url,
+        s3Key: s3Key,
+        content: generatedText,
+        name: originalName,
+        description: description,
+        isParsed: true,
+        data: {}
+      });
+
+      if (!result) {
+        throw new Error("Error saving object to database");
+      }
 
       return {
         status: "ok",
-        body: { 
-          url: uploadResponse.url, 
-          documentId: id, 
-          documentName: name, 
-          generatedText 
+        body: {
+          url: uploadResponse.url,
+          documentId: result.id,
+          documentName: result.name,
+          generatedText
         }
       };
     } catch (error) {
@@ -135,9 +146,9 @@ export abstract class EssayGenerator {
     }
   }
 
+  // Private helper to generate document text from OpenAI.
   private async generateDocument(): Promise<string> {
     const prompt = this.createPrompt();
-
     try {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY_35 || "" });
       const response = await openai.chat.completions.create({
@@ -157,7 +168,6 @@ export abstract class EssayGenerator {
           subType: this._documentType
         }
       });
-
       const documentText = response.choices?.[0]?.message?.content?.trim() ?? "No response generated.";
       return documentText;
     } catch (error) {
@@ -166,6 +176,7 @@ export abstract class EssayGenerator {
     }
   }
 
+  // Creates a Word document buffer from generated text using docx.
   private static async createWordDocumentBuffer(generatedText: string): Promise<Buffer> {
     const doc = new Document({
       sections: [
@@ -180,50 +191,17 @@ export abstract class EssayGenerator {
         }
       ]
     });
-
     return await Packer.toBuffer(doc);
   }
 
-  private static async saveToDatabase(
-    userId: string,
-    url: string,
-    content: string,
-    filename: string,
-    s3Key: string,
-    description: string
-  ): Promise<{ id: number; name: string }> {
-    const result = await db
-      .insert(documentsTable)
-      .values({
-        userId: userId,
-        type: "ecq",
-        source: "APPLICATION_GENERATED",
-        url: url,
-        s3Key: s3Key,
-        content: content,
-        name: filename,
-        description: description,
-        isParsed: true,
-        data: {}
-      })
-      .returning();
-
-    if (!result || result.length !== 1) {
-      throw new Error("Error saving object to database");
-    }
-
-    return { id: result[0].id, name: result[0].name };
-  }
-
+  // This method formats length requirements based on the generation selection.
   protected formatLengthRequirementNOMORETHAN_X_WORDSorPAGES(): string {
     const { length, lengthUnit } = this._generationSelection;
-    if (lengthUnit === 'words') {
+    if (lengthUnit === "words") {
       return `NO MORE THAN ${length} WORDS`;
-    } else if (lengthUnit === 'pages') {
+    } else if (lengthUnit === "pages") {
       return `NO MORE THAN ${length} PAGES`;
     }
-    return '';
+    return "";
   }
-  
 }
-

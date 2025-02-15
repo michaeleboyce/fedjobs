@@ -14,8 +14,6 @@ import {
 import { PositionRecord, NewPositionRecord } from '@fedjobs/database';
 import { Position } from "@fedjobs/types";
 import { v4 as uuidv4 } from 'uuid';
-import { db, eq } from '@fedjobs/database';
-import { positions as positionsTable } from '@fedjobs/database';
 
 /* Existing types and functions remain unchanged */
 

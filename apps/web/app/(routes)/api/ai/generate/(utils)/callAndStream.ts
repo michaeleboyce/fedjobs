@@ -1,11 +1,10 @@
-// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
-// /apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
-
-// import { ReadableStream } from "web-streams-polyfill/ponyfill"; // Ensure compatibility
+// apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
+// Refactored to use the GenerationRepository for saving AI generations.
 import { db } from "@fedjobs/database";
-import { generations as generationsTable } from "@fedjobs/database";
 import { DocumentType } from "@fedjobs/types";
 import { AIProviderStream } from "./interfaces";
+// Import GenerationRepository from the database repositories.
+import { GenerationRepository } from "@fedjobs/database";
 
 interface CallAndStreamOptions {
   prompt: string;
@@ -18,8 +17,11 @@ interface CallAndStreamOptions {
   provider?: "openai" | "anthropic";
 }
 
+const generationRepo = new GenerationRepository();
+
 /**
- * Handles the streaming process for any AI provider implementing AIProviderStream.
+ * Handles streaming of AI response.
+ * Accumulates tokens and, upon completion, saves the generation using the repository.
  */
 export async function callAndStreamAIResponse(
   providerStream: AIProviderStream,
@@ -35,9 +37,8 @@ export async function callAndStreamAIResponse(
           fullCompletion += token;
           controller.enqueue(encoder.encode(token));
         });
-      } catch (error: unknown) { // Explicitly type error as unknown
+      } catch (error: unknown) {
         console.error(`Error while streaming tokens:`, error);
-
         if (error instanceof Error) {
           controller.error(`Error while streaming tokens: ${error.message}`);
         } else {
@@ -47,19 +48,19 @@ export async function callAndStreamAIResponse(
         controller.close();
 
         try {
-          await db.insert(generationsTable).values({
-            prompt: options.prompt,
+          // Instead of using raw db.insert, use the GenerationRepository.
+          await generationRepo.insert({
+            userId: options.userId,
             type: options.type,
             isParagraph: options.isParagraph,
-            userId: options.userId,
+            prompt: options.prompt,
             completion: fullCompletion,
-            temperature: options.temperature.toFixed(1), // Ensures one decimal place
+            temperature: options.temperature.toFixed(1),
           });
         } catch (dbErr) {
           console.error("DB insertion error:", dbErr);
         }
 
-        // Cleanup the provider stream
         providerStream.cleanup();
       }
     },

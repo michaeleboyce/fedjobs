@@ -2,8 +2,7 @@
 // apps/api/src/routes/parsingStatus.ts
 
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { db, eq, desc, getLatestParsingByDocId } from "@fedjobs/database";
-import { parsings } from "@fedjobs/database/src/schema/parsings";
+import { getLatestParsingByDocId } from "@fedjobs/database";
 import { ApiError } from '../middleware/error';
 
 const router: Router = express.Router();

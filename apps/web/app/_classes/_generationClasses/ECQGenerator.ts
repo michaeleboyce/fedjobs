@@ -1,10 +1,8 @@
 // File path: apps/web/app/_classes/_generationClasses/ECQGenerator.ts
 // ECQGenerator.ts
-import { PositionObject } from "../Position";
 import { EssayGenerator } from "./EssayGenerator";
 import { ECQCompetency } from "@/app/_types/ECQCompetencies";
 import { ECQ_COMPENTENCIES } from "@/app/_utils/Constants";
-import { JobInfo } from "@fedjobs/types";
 import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
 

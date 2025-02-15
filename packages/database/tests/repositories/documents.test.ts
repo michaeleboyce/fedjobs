@@ -64,8 +64,8 @@ describe('DocumentRepository', () => {
   // Optional: test the prepared query functionality.
   it('should execute a prepared query to get documents by userId', async () => {
     // Insert a document first.
-    const docData: Document = {
-      userId: 'prepared-test',
+    const docData: DocumentRecord = {
+      
       type: "resume",
       source: "USER_UPLOADED",
       url: 'http://example.com/prep.pdf',
