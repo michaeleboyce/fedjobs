@@ -4,8 +4,14 @@ import { Resume } from '@/app/_classes/Resume';
 import { notFound } from 'next/navigation';
 import { ResumePageManager } from './_Components/ResumePageManager';
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = params;
+// Update the props type so that params is a Promise containing the id.
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // Await the params promise to extract the id value.
+  const { id } = await params;
   
   // Retrieve session and user details
   const session = await getKindeServerSession();

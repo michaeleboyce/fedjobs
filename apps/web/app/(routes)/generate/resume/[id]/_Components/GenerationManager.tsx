@@ -70,13 +70,15 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
 
   const handleViewClick = async (documentId: number) => {
     const response = await getDocumentSignedURL(documentId);
-    if (response.success) {
+    if ('failure' in response) {
+      alert('Error retrieving document: ' + response.failure);
+    } else if ('success' in response && response.success) {
       window.open(response.success.url, '_blank');
     } else {
-      alert('Error retrieving document: ' + response.failure);
+      alert('Unexpected response format');
     }
   };
-
+  
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
     if (!selectedState.positions.length) {
       console.error("No positions selected");
