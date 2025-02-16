@@ -1,7 +1,7 @@
 // File path: apps/web/app/(routes)/documents/_Components/DocumentCard.tsx
 'use client'
 import React, { useRef, useState } from 'react';
-import { deleteDocument, getDocumentSignedURL, getUpdatedDocumentStatus } from '../../../_actions/files/fileActions';
+import { deleteDocument, getDocumentSignedURL, } from '../../../_actions/files/fileActions';
 import { DocumentRecord } from '@fedjobs/database';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faChevronDown, faChevronUp, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
@@ -55,7 +55,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   const handleViewClick = async (documentId: number) => {
     // Call getDocumentSignedURL and handle the result
       const response = await getDocumentSignedURL(documentId);
-      if (response.success) {
+      if ("success" in response) {
           window.open(response.success.url, '_blank');
       } else {
           alert('Error retrieving document: ' + response.failure);

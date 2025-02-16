@@ -32,10 +32,30 @@
 │       │   │   │   ├── ai
 │       │   │   │   │   ├── generate
 │       │   │   │   │   │   ├── (utils)
+│       │   │   │   │   │   │   ├── ClaudeStream.ts
+│       │   │   │   │   │   │   ├── OpenAIStream.ts
+│       │   │   │   │   │   │   ├── callAndStream.ts
+│       │   │   │   │   │   │   ├── callApi.ts
+│       │   │   │   │   │   │   ├── interfaces.ts
+│       │   │   │   │   │   │   ├── streamHandler.ts
+│       │   │   │   │   │   │   ├── types.d.ts
+│       │   │   │   │   │   │   └── types.ts
 │       │   │   │   │   │   ├── cover_letter
+│       │   │   │   │   │   │   ├── paragraph
+│       │   │   │   │   │   │   │   └── route.ts
+│       │   │   │   │   │   │   └── route.ts
 │       │   │   │   │   │   ├── ecq
+│       │   │   │   │   │   │   ├── paragraph
+│       │   │   │   │   │   │   │   └── route.ts
+│       │   │   │   │   │   │   └── route.ts
 │       │   │   │   │   │   ├── other
+│       │   │   │   │   │   │   ├── paragraph
+│       │   │   │   │   │   │   │   └── route.ts
+│       │   │   │   │   │   │   └── route.ts
 │       │   │   │   │   │   └── tcq
+│       │   │   │   │   │       ├── paragraph
+│       │   │   │   │   │       │   └── route.ts
+│       │   │   │   │   │       └── route.ts
 │       │   │   │   │   └── vectorize
 │       │   │   │   │       └── route.ts
 │       │   │   │   └── auth
@@ -64,6 +84,9 @@
 │       │   │   │   │       ├── RegenerationTools.tsx
 │       │   │   │   │       ├── SaveSuccessMessage.tsx
 │       │   │   │   │       └── _AdditionalInfoBox
+│       │   │   │   │           ├── DocumentInfo.tsx
+│       │   │   │   │           ├── JobInfoInput.tsx
+│       │   │   │   │           └── JobSearch.tsx
 │       │   │   │   ├── _Providers
 │       │   │   │   │   └── GenerationProvider.tsx
 │       │   │   │   ├── page.tsx
@@ -71,6 +94,17 @@
 │       │   │   │       └── [id]
 │       │   │   │           ├── PageClient.tsx
 │       │   │   │           ├── _Components
+│       │   │   │           │   ├── AdditionalInfoBox.tsx
+│       │   │   │           │   ├── GenerateBottomBar.tsx
+│       │   │   │           │   ├── GeneratedDocumentCard.tsx
+│       │   │   │           │   ├── GenerationManager.tsx
+│       │   │   │           │   ├── StreamingDocumentViewer.tsx
+│       │   │   │           │   └── _Subcomponents
+│       │   │   │           │       ├── GenerateButton.tsx
+│       │   │   │           │       ├── ParagraphControls.tsx
+│       │   │   │           │       ├── RegenerationTools.tsx
+│       │   │   │           │       ├── SaveSuccessMessage.tsx
+│       │   │   │           │       └── _AdditionalInfoBox
 │       │   │   │           └── page.tsx
 │       │   │   ├── resume
 │       │   │   │   └── [id]
@@ -197,16 +231,22 @@
 │   │   │   ├── _depricated_old)dbService.ts
 │   │   │   ├── db-connection.ts
 │   │   │   ├── index.ts
-│   │   │   ├── queries
-│   │   │   │   ├── documentQueries.ts
-│   │   │   │   ├── parsingQueries.ts
-│   │   │   │   ├── positionQueries.ts
-│   │   │   │   └── query.ts
+│   │   │   ├── repositories
+│   │   │   │   ├── documents.ts
+│   │   │   │   ├── generations.ts
+│   │   │   │   ├── parsings.ts
+│   │   │   │   └── positions.ts
 │   │   │   └── schema
 │   │   │       ├── documents.ts
 │   │   │       ├── generations.ts
 │   │   │       ├── parsings.ts
 │   │   │       └── positions.ts
+│   │   ├── tests
+│   │   │   └── repositories
+│   │   │       ├── documents.test.ts
+│   │   │       ├── generations.test.ts
+│   │   │       ├── parsings.test.ts
+│   │   │       └── positions.test.ts
 │   │   └── tsconfig.json
 │   ├── types
 │   │   ├── package.json
@@ -255,4 +295,4 @@
 ├── turbo.json
 └── vitest.config.ts
 
-91 directories, 165 files
+99 directories, 197 files

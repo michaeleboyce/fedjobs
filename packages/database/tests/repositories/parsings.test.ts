@@ -1,3 +1,4 @@
+// File path: packages/database/tests/repositories/parsings.test.ts
 // packages/database/tests/repositories/parsings.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ParsingRepository } from '../../src/repositories/parsings';

@@ -101,11 +101,12 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
       const { text, type } = data;
       const result = await processFile(formData, shouldAddToKnowledgeBank, documentType, description, text);
       
-      if (result.success) {
+      if ("success" in result) {
+        // This is the success branch
         addDocument(result.success.document);
       } else {
-        //@ts-ignore  
-        throw new Error(result.error || 'Failed to process file');
+        // This is the failure branch
+        throw new Error(result.failure || "Failed to process file");
       }
       //#endregion
     } catch (error) {

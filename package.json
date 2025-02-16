@@ -7,6 +7,7 @@
     "generate-tree": "./generate-directory-tree.sh",
     "add-file-names": "node add-file-path-comments.js",
     "export-key-contents": "bash projectRefactor.sh",
+    "export-key-contents-and-web": "bash projectRefactor.sh ./apps/web/app",
     "test": "turbo run test",
     "dev": "turbo run dev",
     "build": "turbo run build",

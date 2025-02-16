@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/_Components/GenerateBottomBar.tsx
 // apps/web/app/(routes)/generate/_Components/GenerateBottomBar.tsx
 
 import React from "react";

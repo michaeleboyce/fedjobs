@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/streamHandler.ts
 // apps/web/app/(routes)/api/ai/generate/(utils)/streamHandler.ts
 // Refactored to use GenerationRepository for saving streaming results.
 import { DocumentType } from "@fedjobs/types";

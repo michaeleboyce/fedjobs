@@ -2,15 +2,12 @@
 // apps/api/src/routes/parsingStatus.ts
 
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { getLatestParsingByDocId } from "@fedjobs/database";
+import { ParsingRepository } from "@fedjobs/database";
 import { ApiError } from '../middleware/error';
 
 const router: Router = express.Router();
+const parsingRepository = new ParsingRepository(); // Instantiate your repository here
 
-/**
- * GET /api/parse/status/:documentId
- * Retrieves the latest parsing status for a specific document.
- */
 router.get('/:documentId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const documentId = parseInt(req.params.documentId, 10);
@@ -18,8 +15,8 @@ router.get('/:documentId', async (req: Request, res: Response, next: NextFunctio
       throw new ApiError(400, 'Invalid document ID');
     }
 
-    // Use your new query function:
-    const parseTask = await getLatestParsingByDocId(documentId);
+    // Use the ParsingRepository's method getLatestByDocumentId
+    const parseTask = await parsingRepository.getLatestByDocumentId(documentId);
     if (!parseTask) {
       throw new ApiError(404, 'No parsing task found for this document');
     }
@@ -28,7 +25,7 @@ router.get('/:documentId', async (req: Request, res: Response, next: NextFunctio
       parseId: parseTask.id,
       isComplete: parseTask.isComplete,
       progress: parseTask.analysisPercent,
-      isError: parseTask.completion === 'Error', // Adjust based on your error handling
+      isError: parseTask.completion === 'Error',
       completionText: parseTask.completion,
     });
   } catch (error) {

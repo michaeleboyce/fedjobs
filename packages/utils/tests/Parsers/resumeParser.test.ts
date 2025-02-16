@@ -1,3 +1,4 @@
+// File path: packages/utils/tests/Parsers/resumeParser.test.ts
 /**
  * This test suite verifies the parsing of resume XML-like strings.
  * We test both individual position parsing and full resume parsing.

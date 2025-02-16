@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 // File: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 
 "use client";

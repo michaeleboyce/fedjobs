@@ -4,9 +4,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import React from "react";
 
-// If you still want to fetch some user-specific data here (like # of documents, etc.),
-// import and call your DB queries, e.g.:
-// import { getDocsByUserId } from "@fedjobs/database";
 
 export default async function DashboardPage() {
   const { isAuthenticated, getUser } = await getKindeServerSession();

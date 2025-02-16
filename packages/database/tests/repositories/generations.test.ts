@@ -1,3 +1,4 @@
+// File path: packages/database/tests/repositories/generations.test.ts
 // packages/database/tests/repositories/generations.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { GenerationRepository } from '../../src/repositories/generations';

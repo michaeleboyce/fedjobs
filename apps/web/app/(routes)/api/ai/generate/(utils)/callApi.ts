@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callApi.ts
 // File: apps/web/app/(routes)/api/ai/generate/(utils)/callApi.ts
 
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";

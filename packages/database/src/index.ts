@@ -11,11 +11,6 @@ export * from './schema/generations';
 export * from './schema/parsings';
 export * from "./schema/positions"; 
 
-
-export * from './queries/parsingQueries';
-export * from './queries/documentQueries';
-export * from "./queries/positionQueries";
-
 export * from './repositories/documents';
 export * from './repositories/generations'; 
 export * from './repositories/parsings';

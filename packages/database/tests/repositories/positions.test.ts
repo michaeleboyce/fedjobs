@@ -1,3 +1,4 @@
+// File path: packages/database/tests/repositories/positions.test.ts
 // packages/database/tests/repositories/positions.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PositionRepository } from '../../src/repositories/positions';

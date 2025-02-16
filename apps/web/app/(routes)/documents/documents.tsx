@@ -1,6 +1,6 @@
 // File path: apps/web/app/(routes)/documents/documents.tsx
 'use client';
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   DocumentRecord
 } from "@fedjobs/database";

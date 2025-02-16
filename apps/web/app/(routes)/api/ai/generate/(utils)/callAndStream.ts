@@ -1,6 +1,6 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 // apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 // Refactored to use the GenerationRepository for saving AI generations.
-import { db } from "@fedjobs/database";
 import { DocumentType } from "@fedjobs/types";
 import { AIProviderStream } from "./interfaces";
 // Import GenerationRepository from the database repositories.

@@ -1,3 +1,4 @@
+// File path: apps/web/app/_classes/_generationClasses/EssayGenerator.ts
 // apps/web/app/_classes/_generationClasses/EssayGenerator.ts
 // Refactored to use DocumentRepository for saving generated documents.
 import { Document, Packer, Paragraph, TextRun } from "docx";

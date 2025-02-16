@@ -1,12 +1,16 @@
 #!/bin/bash
 
 # This script exports a directory tree structure and the contents of specific key files
-# into a single file named "key-contents.txt". Then it updates your project's package.json
-# to add a new script called "export-key-contents".
+# into a single file named "key-contents.txt". It also collects all .ts and .tsx files from
+# key directories (hard-coded in KEY_DIRECTORIES) and any directories passed as arguments,
+# ensuring no duplicate file paths are included.
 #
-# Below are the files that are likely most critical to refactor
-# (configuration, main entry points, or representative routes/services).
-# Adjust this list if needed.
+# Usage:
+#   chmod +x projectRefactor.sh
+#   ./projectRefactor.sh [dir1] [dir2] ...
+#
+# Example:
+#   ./projectRefactor.sh ./apps/web/app/_actions ./apps/web/app/_classes ./apps/web/app/_hooks ./apps/web/app/_types
 
 ############################################
 # 1) CONFIGURE WHICH FILES TO EXPORT       #
@@ -35,6 +39,7 @@ KEY_FILES=(
     "apps/api/src/middleware/error.ts"
     "apps/api/tests/services/parsingService.test.ts"
     "apps/api/src/types/index.ts"
+    
     # Apps/web essential
     "apps/web/package.json"
     "apps/web/tsconfig.json"
@@ -85,11 +90,65 @@ KEY_FILES=(
     # ADDITIONS FOR PACKAGES/UTILS
     "packages/utils/src/Parsers/ResumeParsers.ts"
     "packages/utils/src/Services/S3Service/index.ts"
-
 )
 
 ############################################
-# 2) EXPORT FILE CONTENTS + DIRECTORY TREE #
+# 1.5) CONFIGURE KEY DIRECTORIES           #
+############################################
+# List directories whose .ts and .tsx files should be included.
+KEY_DIRECTORIES=(
+    "./apps/web/app/_actions"
+    "./apps/web/app/_classes"
+    "./apps/web/app/_hooks"
+    "./apps/web/app/_types"
+)
+
+############################################
+# 2) HELPER FUNCTION: ADD UNIQUE FILE      #
+############################################
+# This function adds a file to KEY_FILES if it isn't already included.
+add_unique_file() {
+    local file="$1"
+    for existing in "${KEY_FILES[@]}"; do
+        if [ "$existing" == "$file" ]; then
+            return 0  # file already exists; do nothing
+        fi
+    done
+    KEY_FILES+=("$file")
+}
+
+############################################
+# 3) PROCESS KEY_DIRECTORIES               #
+############################################
+for dir in "${KEY_DIRECTORIES[@]}"; do
+    if [ -d "$dir" ]; then
+        while IFS= read -r -d '' file; do
+            add_unique_file "$file"
+        done < <(find "$dir" -type f \( -name "*.ts" -o -name "*.tsx" \) -print0)
+    else
+        echo "Warning: '$dir' is not a directory. Ignoring."
+    fi
+done
+
+############################################
+# 4) OPTIONAL: COLLECT .TS/.TSX FROM ARGUMENTS
+############################################
+# If one or more directories are passed as arguments, add their .ts and .tsx files.
+if [ "$#" -gt 0 ]; then
+    for arg in "$@"; do
+        if [ -d "$arg" ]; then
+            echo "Collecting .ts and .tsx files from $arg ..."
+            while IFS= read -r -d '' file; do
+                add_unique_file "$file"
+            done < <(find "$arg" -type f \( -name "*.ts" -o -name "*.tsx" \) -print0)
+        else
+            echo "Warning: '$arg' is not a directory. Ignoring argument."
+        fi
+    done
+fi
+
+############################################
+# 5) EXPORT FILE CONTENTS + DIRECTORY TREE #
 ############################################
 export_key_contents() {
     # Clear (or create) key-contents.txt
@@ -106,16 +165,20 @@ export_key_contents() {
     done
 
     echo -e "\n\n===== DIRECTORY TREE STRUCTURE =====" >> key-contents.txt
-    # Use 'tree' to generate the directory structure, ignoring common build or version-control directories
-    tree -I 'node_modules|dist|build|.git|*.log|*.md' -P 'package.json|tsconfig.json|turbo.json|next.config.js|*.js|*.ts|*.tsx' -a -F >> key-contents.txt
+    # Generate the directory structure using 'tree', ignoring common build or VCS directories.
+    tree -I 'node_modules|dist|build|.git|*.log|*.md' \
+         -P 'package.json|tsconfig.json|turbo.json|next.config.js|*.js|*.ts|*.tsx' \
+         -a -F >> key-contents.txt
 
     echo -e "\nDone! Exported file contents and directory tree to key-contents.txt\n"
 }
 
-
 ############################################
-# 4) MAIN SCRIPT EXECUTION                 #
+# 6) MAIN SCRIPT EXECUTION                 #
 ############################################
 export_key_contents
 
-echo -e "\nUsage:\n  chmod +x projectRefactor.sh\n  ./projectRefactor.sh\nThen you can run:\n  npm run export-key-contents\n  pnpm run export-key-contents\n  yarn export-key-contents\n"
+echo -e "\nUsage:\n  chmod +x projectRefactor.sh\n  ./projectRefactor.sh [optional-directory]...\n\n" \
+         "You can run:\n  npm run export-key-contents\n  pnpm run export-key-contents\n  yarn export-key-contents\n" \
+         "If you provide directory arguments (e.g. ./projectRefactor.sh apps/web/app/_actions ...),\n" \
+         "they will be included in addition to the predefined KEY_FILES and KEY_DIRECTORIES.\n"

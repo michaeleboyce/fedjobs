@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Parsers/ResumeParsers.ts
 /**
  * This file contains functions for parsing XML-like annotated resume texts.
  * It extracts positions and their details and returns structured objects.
