@@ -71,7 +71,7 @@ export const PositionHeader: React.FC<PositionHeaderProps> = ({
                 <span>Create Employment History Position</span>
               </button>
             )}
-            {!isEditing && isEmploymentHistory && !isGenerationView &&(
+            {!isEditing && isEmploymentHistory && !isGenerationView && (
               <button
                 onClick={onRemoveFromEmploymentHistory}
                 disabled={isLoading}
@@ -109,13 +109,13 @@ export const PositionHeader: React.FC<PositionHeaderProps> = ({
             )}
             <button
               onClick={onExpandToggle}
-              className={buttonClasses.link}
+              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1 text-sm"
             >
               <FontAwesomeIcon 
                 icon={isExpanded ? faChevronUp : faChevronDown} 
-                className="h-3 w-3" 
+                className="h-4 w-4" 
               />
-              <span>{isExpanded ? "Hide" : "Show"}</span>
+              <span>{isExpanded ? "Hide" : "Expand"}</span>
             </button>
           </div>
         </div>

@@ -1,8 +1,9 @@
 FROM node:20-slim
 
 WORKDIR /app
-
-# Install pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g corepack@latest
 RUN corepack enable
 RUN corepack prepare pnpm@latest --activate
 
@@ -13,7 +14,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Build the API and its dependencies
-RUN npx turbo run build --filter=@fedjobs/api...
+RUN npx turbo run build --filter="@fedjobs/api..."
 
 EXPOSE 3001
-CMD ["sh", "-c", "env && pnpm --filter @fedjobs/api start"]
+CMD ["sh", "-c", "pnpm --filter @fedjobs/api start"]

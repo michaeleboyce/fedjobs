@@ -4,8 +4,6 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { processDocumentTextFromBuffer } from '../backend-utils/DocumentParsers';
-import { ApiError } from '../middleware/error';
-import { DocumentParseRequestSchema } from '@fedjobs/types';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();

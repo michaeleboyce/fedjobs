@@ -3,7 +3,7 @@
 
 import { authenticateUser } from "@fedjobs/utils";
 // Import repository classes
-import { PositionRepository, DocumentRepository } from "@fedjobs/database";
+import { PositionRepository, DocumentRepository, PositionRecord } from "@fedjobs/database";
 // Import types from our type package.
 import { Position } from "@fedjobs/types";
 import { v4 as uuidv4 } from 'uuid';
@@ -33,7 +33,7 @@ const documentRepo = new DocumentRepository();
  * Helper function to map a PositionRecord (raw DB record) to our Position type.
  * Note: Our Position type nests title, organization, date, and details while the DB stores them as flat strings/arrays.
  */
-const mapPositionRecordToPosition = (record: any): Position => ({
+const mapPositionRecordToPosition = (record: PositionRecord): Position => ({
   positionUuid: record.positionUuid,
   organization: { name: record.organization },
   title: { title: record.title },
