@@ -77,13 +77,6 @@ export class AIService {
               controller.enqueue(encoder.encode(text));
             });
             
-            stream.on('content_block_delta', (delta: any) => {
-              if (delta.delta.text) {
-                fullCompletion += delta.delta.text;
-                controller.enqueue(encoder.encode(delta.delta.text));
-              }
-            });
-            
             stream.on('end', () => controller.close());
             stream.on('error', (err: any) => controller.error(err));
           } else {
@@ -185,3 +178,4 @@ export class AIService {
 
 // Create and export a singleton instance
 export const aiService = new AIService();
+export * from './types';

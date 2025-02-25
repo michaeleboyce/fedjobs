@@ -16,7 +16,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { type: string } }
 ) {
-  const type = params.type as DocumentType;
+  const returnedParams = await params; 
+  const type = returnedParams.type as DocumentType; 
   
   // Map document types to their generator factories
   const generatorMap = {
