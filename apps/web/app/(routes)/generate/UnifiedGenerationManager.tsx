@@ -1,9 +1,9 @@
 // File path: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
-// File: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 
 'use client'
 import React, { useState, useCallback } from "react";
 import type { Position } from "@fedjobs/types";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import { useGenerationContext } from "./_Providers/GenerationProvider";
 
@@ -71,7 +71,7 @@ export function UnifiedGenerationManager({
 
   // Called when user clicks "Generate" or "Regenerate Paragraph"
   async function handleGenerateClick(paragraphId?: number, regenerationText?: string) {
-    // Build array of the user’s chosen positions/activities/accomplishments
+    // Build array of the user's chosen positions/activities/accomplishments
     const selectedPositions: SelectedPositionData[] = Object.entries(selectedState).flatMap(
       ([positionUuid, selections]) => {
         const posObj =
@@ -182,9 +182,11 @@ export function UnifiedGenerationManager({
     }
   }
 
-  // Example "save" handler
-  async function handleOnSave(paragraphs: string[]) {
-    const joinedText = paragraphs.join("\n\n");
+  // Handler for saving document to database/storage
+  async function handleOnSave() {
+    const paragraphTexts = streamingTextArray.map(p => p.text);
+    const joinedText = paragraphTexts.join("\n\n");
+    
     // Example: store doc in DB
     const result = await processNewECQDocument(joinedText, "ECQ Title");
     if (result.status === "ok") {
@@ -197,22 +199,63 @@ export function UnifiedGenerationManager({
     }
   }
 
+  const [selectedParagraphId, setSelectedParagraphId] = useState<number | null>(null);
+
+  function handleParagraphSelection(paragraphId: number) {
+    setSelectedParagraphId(paragraphId);
+  }
+
+  function handleParagraphTextUpdate(paragraphId: number, newText: string) {
+    setStreamingTextArray(prev => 
+      prev.map(p => p.id === paragraphId ? { ...p, text: newText } : p)
+    );
+  }
+
+  // Functions for paragraph manipulation
+  function handleParagraphDelete(paragraphId: number) {
+    setStreamingTextArray(prev => prev.filter(p => p.id !== paragraphId));
+  }
+
+  function handleParagraphMove(paragraphId: number, direction: 'up' | 'down') {
+    setStreamingTextArray(prev => {
+      const index = prev.findIndex(p => p.id === paragraphId);
+      if (index === -1) return prev;
+      
+      const newIndex = direction === 'up' ? Math.max(0, index - 1) : Math.min(prev.length - 1, index + 1);
+      if (newIndex === index) return prev;
+      
+      return arrayMove(prev, index, newIndex);
+    });
+  }
+  
+  // Handle drag and drop reordering
+  function handleParagraphReorder(paragraphs: string[]) {
+    // Map the updated text back to the existing array with preserved IDs
+    setStreamingTextArray(prev => {
+      if (prev.length !== paragraphs.length) {
+        console.error("Paragraph count mismatch during reordering");
+        return prev;
+      }
+      
+      return prev.map((paragraph, index) => ({
+        ...paragraph,
+        text: paragraphs[index]
+      }));
+    });
+  }
+
   return (
     <div className="p-4">
       <AdditionalInfoBox showIsDummy={docInfo.isDummy} />
-
       <StreamingDocumentViewer
-        documentName="Generated Document"
         streamingTextArray={streamingTextArray}
         isStreamingComplete={isStreamingComplete}
-        onSave={handleOnSave}
-        saveResult={saveResult}
+        onSave={handleParagraphReorder}
         onRegenerateParagraph={handleGenerateClick}
-        onParagraphDelete={() => {}}
-        onMoveParagraph={() => {}}
-        selectedParagraph={null}
-        onSelectParagraph={() => {}}
-        onParagraphTextUpdate={() => {}}
+        onSelectParagraph={handleParagraphSelection}
+        onParagraphTextUpdate={handleParagraphTextUpdate}
+        onParagraphDelete={handleParagraphDelete}
+        onParagraphMove={handleParagraphMove}
       />
 
       <GeneratePositions
@@ -227,6 +270,8 @@ export function UnifiedGenerationManager({
         isGenerateDisabled={!isGenerateEnabled}
         generatedDocuments={generatedDocuments}
         onViewDocument={(docId) => window.open(`/document/${docId}`, "_blank")}
+        onSaveDocument={handleOnSave}
+        isSaveEnabled={streamingTextArray.length > 0 && isStreamingComplete}
         // Pass the new props
         showModelSelector={showModelSelector}
         model={model}

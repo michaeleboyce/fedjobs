@@ -114,13 +114,11 @@ export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
           className="mb-4 w-full text-base p-2 border border-gray-300 rounded-md bg-white"
         >
           {DOCUMENT_TYPES.map((type) => {
-            if (type !== "resume") {
               return (
                 <option key={type} value={type}>
                   {getPrettyPrintType(type)}
                 </option>
               );
-            }
           })}
         </select>
 
