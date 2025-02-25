@@ -1,0 +1,59 @@
+// File: packages/utils/src/Services/AIService/types.ts
+
+/**
+ * AI providers supported by the service
+ */
+export type AIProvider = 'openai' | 'anthropic';
+
+/**
+ * AI model information
+ */
+export interface AIModel {
+  id: string;
+  name: string;
+  provider: AIProvider;
+}
+
+/**
+ * Options for streaming AI generation
+ */
+export interface AIStreamOptions {
+  model: string;
+  prompt: string;
+  temperature?: number;
+  maxTokens?: number;
+  userId?: string;
+}
+
+/**
+ * Parameters for non-streaming text generation
+ */
+export interface GenerationParams {
+  model: string;
+  prompt: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+/**
+ * Stream response from AI service
+ */
+export interface StreamResponse {
+  stream: ReadableStream<Uint8Array>;
+  getFullCompletion: () => string;
+}
+
+// Anthropic content types
+export interface TextBlock {
+  type: 'text';
+  text: string;
+}
+
+export interface ToolUseBlock {
+  type: 'tool_use';
+  id: string;
+  name: string;
+  input: Record<string, any>;
+}
+
+export type ContentBlock = TextBlock | ToolUseBlock;

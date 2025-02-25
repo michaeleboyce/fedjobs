@@ -39,7 +39,7 @@ const GenerateBottomBar: React.FC<GenerateBottomBarProps> = ({
           >
             <option value="o1-mini">ChatGPT: o1-mini</option>
             <option value="gpt-4o">ChatGPT: gpt-4o</option>
-            <option value="claude-3-5-sonnet-20241022">Claude: Sonnet</option>
+            <option value="claude-3-7-sonnet-20250219">Claude: Sonnet</option>
           </select>
         </div>
       )}

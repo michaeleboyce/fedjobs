@@ -48,7 +48,7 @@ export async function callApi(
   // 3. Decide which model stream to create
   //    We'll handle "o1" or "o1-mini" differently since they need max_completion_tokens, no temperature, etc.
   let providerStream;
-  let usedModel = model ?? "claude-3-5-sonnet-20241022"; // default to Claude if nothing passed
+  let usedModel = model ?? "claude-3-7-sonnet-20250219"; // default to Claude if nothing passed
 
   if (usedModel === "o1" || usedModel === "o1-mini") {
     // o1-series: use max_completion_tokens, no 'temperature', etc.
@@ -77,7 +77,7 @@ export async function callApi(
     });
   } else {
     // Fallback or unrecognized => default to Claude
-    usedModel = "claude-3-5-sonnet-20241022";
+    usedModel = "claude-3-7-sonnet-20250219";
     providerStream = new ClaudeStream({
       model: usedModel,
       prompt,

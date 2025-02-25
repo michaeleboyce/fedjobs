@@ -53,7 +53,7 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
   const showModelSelector = userEmail === "wizrb47@gmail.com";
 
   // 2) Track which model is chosen, default to Claude
-  const [model, setModel] = useState("claude-3-5-sonnet-20241022");
+  const [model, setModel] = useState("claude-3-7-sonnet-20250219");
 
   const handleSelectionChange = useCallback((newSelectedState: {
     positions: {

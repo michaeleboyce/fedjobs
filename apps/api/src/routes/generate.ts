@@ -27,7 +27,7 @@ router.post('/', async (
     if (streaming) {
       const stream = await anthropic.messages.create({
         messages: [{ role: 'user', content }],
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-7-sonnet-20250219',
         stream: true,
         max_tokens: 4096,
       });
@@ -50,7 +50,7 @@ router.post('/', async (
     } else {
       const response = await anthropic.messages.create({
         messages: [{ role: 'user', content }],
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-7-sonnet-20250219',
         max_tokens: 4096,
       });
 

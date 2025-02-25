@@ -65,7 +65,7 @@ export class ParsingService {
   private async processStream(text: string, parsingId: number): Promise<void> {
     const stream = await this.anthropic.messages.create({
       messages: [{ role: 'user', content: this.createPrompt(text) }],
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-7-sonnet-20250219',
       max_tokens: 4096,
       stream: true
     });
@@ -127,7 +127,7 @@ export class ParsingService {
     // Example: Just call anthropic synchronously
     const response = await this.anthropic.messages.create({
       messages: [{ role: 'user', content: this.createPrompt(request.text) }],
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-7-sonnet-20250219022',
       max_tokens: 4096
     });
 

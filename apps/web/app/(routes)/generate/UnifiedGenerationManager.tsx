@@ -47,7 +47,7 @@ export function UnifiedGenerationManager({
 
   // **We keep the chosen model in state** (so it doesn't reset on paragraph regeneration).
   // Default to "o1-mini" or whichever you want as a fallback.
-  const [model, setModel] = useState("claude-3-5-sonnet-20241022");
+  const [model, setModel] = useState("claude-3-7-sonnet-20250219");
 
   // AI streaming states
   const [streamingTextArray, setStreamingTextArray] = useState<StreamingTextArray>([]);

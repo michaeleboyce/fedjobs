@@ -3,3 +3,4 @@ export * from './AuthService';
 export * from './S3Service';
 export * from './KeyGenerationService';
 export * from '../ServerActions/VectorizationActions';
+export * from './AIService';
