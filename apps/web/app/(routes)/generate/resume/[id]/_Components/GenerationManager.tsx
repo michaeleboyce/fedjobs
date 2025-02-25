@@ -2,15 +2,15 @@
 'use client'
 import React, { useState, useCallback } from 'react';
 import { Resume as ResumeComponent } from '@/app/_components/Resume';
-import { AdditionalInfoBox } from './AdditionalInfoBox';
+import { AdditionalInfoBox } from '../../../_Shared/AdditionalInfoBox'; // Adjust the import path as needed
 import { ResumeObject } from '@/app/_classes/Resume';
 import { DUMMY_ECQ_PARAGRAPH_TEXT, DUMMY_FULL_ECQ_TEXT } from '@/app/_utils/Constants';
 import { PositionObject } from '@/app/_classes/Position';
 import { getDocumentSignedURL, processNewECQDocument } from '@/app/_actions/files/fileActions';
 import { GeneratedDocumentInformation } from '@/app/_types/GeneratedDocumentInformation';
-import GenerateBottomBar from './GenerateBottomBar';
+import  GenerateBottomBar  from '../../../_Shared/GenerateBottomBar'; // Adjust the import path as needed
 import { GenerationSelection } from '@/app/_types/GenerationSelection';
-import StreamingDocumentViewer from './StreamingDocumentViewer';
+import StreamingDocumentViewer from '../../../_Shared/StreamingDocumentViewer'; // Adjust the import path as needed
 import { createMockReader } from '@/app/_utils/mockReader';
 import { StreamingTextArray } from '@/app/_types/StreamingTextArray';
 import { useGenerationContext } from '../../../_Providers/GenerationProvider';

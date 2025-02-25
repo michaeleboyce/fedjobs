@@ -8,10 +8,10 @@ import type { Position } from "@fedjobs/types";
 
 import { useGenerationContext } from "./_Providers/GenerationProvider";
 
-import { AdditionalInfoBox } from "./_Components/AdditionalInfoBox";
+import { AdditionalInfoBox } from "./_Shared/AdditionalInfoBox";
 import { GeneratePositions } from "./_Components/GeneratePositions";
-import GenerateBottomBar from "./_Components/GenerateBottomBar";
-import StreamingDocumentViewer from "./_Components/StreamingDocumentViewer";
+import GenerateBottomBar from "./_Shared/GenerateBottomBar";
+import StreamingDocumentViewer from "./_Shared/StreamingDocumentViewer";
 
 import { createMockReader } from "@/app/_utils/mockReader";
 import { DUMMY_FULL_ECQ_TEXT } from "@/app/_utils/Constants";

@@ -2,7 +2,7 @@
 'use client'
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { DocumentInfo } from '@/app/_types/DocumentInfo';
-import { DOCUMENT_TYPES } from '@/app/_utils/Constants';
+import { DOCUMENT_TYPES } from '@fedjobs/utils';
 import { Job, JobInfo } from '@fedjobs/types';
 import { getTCQEssayPrompts } from '@/app/_actions/usaJobsActions';
 

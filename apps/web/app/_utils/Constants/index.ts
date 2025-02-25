@@ -299,8 +299,6 @@ export const DUMMY_FULL_ECQ_URL = `https://fedjobs.s3.us-east-2.amazonaws.com/Ge
 
 export const DUMMY_FULL_ECQ_DOC_ID = 12;
 
-export const DOCUMENT_TYPES: [string, ...string[]]=["resume", "ecq", "tcq","cover_letter", "other"];
-export const GENERATION_TYPES: [string, ...string[]]=["resume", "ecq", "tcq","cover_letter","paragraph", "other"];
 
 export const getPrettyPrintType = (type: string) => {
   switch(type){

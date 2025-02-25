@@ -2,8 +2,8 @@
 // apps/web/app/(routes)/generate/_Components/GenerateBottomBar.tsx
 
 import React from "react";
-import GenerateButton from "@/app/(routes)/generate/resume/[id]/_Components/_Subcomponents/GenerateButton";
-import { GeneratedDocumentCard } from "./GeneratedDocumentCard";
+import GenerateButton from "@/app/(routes)/generate/_Shared/_Subcomponents/GenerateButton";
+import { GeneratedDocumentCard } from "../_Components/GeneratedDocumentCard";
 import { GeneratedDocumentInformation } from "@/app/_types/GeneratedDocumentInformation";
 
 interface GenerateBottomBarProps {
