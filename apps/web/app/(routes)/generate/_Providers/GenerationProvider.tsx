@@ -1,6 +1,6 @@
 // File path: apps/web/app/(routes)/generate/_Providers/GenerationProvider.tsx
 'use client'
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DocumentInfo } from '@/app/_types/DocumentInfo';
 import { DOCUMENT_TYPES } from '@fedjobs/utils';
 import { Job, JobInfo } from '@fedjobs/types';
@@ -67,23 +67,7 @@ export const GenerationProvider: React.FC<GenerationProviderProps> = ({ children
   } 
   }
   const setJob = async (job: Job) => {
-    // const details = job.MatchedObjectDescriptor;
-    // const jobInfoString = [
-    //     `${details.PositionTitle}, ${details.DepartmentName}`,
-    //     `Location: ${details.PositionLocationDisplay}`,
-    //     `Organization: ${details.OrganizationName}`,
-    //     `SubAgency: ${details.SubAgency}`,
-    //     `Grade: ${details.JobGrade?.[0].Code ?? ''}`,
-    //     `Schedule: ${details.PositionSchedule?.[0].Name ?? ''}`,
-    //     `Open Period: ${formatDateMMDDYYYY(details.PositionStartDate)} - ${formatDateMMDDYYYY(details.PositionEndDate)}`,
-    //     `Qualifications: ${details.QualificationSummary}`,
-    //     `Agency Marketing Statement: ${details.UserArea.Details.AgencyMarketingStatement}`,
-    //     `Major Duties: ${details.UserArea.Details.MajorDuties.join(' ')}`,
-    //     `Evaluations: ${details.UserArea.Details.Evaluations}`,
-    // ].join('\n');
-    //setJobDescription(jobInfoString);
     setJobInfo({...jobInfo, job});
-    // Update other states as necessary
 };
 
   const setJobPostingUrl = (url: string) => {

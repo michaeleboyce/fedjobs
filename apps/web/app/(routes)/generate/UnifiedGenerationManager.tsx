@@ -1,8 +1,7 @@
 // File path: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 // File: apps/web/app/(routes)/generate/UnifiedGenerationManager.tsx
 
-"use client";
-
+'use client'
 import React, { useState, useCallback } from "react";
 import type { Position } from "@fedjobs/types";
 
