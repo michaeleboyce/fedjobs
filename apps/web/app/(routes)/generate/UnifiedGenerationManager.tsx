@@ -255,7 +255,7 @@ export function UnifiedGenerationManager({
         onSelectParagraph={handleParagraphSelection}
         onParagraphTextUpdate={handleParagraphTextUpdate}
         onParagraphDelete={handleParagraphDelete}
-        onParagraphMove={handleParagraphMove}
+        onMoveParagraph={handleParagraphMove}
       />
 
       <GeneratePositions

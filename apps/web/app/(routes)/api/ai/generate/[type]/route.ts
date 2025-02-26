@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
   const returnedParams = await params; 
   const type = returnedParams.type as DocumentType; 

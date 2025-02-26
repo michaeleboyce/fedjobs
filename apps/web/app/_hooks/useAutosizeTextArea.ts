@@ -6,7 +6,7 @@ import { useEffect } from 'react';
  * @param value The text content of the textarea
  */
 export const useAutosizeTextArea = (
-  textAreaRef: React.RefObject<HTMLTextAreaElement>,
+  textAreaRef: React.RefObject<HTMLTextAreaElement | null>,
   value: string
 ) => {
   useEffect(() => {

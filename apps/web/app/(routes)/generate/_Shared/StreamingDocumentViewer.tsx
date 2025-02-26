@@ -9,14 +9,18 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import useParagraphKeyboardShortcuts from '@/app/_hooks/useParagraphKeyboardShortcuts';
 
 interface StreamingDocumentViewerProps {
+  // Add these two missing props
+  documentName?: string;
+  saveResult?: { url: string; message: string };
   streamingTextArray: StreamingTextArray;
   isStreamingComplete: boolean;
-  onSave: (paragraphs: string[]) => void; // For reordering paragraphs (used by DnD)
+  onSave: (paragraphs: string[]) => void;
   onRegenerateParagraph: (paragraphId: number, regenerationText?: string) => Promise<void>;
   onSelectParagraph: (paragraphId: number) => void;
   onParagraphTextUpdate: (paragraphId: number, newText: string) => void;
-  onParagraphDelete: (paragraphId: number) => void;
-  onParagraphMove: (paragraphId: number, direction: 'up' | 'down') => void;
+  onParagraphDelete: (id: number) => void;
+  onMoveParagraph: (id: number, direction: 'up' | 'down') => void;
+  selectedParagraph?: number | null;
 }
 
 /**
@@ -30,7 +34,7 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
   onSelectParagraph,
   onParagraphTextUpdate,
   onParagraphDelete,
-  onParagraphMove,
+  onMoveParagraph
 }) => {
   const [selectedParagraphId, setSelectedParagraphId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -130,7 +134,7 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
 
   const handleMoveParagraph = (id: number, direction: 'up' | 'down') => {
     setSelectedParagraphId(id);
-    onParagraphMove(id, direction);
+    onMoveParagraph(id, direction);
   };
 
   // No need for async/await since our onSave now just updates state

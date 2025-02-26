@@ -11,34 +11,30 @@ import { OtherGenerator } from '@/app/_classes/_generationClasses/OtherGenerator
 import { DocumentType } from '@fedjobs/types';
 
 export const runtime = 'nodejs';
-
 export async function POST(
   request: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
-  const type = params.type as DocumentType;
+  const { type } = await params;
   
   // Map document types to their generator factories
   const generatorMap = {
-    'ecq': (generationSelection: any) => {
-      return new ECQGenerator(generationSelection.docInfo.ecqShortTitle, generationSelection);
-    },
+    'ecq': (generationSelection: any) =>
+      new ECQGenerator(generationSelection.docInfo.ecqShortTitle, generationSelection),
     'tcq': (generationSelection: any) => new TCQGenerator(generationSelection),
     'cover_letter': (generationSelection: any) => new CoverLetterGenerator(generationSelection),
-    'resume': (generationSelection: any) => new ResumeGenerator(generationSelection
-    ),
+    'resume': (generationSelection: any) => new ResumeGenerator(generationSelection),
     'other': (generationSelection: any) => new OtherGenerator(generationSelection),
   } as const;
-  
-  // Use the appropriate generator factory based on the type
-  const generatorFactory = generatorMap[type];
-  
+
+  const generatorFactory = generatorMap[type as keyof typeof generatorMap];
+
   if (!generatorFactory) {
-    return new Response(JSON.stringify({ error: `Unsupported document type: ${type}` }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({ error: `Unsupported document type: ${type}` }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
-  
+
   return callApi(request, generatorFactory, true);
 }
