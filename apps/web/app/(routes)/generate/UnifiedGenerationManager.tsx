@@ -229,21 +229,18 @@ export function UnifiedGenerationManager({
   }
   
   // Handle drag and drop reordering
-  function handleParagraphReorder(paragraphs: string[]) {
-    // Map the updated text back to the existing array with preserved IDs
-    setStreamingTextArray(prev => {
-      if (prev.length !== paragraphs.length) {
-        console.error("Paragraph count mismatch during reordering");
-        return prev;
+  function handleParagraphReorder(data: string[] | StreamingTextArray) {
+    if (Array.isArray(data)) {
+      if (data.length > 0 && typeof data[0] === 'string') {
+        // Handle string array (final document save)
+        const paragraphTexts = data as string[];
+        // If you need to do something with the saved document text
+      } else {
+        // Handle StreamingTextArray (paragraph reordering)
+        setStreamingTextArray(data as StreamingTextArray);
       }
-      
-      return prev.map((paragraph, index) => ({
-        ...paragraph,
-        text: paragraphs[index]
-      }));
-    });
+    }
   }
-
   return (
     <div className="p-4">
       <AdditionalInfoBox showIsDummy={docInfo.isDummy} />
@@ -272,7 +269,6 @@ export function UnifiedGenerationManager({
         onViewDocument={(docId) => window.open(`/document/${docId}`, "_blank")}
         onSaveDocument={handleOnSave}
         isSaveEnabled={streamingTextArray.length > 0 && isStreamingComplete}
-        // Pass the new props
         showModelSelector={showModelSelector}
         model={model}
         setModel={setModel}

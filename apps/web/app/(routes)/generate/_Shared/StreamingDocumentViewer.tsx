@@ -8,13 +8,15 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import useParagraphKeyboardShortcuts from '@/app/_hooks/useParagraphKeyboardShortcuts';
 
+// In StreamingDocumentViewer.tsx, update the interface:
+
 interface StreamingDocumentViewerProps {
-  // Add these two missing props
   documentName?: string;
   saveResult?: { url: string; message: string };
   streamingTextArray: StreamingTextArray;
   isStreamingComplete: boolean;
-  onSave: (paragraphs: string[]) => void;
+  // Update this prop type to accept either string[] or StreamingTextArray
+  onSave: (paragraphs: string[] | StreamingTextArray) => void;
   onRegenerateParagraph: (paragraphId: number, regenerationText?: string) => Promise<void>;
   onSelectParagraph: (paragraphId: number) => void;
   onParagraphTextUpdate: (paragraphId: number, newText: string) => void;
@@ -39,7 +41,7 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
   const [selectedParagraphId, setSelectedParagraphId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [regenerateMode, setRegenerateMode] = useState(false);
-
+  
   // Set up drag sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -137,7 +139,6 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
     onMoveParagraph(id, direction);
   };
 
-  // No need for async/await since our onSave now just updates state
   const handleSaveDocument = () => {
     const paragraphTexts = streamingTextArray.map(p => p.text);
     onSave(paragraphTexts);
@@ -161,7 +162,7 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
     onSelectParagraph(newParagraphId);
   };
 
-  // Handle drag end events
+  // FIX: Updated handleDragEnd to maintain paragraph IDs and order
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
@@ -170,14 +171,20 @@ const StreamingDocumentViewer: React.FC<StreamingDocumentViewerProps> = ({
       const oldIndex = streamingTextArray.findIndex(item => item.id === active.id);
       const newIndex = streamingTextArray.findIndex(item => item.id === over.id);
       
-      // Calculate what the new array would look like
-      const newItems = arrayMove(streamingTextArray, oldIndex, newIndex);
-      
-      // Ask the parent component to save this change
-      // This ensures state is managed in one place (parent component)
-      onSave(newItems.map(p => p.text));
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Create a new array with the reordered paragraphs
+        const reorderedArray = arrayMove([...streamingTextArray], oldIndex, newIndex);
+        
+        // Send the entire reordered StreamingTextArray to the parent
+        onSave(reorderedArray);
+        
+        // Update the selected paragraph if needed
+        if (selectedParagraphId === active.id) {
+          setSelectedParagraphId(active.id as number);
+        }
+      }
     }
-  };
+  }
 
   // Use our custom hook for keyboard shortcuts
   useParagraphKeyboardShortcuts({

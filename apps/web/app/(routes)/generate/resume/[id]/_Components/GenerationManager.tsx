@@ -184,21 +184,31 @@ const GenerationManager: React.FC<GenerationManagerProps> = ({ resume, userEmail
     setStreamingTextArray(paragraphs);
   };
 
-  const handleOnSave = async (paragraphs: string[]) => {
-    const result = await processNewECQDocument(
-      paragraphs.join('\n\n'),
-      docInfo.ecqShortTitle || ''
-    );
-    if (result.status === 'ok') {
-      setSaveResult({
-        url: result.body.url,
-        message: "Document Successfully Saved - Click here to view"
-      });
-    } else {
-      setSaveResult({ url: '', message: "Save error occurred" });
+  const handleOnSave = async (data: string[] | StreamingTextArray) => {
+    if (Array.isArray(data)) {
+      if (data.length > 0 && typeof data[0] === 'string') {
+        // This is a string array for document saving
+        const paragraphs = data as string[];
+        
+        const result = await processNewECQDocument(
+          paragraphs.join('\n\n'),
+          docInfo.ecqShortTitle || ''
+        );
+        
+        if (result.status === 'ok') {
+          setSaveResult({
+            url: result.body.url,
+            message: "Document Successfully Saved - Click here to view"
+          });
+        } else {
+          setSaveResult({ url: '', message: "Save error occurred" });
+        }
+      } else {
+        // This is a StreamingTextArray for reordering
+        setStreamingTextArray(data as StreamingTextArray);
+      }
     }
   };
-
   const handleParagraphTextUpdate = useCallback((paragraphId: number, newText: string) => {
     setStreamingTextArray(currentArray =>
       currentArray.map(paragraph =>
