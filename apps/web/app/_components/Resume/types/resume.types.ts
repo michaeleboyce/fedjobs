@@ -1,6 +1,6 @@
 // File path: apps/web/app/_components/Resume/types/resume.types.ts
-import { ResumeObject } from '@/app/_classes/Resume';
-import { PositionObject } from '@/app/_classes/Position';
+import { ResumeObject } from '@/app/shared/types/Resume';
+import { PositionObject } from '@/app/shared/types/Position';
 
 /**
  * Props for the TestResume component

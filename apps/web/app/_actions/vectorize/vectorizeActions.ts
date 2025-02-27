@@ -1,6 +1,6 @@
 // File path: apps/web/app/_actions/vectorize/vectorizeActions.ts
 'use server'
-import { PINECONE_INDEX_NAME } from '@/app/_utils/Constants';
+import { PINECONE_INDEX_NAME } from '@/app/shared/utils/Constants';
 import { Pinecone } from '@pinecone-database/pinecone';
 
 type IndexMetaData = {

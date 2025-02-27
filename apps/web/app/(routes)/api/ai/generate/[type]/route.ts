@@ -3,11 +3,11 @@ import { NextRequest } from 'next/server';
 import { callApi } from '../(utils)/callApi';
 
 // Import all generators
-import { ECQGenerator } from '@/app/_classes/_generationClasses/ECQGenerator';
-import { TCQGenerator } from '@/app/_classes/_generationClasses/TCQGenerator';
-import { CoverLetterGenerator } from '@/app/_classes/_generationClasses/CoverLetterGenerator';
-import { ResumeGenerator } from '@/app/_classes/_generationClasses/ResumeGenerator';
-import { OtherGenerator } from '@/app/_classes/_generationClasses/OtherGenerator';
+import { ECQGenerator } from '@/app/features/generation/generators/ECQGenerator';
+import { TCQGenerator } from '@/app/features/generation/generators/TCQGenerator';
+import { CoverLetterGenerator } from '@/app/features/generation/generators/CoverLetterGenerator';
+import { ResumeGenerator } from '@/app/features/generation/generators/ResumeGenerator';
+import { OtherGenerator } from '@/app/features/generation/generators/OtherGenerator';
 import { DocumentType } from '@fedjobs/types';
 
 export const runtime = 'nodejs';

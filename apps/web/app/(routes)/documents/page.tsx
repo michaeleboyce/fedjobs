@@ -1,9 +1,9 @@
 // File path: apps/web/app/(routes)/documents/page.tsx
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
-import { DocumentManager } from "./DocumentManager";
+import { DocumentManager } from "@/app/features/documents/components/DocumentManager";
 import { DocumentRepository } from "@fedjobs/database";
-import { processDocumentFromFormData } from "@/app/_utils/documentParsing";
+import { processDocumentFromFormData } from "@/app/features/documents/utils/documentParsing";
 
 export default async function Page(){
     const {isAuthenticated, getUser} = await getKindeServerSession();

@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import TopBar from "./_components/TopBar";
-import { Breadcrumbs } from "./_components/Breadcrumbs";  // Import the Breadcrumbs component
+import TopBar from "./shared/components/TopBar";
+import { Breadcrumbs } from "./shared/components/Breadcrumbs";  // Import the Breadcrumbs component
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -1,11 +1,11 @@
 // File path: apps/web/app/_components/ReviewPositions/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
-import { usePositions } from "@/app/_components/PositionCard/Context/PositionsContext";
-import { PositionCard } from "@/app/_components/PositionCard";
-import { SearchBar } from "@/app/_components/SearchBar";
-import { YearSidebar } from "@/app/_components/YearSidebar";
-import { ColumnToggle } from "@/app/_components/ReviewPositions/ColumnToggle";
+import { usePositions } from "@/app/features/positions/context";
+import { PositionCard } from "@/app/features/positions/components/PositionCard";
+import { SearchBar } from "@/app/shared/components/SearchBar";
+import { YearSidebar } from "@/app/shared/components/YearSidebar";
+import { ColumnToggle } from "@/app/features/positions/components/ReviewPositions/ColumnToggle";
 
 type ColumnType = "employment" | "other";
 type HiddenColumn = "none" | ColumnType;

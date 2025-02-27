@@ -2,8 +2,8 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { callAndStreamAIResponse } from "./callAndStream";
-import { GenerationSelection } from "@/app/_types/GenerationSelection";
-import { EssayGenerator } from "@/app/_classes/_generationClasses/EssayGenerator";
+import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { EssayGenerator } from "@/app/features/generation/generators/EssayGenerator";
 
 export const runtime = "edge";
 

@@ -1,8 +1,8 @@
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { DocumentRepository } from '@fedjobs/database'; // Use the repository abstraction
-import { Resume } from '@/app/_classes/Resume';
+import { Resume } from '@/app/shared/types/Resume';
 import { notFound } from 'next/navigation';
-import { ResumePageManager } from './_Components/ResumePageManager';
+import { ResumePageManager } from '@/app/features/resume/components/ResumePageManager';
 
 // Update the props type so that params is a Promise containing the id.
 export default async function Page({

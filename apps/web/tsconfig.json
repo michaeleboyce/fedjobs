@@ -17,6 +17,11 @@
       "@/*": [
         "./*"
       ],
+      "@/app/*": ["./app/*"],
+      "@/features/*": ["./app/features/*"],
+      "@/shared/*": ["./app/shared/*"],
+      "@/services/*": ["./app/services/*"],
+      "@/providers/*": ["./app/providers/*"],
       "@fedjobs/types": [
         "../../packages/types/src"
       ],

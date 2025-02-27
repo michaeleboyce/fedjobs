@@ -1,9 +1,9 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
-import { getAllPositions } from "@/app/_actions/positions/reviewPositionActions";
-import { GenerationProvider } from "./_Providers/GenerationProvider";
-import { DocumentGenerationManager } from "./DocumentGenerationManager";
-import { PositionsProvider } from "@/app/_components/PositionCard/Context/PositionsContext";
+import { getAllPositions } from "@/app/features/positions/actions/reviewPositionActions";
+import { GenerationProvider } from "../../features/generation/providers/GenerationProvider";
+import { DocumentGenerationManager } from "../../features/generation/components/DocumentGenerationManager";
+import { PositionsProvider } from "@/app/features/positions/context";
 
 export default async function GeneratePage() {
   const { isAuthenticated, getUser } = await getKindeServerSession();

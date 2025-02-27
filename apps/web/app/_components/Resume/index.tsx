@@ -1,9 +1,9 @@
 // File path: apps/web/app/_components/Resume/index.tsx
 'use client';
 import React, { useEffect, useState } from 'react';
-import { PositionCard } from './components/PositionCard';
-import { usePositionSelections } from './hooks/usePositionSelections';
-import { toggleItemInArray, mapSelectionsToPositions } from './utils/selectionUtils';
+import { PositionCard } from '@/app/features/resume/components/PositionCard';
+import { usePositionSelections } from '../../features/resume/hooks/usePositionSelections';
+import { toggleItemInArray, mapSelectionsToPositions } from '@/app/features/resume/utils/selectionUtils';
 import { ResumeProps } from './types/resume.types';
 
 /**
