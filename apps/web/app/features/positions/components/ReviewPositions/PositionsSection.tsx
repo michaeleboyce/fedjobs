@@ -2,7 +2,7 @@
 import React from "react";
 import { Position } from "@fedjobs/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { PositionCard } from "@/app/_components/Resume/components/PositionCard";
+import { PositionCard } from "@/app/features/resume/components/PositionCard";
 import { EditPositionForm } from "./EditPositionsForm";
 
 interface PositionsSectionProps {

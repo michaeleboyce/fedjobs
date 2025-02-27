@@ -1,7 +1,7 @@
 // File path: apps/web/app/_components/ReviewPositions/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
-import { usePositions } from "@/app/features/positions/context/PositionsContext";
+import { usePositionsManagement } from "@/app/features/positions/hooks/usePositionsManagement";
 import { PositionCard } from "@/app/features/positions/components/PositionCard"
 import { SearchBar } from "@/app/shared/components/SearchBar";
 import { YearSidebar } from "@/app/shared/components/YearSidebar";
@@ -17,7 +17,7 @@ interface ColumnConfig {
 }
 
 const ReviewPositions: React.FC = () => {
-  const { employmentHistory, otherPositions } = usePositions();
+  const { employmentHistory, otherPositions, isLoading } = usePositionsManagement();
   const [hiddenColumn, setHiddenColumn] = useState<HiddenColumn>("none");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -54,6 +54,19 @@ const ReviewPositions: React.FC = () => {
     sortPositionsDescending(filteredOtherPositions)
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-pulse text-center">
+          <div className="h-8 w-64 bg-gray-200 rounded mb-4 mx-auto"></div>
+          <div className="h-4 w-48 bg-gray-200 rounded mb-2 mx-auto"></div>
+          <div className="h-4 w-56 bg-gray-200 rounded mb-4 mx-auto"></div>
+          <div className="text-gray-500">Loading positions...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-2 p-4 min-h-screen">
       {/* Employment History Column */}
@@ -85,18 +98,24 @@ const ReviewPositions: React.FC = () => {
             />
           </div>
 
-          {groupedEmployment.map(([year, positions]) => (
-            <div key={year} id={`eh-year-${year}`} className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">{year}</h3>
-              {positions.map((position) => (
-                <PositionCard
-                  key={position.positionUuid}
-                  position={position}
-                  isEmploymentHistory={true}
-                />
-              ))}
+          {employmentHistory.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No positions in your employment history yet.
             </div>
-          ))}
+          ) : (
+            groupedEmployment.map(([year, positions]) => (
+              <div key={year} id={`eh-year-${year}`} className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">{year}</h3>
+                {positions.map((position) => (
+                  <PositionCard
+                    key={position.positionUuid}
+                    position={position}
+                    isEmploymentHistory={true}
+                  />
+                ))}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -131,20 +150,28 @@ const ReviewPositions: React.FC = () => {
 
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-          {groupedOther.map(([year, positions]) => (
-            <div key={year} id={`other-year-${year}`} className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">
-                {typeof year === "number" ? year : "No Date"}
-              </h3>
-              {positions.map((position) => (
-                <PositionCard
-                  key={position.positionUuid}
-                  position={position}
-                  isEmploymentHistory={false}
-                />
-              ))}
+          {filteredOtherPositions.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {searchTerm 
+                ? "No positions match your search criteria." 
+                : "No positions available."}
             </div>
-          ))}
+          ) : (
+            groupedOther.map(([year, positions]) => (
+              <div key={year} id={`other-year-${year}`} className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">
+                  {typeof year === "number" ? year : "No Date"}
+                </h3>
+                {positions.map((position) => (
+                  <PositionCard
+                    key={position.positionUuid}
+                    position={position}
+                    isEmploymentHistory={false}
+                  />
+                ))}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

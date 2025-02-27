@@ -5,7 +5,7 @@ import {
   ECQ_NAMES,
   getPrettyPrintType,
 } from "@fedjobs/utils";
-import { useGenerationContext } from "../../../../providers/GenerationProvider";
+import { useGenerationManagement } from "@/app/features/generation/hooks/useGenerationManagement";
 import { ECQNamesType } from "@/app/features/generation/types/ECQCompetencies";
 
 type DocumentInfoProps = {
@@ -13,7 +13,7 @@ type DocumentInfoProps = {
 };
 
 export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
-  const { docInfo, setDocInfo } = useGenerationContext();
+  const { docInfo, updateDocInfo, setDocInfo } = useGenerationManagement();
   const [lengthInput, setLengthInput] = useState<string>(
     docInfo.length.toString()
   );
@@ -25,26 +25,26 @@ export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
     // Check if the target is a select element
     if (event.target instanceof HTMLSelectElement) {
       if (docInfo.essayPromptSuggestions.includes(value)) {
-        setDocInfo({ ...docInfo, essayPrompt: value });
+        updateDocInfo({ essayPrompt: value });
       } else if (value === "custom") {
-        setDocInfo({ ...docInfo, essayPrompt: "" });
+        updateDocInfo({ essayPrompt: "" });
       }
     } else {
       // It's an input element
-      setDocInfo({ ...docInfo, essayPrompt: value });
+      updateDocInfo({ essayPrompt: value });
     }
   };
 
   const handleDummyDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDocInfo({ ...docInfo, isDummy: e.target.checked });
+    updateDocInfo({ isDummy: e.target.checked });
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDocInfo({ ...docInfo, type: e.target.value });
+    updateDocInfo({ type: e.target.value });
   };
 
   const handleECQTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDocInfo({ ...docInfo, ecqShortTitle: e.target.value as ECQNamesType });
+    updateDocInfo({ ecqShortTitle: e.target.value as ECQNamesType });
   };
 
   useEffect(() => {
@@ -62,14 +62,14 @@ export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
       value > 0 &&
       value <= getMaxLength(docInfo.lengthUnit)
     ) {
-      setDocInfo({ ...docInfo, length: value });
+      updateDocInfo({ length: value });
     } else if (lengthInput === "") {
       // Optionally, do nothing or set to a temporary state
       // Here, we'll keep it empty until the user types a valid number
     } else {
       // If invalid, reset to default based on unit
       const defaultLength = docInfo.lengthUnit === "words" ? 500 : 2;
-      setDocInfo({ ...docInfo, length: defaultLength });
+      updateDocInfo({ length: defaultLength });
       setLengthInput(defaultLength.toString());
       alert(`Please enter a valid number of ${docInfo.lengthUnit}.`);
     }
@@ -78,7 +78,7 @@ export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
   const handleLengthUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newUnit = e.target.value as "words" | "pages";
     const defaultLength = newUnit === "words" ? 500 : 2;
-    setDocInfo({ ...docInfo, lengthUnit: newUnit, length: defaultLength });
+    updateDocInfo({ lengthUnit: newUnit, length: defaultLength });
     setLengthInput(defaultLength.toString());
   };
 
@@ -90,7 +90,7 @@ export const DocumentInfo: React.FC<DocumentInfoProps> = ({ showIsDummy }) => {
   const handleAdditionalDocInfoChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setDocInfo({ ...docInfo, additionalDocInfo: e.target.value });
+    updateDocInfo({ additionalDocInfo: e.target.value });
   };
   return (
     <div className="w-full text-left">

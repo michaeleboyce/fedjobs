@@ -1,5 +1,6 @@
 import { PositionRepository } from '@fedjobs/database';
 import { Position } from '@fedjobs/types';
+import { updatePosition as updatePositionAction } from '@/app/features/positions/actions/reviewPositionActions';
 
 const positionRepo = new PositionRepository();
 
@@ -12,10 +13,13 @@ export const getPositionsByUserId = async (userId: string) => {
 };
 
 export const updatePosition = async (uuid: string, data: Partial<Position>) => {
-  return positionRepo.updateByUuid(uuid, data);
+  // Use the existing action that properly handles nested types
+  return await updatePositionAction(uuid, data);
 };
 
 export const createPosition = async (data: any) => {
+  // For consistency in the future, we'd want to transform the data here as well
+  // But for now, just use the original implementation
   return positionRepo.insert(data);
 };
 
