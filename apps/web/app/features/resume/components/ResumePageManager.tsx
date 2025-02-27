@@ -1,7 +1,7 @@
 // File path: apps/web/app/(routes)/resume/[id]/_Components/ResumePageManager.tsx
 'use client'
 import { ResumeObject } from '@/app/shared/types/Resume';
-import { Resume as ResumeComponent } from '@/app/_components/Resume';
+import { Resume as ResumeComponent } from '@/app/features/resume/components/ResumeView';
 
 type ResumePageManagerProps = {
     resume: ResumeObject;

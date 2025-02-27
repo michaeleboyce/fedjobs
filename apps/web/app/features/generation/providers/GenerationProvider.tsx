@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DocumentInfo } from '@/app/features/generation/types/DocumentInfo';
 import { DOCUMENT_TYPES } from '@fedjobs/utils';
 import { Job, JobInfo } from '@fedjobs/types';
-import { getTCQEssayPrompts } from '@/app/_actions/usaJobsActions';
+import { getTCQEssayPrompts } from '@/app/shared/actions/usaJobsActions';
 
 type GenerationContextType = {
   jobInfo: JobInfo;

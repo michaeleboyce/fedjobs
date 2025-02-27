@@ -12,7 +12,7 @@ import { AdditionalInfoBox } from "./_Shared/AdditionalInfoBox";
 import { GeneratePositions } from "./GeneratePositions";
 import GenerateBottomBar from "./_Shared/GenerateBottomBar";
 import StreamingDocumentViewer from "./_Shared/StreamingDocumentViewer";
-import { Resume } from "@/app/_components/Resume";
+import { Resume } from "@/app/features/resume/components/ResumeView";
 import { ResumeObject } from "@/app/shared/types/Resume";
 
 // Constants

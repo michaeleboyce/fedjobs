@@ -2,9 +2,9 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { PositionCard } from '@/app/features/resume/components/PositionCard';
-import { usePositionSelections } from '../../features/resume/hooks/usePositionSelections';
+import { usePositionSelections } from '@/app/features/resume/hooks/usePositionSelections';
 import { toggleItemInArray, mapSelectionsToPositions } from '@/app/features/resume/utils/selectionUtils';
-import { ResumeProps } from './types/resume.types';
+import { ResumeProps } from '@/app/features/resume/types/resume.types';
 
 /**
  * TestResume Component
