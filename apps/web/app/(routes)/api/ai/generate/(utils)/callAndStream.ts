@@ -2,7 +2,6 @@
 import { DocumentType } from "@fedjobs/types";
 import { GenerationRepository } from "@fedjobs/database";
 import { aiService } from "@fedjobs/utils";
-import { AIStreamOptions } from "@fedjobs/utils";
 
 interface CallAndStreamOptions {
   userId: string;
@@ -13,7 +12,13 @@ interface CallAndStreamOptions {
 const generationRepo = new GenerationRepository();
 
 export async function callAndStreamAIResponse(
-  streamOptions: AIStreamOptions,
+  streamOptions: {
+    model: string;
+    prompt: string;
+    temperature?: number;
+    maxTokens?: number;
+    userId: string;
+  },
   options: CallAndStreamOptions
 ): Promise<Response> {
   try {

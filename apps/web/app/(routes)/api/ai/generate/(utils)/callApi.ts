@@ -3,10 +3,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { callAndStreamAIResponse } from "./callAndStream";
 import { GenerationSelection } from "@/app/_types/GenerationSelection";
-import { StreamingTextArray } from "@/app/_types/StreamingTextArray";
 import { EssayGenerator } from "@/app/_classes/_generationClasses/EssayGenerator";
-// Import the AIService
-import { aiService } from "@fedjobs/utils";
 
 export const runtime = "edge";
 

@@ -3,8 +3,9 @@
 import React from 'react';
 import { GenerationProvider } from '@/app/(routes)/generate/_Providers/GenerationProvider'
 import { ResumeObject } from '@/app/_classes/Resume';
-import GenerationManager  from '@/app/(routes)/generate/resume/[id]/_Components/GenerationManager'; // Adjust the import path as needed
+import { DocumentGenerationManager } from '../../DocumentGenerationManager';
 import { QueryClient, QueryClientProvider } from 'react-query';
+
 const queryClient = new QueryClient();
 
 type PageClientProps = {
@@ -13,14 +14,16 @@ type PageClientProps = {
 };
 
 export const PageClient: React.FC<PageClientProps> = ({ resume, userEmail }) => {
-
   return (
-      <GenerationProvider>
-          <QueryClientProvider client={queryClient}>
-            <GenerationManager resume={resume} userEmail={userEmail} />
-          </QueryClientProvider>
-      </GenerationProvider>
-
+    <GenerationProvider>
+      <QueryClientProvider client={queryClient}>
+        <DocumentGenerationManager 
+          resume={resume}
+          userEmail={userEmail}
+          employmentHistory={[]}  // Empty arrays since we're using the resume prop
+          otherPositions={[]}     // These will be used for similar positions if needed
+        />
+      </QueryClientProvider>
+    </GenerationProvider>
   );
 }
-
