@@ -1,6 +1,9 @@
 import { Position } from '@fedjobs/types';
 import { PositionItem } from './PositionItem';
 import { PositionSelectionState } from '@/app/features/generation/types';
+import { sortPositions, groupPositionsByYear } from '@/app/shared/utils/positionSorting';
+import { YearSidebar } from '@/app/shared/components/YearSidebar';
+
 interface PositionListSelectorProps {
   employmentHistory: Position[];
   otherPositions: Position[];
@@ -14,17 +17,9 @@ export function PositionListSelector({
   selectedState,
   onSelectionChange
 }: PositionListSelectorProps) {
-  // Sort positions by date (descending)
-  const sortByDate = (positions: Position[]) => {
-    return [...positions].sort((a, b) => {
-      const aDate = a.date.endDate || a.date.startDate;
-      const bDate = b.date.endDate || b.date.startDate;
-      return new Date(bDate).getTime() - new Date(aDate).getTime();
-    });
-  };
-  
-  const sortedEmploymentHistory = sortByDate(employmentHistory);
-  const sortedOtherPositions = sortByDate(otherPositions);
+  // Use the improved position sorting logic
+  const sortedEmploymentHistory = sortPositions(employmentHistory);
+  const sortedOtherPositions = sortPositions(otherPositions);
   
   // Update selection state for a position
   const handleSelectionChange = (positionUuid: string, type: 'activities' | 'accomplishments', idx: number) => {
@@ -94,48 +89,102 @@ export function PositionListSelector({
     onSelectionChange(newState);
   };
 
+  // Group positions by year (using shared utility function)
+
+  // Group positions for employment history and other positions
+  const groupedEmployment = groupPositionsByYear(sortedEmploymentHistory);
+  const groupedOther = groupPositionsByYear(sortedOtherPositions);
+
   return (
     <div className="bg-white p-4 my-4 rounded border">
       <h2 className="text-xl font-bold mb-4">Select Positions for Generation</h2>
       
-      {/* Employment History Positions */}
+      {/* Employment History Section */}
       {sortedEmploymentHistory.length > 0 && (
-        <>
+        <div className="mb-8">
           <h3 className="text-lg font-semibold mb-2">Employment History</h3>
-          {sortedEmploymentHistory.map((position) => (
-            <PositionItem
-              key={position.positionUuid}
-              position={position}
-              selections={selectedState[position.positionUuid] || {
-                selectedActivities: [],
-                selectedAccomplishments: [],
-              }}
-              onSelectionChange={handleSelectionChange}
-              onSelectAll={handleSelectAll}
-              onClearAll={handleClearAll}
-            />
-          ))}
-        </>
+          <div className="flex">
+            {/* Year sidebar for employment history */}
+            <div className="w-32 pr-4 flex-shrink-0">
+              <div className="sticky top-4">
+                <h4 className="text-base font-semibold mb-2 text-gray-600">Years</h4>
+                <nav className="border-l border-gray-200">
+                  <YearSidebar
+                    years={groupedEmployment.map(([year]) => year)}
+                    prefix="gen-eh-year-"
+                    parentId="employment-history-container"
+                  />
+                </nav>
+              </div>
+            </div>
+            
+            {/* Position list with year headers */}
+            <div id="employment-history-container" className="flex-1 overflow-y-auto h-[calc(100vh-16rem)]">
+              {groupedEmployment.map(([year, positions]) => (
+                <div key={year} id={`gen-eh-year-${year}`} className="mb-6">
+                  <h4 className="text-md font-medium mb-2 sticky top-0 bg-white py-2 z-10">{year}</h4>
+                  {positions.map((position) => (
+                    <PositionItem
+                      key={position.positionUuid}
+                      position={position}
+                      selections={selectedState[position.positionUuid] || {
+                        selectedActivities: [],
+                        selectedAccomplishments: [],
+                      }}
+                      onSelectionChange={handleSelectionChange}
+                      onSelectAll={handleSelectAll}
+                      onClearAll={handleClearAll}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       
-      {/* Other Positions */}
+      {/* Other Positions Section */}
       {sortedOtherPositions.length > 0 && (
-        <>
+        <div>
           <h3 className="text-lg font-semibold mt-6 mb-2">Other Positions</h3>
-          {sortedOtherPositions.map((position) => (
-            <PositionItem
-              key={position.positionUuid}
-              position={position}
-              selections={selectedState[position.positionUuid] || {
-                selectedActivities: [],
-                selectedAccomplishments: [],
-              }}
-              onSelectionChange={handleSelectionChange}
-              onSelectAll={handleSelectAll}
-              onClearAll={handleClearAll}
-            />
-          ))}
-        </>
+          <div className="flex">
+            {/* Year sidebar for other positions */}
+            <div className="w-32 pr-4 flex-shrink-0">
+              <div className="sticky top-4">
+                <h4 className="text-base font-semibold mb-2 text-gray-600">Years</h4>
+                <nav className="border-l border-gray-200">
+                  <YearSidebar
+                    years={groupedOther.map(([year]) => year)}
+                    prefix="gen-other-year-"
+                    parentId="other-positions-container"
+                  />
+                </nav>
+              </div>
+            </div>
+            
+            {/* Position list with year headers */}
+            <div id="other-positions-container" className="flex-1 overflow-y-auto h-[calc(100vh-16rem)]">
+              {groupedOther.map(([year, positions]) => (
+                <div key={year} id={`gen-other-year-${year}`} className="mb-6">
+                  <h4 className="text-md font-medium mb-2 sticky top-0 bg-white py-2 z-10">{year}</h4>
+                  {positions.map((position) => (
+                    <PositionItem
+                      key={position.positionUuid}
+                      position={position}
+                      selections={selectedState[position.positionUuid] || {
+                        selectedActivities: [],
+                        selectedAccomplishments: [],
+                      }}
+                      onSelectionChange={handleSelectionChange}
+                      onSelectAll={handleSelectAll}
+                      onClearAll={handleClearAll}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Show message if no positions */}

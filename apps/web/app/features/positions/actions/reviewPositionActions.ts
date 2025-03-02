@@ -64,15 +64,26 @@ export async function getAllPositions(): Promise<GetAllPositionsResponse> {
   }
 
   try {
-    const dbPositions = await positionRepo.getByUserId(user.id);
-    const employmentHistoryPositions = dbPositions
-      .filter(pos => pos.isEmploymentHistory)
-      .map(pos => mapPositionRecordToPosition(pos));
-    const otherPositions = dbPositions
-      .filter(pos => !pos.isEmploymentHistory)
-      .map(pos => mapPositionRecordToPosition(pos));
+    // Use the optimized method to get all positions in a single query
+    const positions = await positionRepo.getByUserIdOptimized(user.id);
+    
+    // Process positions in-memory instead of making additional queries
+    const employmentHistory = [];
+    const otherPositions = [];
+    
+    for (const position of positions) {
+      if (position.isEmploymentHistory) {
+        employmentHistory.push(mapPositionRecordToPosition(position));
+      } else {
+        otherPositions.push(mapPositionRecordToPosition(position));
+      }
+    }
 
-    return { success: true, employmentHistory: employmentHistoryPositions, otherPositions };
+    return { 
+      success: true, 
+      employmentHistory, 
+      otherPositions 
+    };
   } catch (error: any) {
     console.error("Error fetching positions:", error);
     return { success: false, error: "Failed to fetch positions." };

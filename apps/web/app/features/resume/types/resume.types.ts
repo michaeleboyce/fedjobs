@@ -1,16 +1,19 @@
-// File path: apps/web/app/_components/Resume/types/resume.types.ts
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { PositionObject } from '@/app/shared/types/Position';
 
 /**
- * Props for the TestResume component
+ * Props for the Resume component
  */
 export interface ResumeProps {
   resume: ResumeObject;
   onSelectionChange: (selectedState: SelectionState) => void;
   isViewOnly: boolean;
+  className?: string;
 }
 
+/**
+ * Props for the PositionCard component
+ */
 export interface PositionCardProps {
   position: PositionObject;
   isOpen: boolean;
@@ -22,7 +25,8 @@ export interface PositionCardProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   actions?: React.ReactNode; 
-  children?: React.ReactNode; 
+  children?: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -34,4 +38,4 @@ export interface SelectionState {
     selectedActivities: number[];
     selectedAccomplishments: number[];
   }[];
-} 
+}

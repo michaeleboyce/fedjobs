@@ -30,6 +30,19 @@ export class PositionRepository {
       .execute();
   }
 
+  // New optimized method to fetch all positions for a user in one query
+  async getByUserIdOptimized(userId: string): Promise<PositionRecord[]> {
+    // Create a prepared statement for better performance with repeated calls
+    const preparedQuery = db
+      .select()
+      .from(positions)
+      .where(eq(positions.userId, userId))
+      .prepare(`get_positions_by_user_id_${userId}`);
+    
+    // Execute the prepared query
+    return await preparedQuery.execute({ userId });
+  }
+
   // Updates a position record by its UUID.
   async updateByUuid(positionUuid: string, updateData: Partial<PositionRecord>): Promise<PositionRecord[]> {
     return await db

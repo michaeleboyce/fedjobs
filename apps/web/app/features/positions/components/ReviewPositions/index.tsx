@@ -6,6 +6,7 @@ import { PositionCard } from "@/app/features/positions/components/PositionCard"
 import { SearchBar } from "@/app/shared/components/SearchBar";
 import { YearSidebar } from "@/app/shared/components/YearSidebar";
 import { ColumnToggle } from "@/app/features/positions/components/ReviewPositions/ColumnToggle";
+import { sortPositions, groupPositionsByYear } from '@/app/shared/utils/positionSorting';
 
 type ColumnType = "employment" | "other";
 type HiddenColumn = "none" | ColumnType;
@@ -89,7 +90,7 @@ const ReviewPositions: React.FC = () => {
           id="employment-history"
           className="flex-1 overflow-y-auto h-[calc(100vh-6rem)] relative"
         >
-          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10 py-2">
+          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-20 py-2 border-b">
             <h2 className="text-xl font-bold">Employment History</h2>
             <ColumnToggle
               isExpanded={hiddenColumn === "other"}
@@ -105,7 +106,8 @@ const ReviewPositions: React.FC = () => {
           ) : (
             groupedEmployment.map(([year, positions]) => (
               <div key={year} id={`eh-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">{year}</h3>
+                <h3 className="text-lg font-semibold mb-4 sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg">{year}</h3>
+                <div className="mt-2"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}
@@ -139,7 +141,7 @@ const ReviewPositions: React.FC = () => {
           id="other-positions"
           className="flex-1 overflow-y-auto h-[calc(100vh-6rem)] relative"
         >
-          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10 py-2">
+          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-20 py-2 border-b">
             <h2 className="text-xl font-bold">Other Positions</h2>
             <ColumnToggle
               isExpanded={hiddenColumn === "employment"}
@@ -159,9 +161,10 @@ const ReviewPositions: React.FC = () => {
           ) : (
             groupedOther.map(([year, positions]) => (
               <div key={year} id={`other-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">
+                <h3 className="text-lg font-semibold mb-4 sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg">
                   {typeof year === "number" ? year : "No Date"}
                 </h3>
+                <div className="mt-2"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}
@@ -178,47 +181,10 @@ const ReviewPositions: React.FC = () => {
   );
 };
 
-const groupPositionsByYear = (
-  positions: Position[]
-): [number | string, Position[]][] => {
-  const map = new Map<number | string, Position[]>();
-  positions.forEach((pos) => {
-    const hasValidDate = pos.date.startDate || pos.date.endDate;
-    let key: number | string;
-    if (!hasValidDate) {
-      key = "No Date";
-    } else {
-      const baseDate = pos.date.endDate || pos.date.startDate;
-      key = new Date(baseDate).getFullYear();
-    }
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(pos);
-  });
-  const entries = Array.from(map.entries());
-  entries.sort((a, b) => {
-    // Sort numeric years descending, "No Date" goes last
-    if (typeof a[0] === "number" && typeof b[0] === "string") return -1;
-    if (typeof a[0] === "string" && typeof b[0] === "number") return 1;
-    if (typeof a[0] === "number" && typeof b[0] === "number") {
-      return (b[0] as number) - (a[0] as number);
-    }
-    return 0;
-  });
-  return entries;
-};
+// Group positions by year function is now imported from shared utils
 
 const sortPositionsDescending = (positions: Position[]): Position[] => {
-  return [...positions].sort((a, b) => {
-    const dateA = new Date(a.date.endDate || a.date.startDate);
-    const dateB = new Date(b.date.endDate || b.date.startDate);
-    const timeA = isNaN(dateA.getTime()) ? -Infinity : dateA.getTime();
-    const timeB = isNaN(dateB.getTime()) ? -Infinity : dateB.getTime();
-    // Place positions without valid dates at the bottom
-    if (timeA === -Infinity && timeB === -Infinity) return 0;
-    if (timeA === -Infinity) return 1;
-    if (timeB === -Infinity) return -1;
-    return timeB - timeA;
-  });
+  return sortPositions(positions);
 };
 
 export default ReviewPositions;

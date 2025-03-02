@@ -1,18 +1,30 @@
-// apps/web/app/features/generation/components/PositionSelector/ResumePositionSelector.tsx
+'use client';
+
+import { useRef } from 'react';
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { Resume } from '@/app/features/resume/components/ResumeView';
+import { cn } from '@/app/shared/utils/classNames';
 
 interface ResumePositionSelectorProps {
   resume: ResumeObject;
   selectedState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>;
   onSelectionChange: (newState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>) => void;
+  className?: string;
 }
 
+/**
+ * ResumePositionSelector component
+ * Allows users to select specific activities and accomplishments from their resume
+ */
 export function ResumePositionSelector({
   resume,
   selectedState,
-  onSelectionChange
+  onSelectionChange,
+  className
 }: ResumePositionSelectorProps) {
+  // Add a ref to track if we're in the middle of updating
+  const isUpdatingRef = useRef(false);
+  
   // Convert selections to format expected by Resume component
   const positionsData = resume.positions.map(position => {
     const selections = selectedState[position.positionUuid] || {
@@ -27,8 +39,11 @@ export function ResumePositionSelector({
     };
   });
   
-  // Handle selection changes
+  // Handle selection changes - prevent infinite loops
   const handleSelectionChange = (selections: { positions: typeof positionsData }) => {
+    // Avoid triggering an update if we're already updating
+    if (isUpdatingRef.current) return;
+    
     // Convert back to our format
     const newState = selections.positions.reduce((acc, item) => {
       acc[item.position.positionUuid] = {
@@ -42,10 +57,12 @@ export function ResumePositionSelector({
   };
 
   return (
-    <Resume
-      resume={resume}
-      onSelectionChange={handleSelectionChange}
-      isViewOnly={false}
-    />
+    <div className={cn("resume-position-selector", className)}>
+      <Resume
+        resume={resume}
+        onSelectionChange={handleSelectionChange}
+        isViewOnly={false}
+      />
+    </div>
   );
 }

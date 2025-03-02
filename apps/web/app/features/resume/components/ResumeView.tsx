@@ -1,35 +1,59 @@
-// File path: apps/web/app/_components/Resume/index.tsx
 'use client';
-import React, { useEffect, useState } from 'react';
+
+import { useEffect, useRef, useState } from 'react';
 import { PositionCard } from '@/app/features/resume/components/PositionCard';
 import { usePositionSelections } from '@/app/features/resume/hooks/usePositionSelections';
 import { toggleItemInArray, mapSelectionsToPositions } from '@/app/features/resume/utils/selectionUtils';
 import { ResumeProps } from '@/app/features/resume/types/resume.types';
+import { cn } from '@/app/shared/utils/classNames';
+import { Position } from '@fedjobs/types';
+import { sortPositions, groupPositionsByYear } from '@/app/shared/utils/positionSorting';
+import { YearSidebar } from '@/app/shared/components/YearSidebar';
 
 /**
- * TestResume Component
+ * Resume Component
  * Displays a resume with selectable positions, activities, and accomplishments
- * 
- * @component
- * @param {ResumeProps} props - Component props
- * @param {ResumeObject} props.resume - Resume data to display
- * @param {Function} props.onSelectionChange - Callback when selections change
- * @param {boolean} props.isViewOnly - Whether the resume is in view-only mode
  */
 export const Resume: React.FC<ResumeProps> = ({
   resume,
   onSelectionChange,
   isViewOnly,
+  className,
 }) => {
   // Custom hook to manage position selections
   const [selectedPositions, setSelectedPositions] = usePositionSelections(resume.positions);
   const [openPositionIndexes, setOpenPositionIndexes] = useState<number[]>([]);
 
+  // Prevent infinite update loops with a ref
+  const prevSelectedPositionsRef = useRef<typeof selectedPositions>(null);
+
+  // Sort positions using improved sorting logic
+  const sortedPositions = sortPositions(resume.positions);
+
+  // Group positions by year
+  const groupedPositions = groupPositionsByYear(sortedPositions);
+
+  // Build a map of position UUIDs to indexes for tracking selections
+  const positionIndexMap = sortedPositions.reduce((acc, pos, idx) => {
+    acc[pos.positionUuid] = idx;
+    return acc;
+  }, {} as Record<string, number>);
+
   // Notify parent of selection changes
   useEffect(() => {
-    const positionsData = mapSelectionsToPositions(resume.positions, selectedPositions);
-    onSelectionChange({ positions: positionsData });
-  }, [resume.positions, selectedPositions, onSelectionChange]);
+    // Skip the initial render or if we just received props
+    if (!prevSelectedPositionsRef.current) {
+      prevSelectedPositionsRef.current = selectedPositions;
+      return;
+    }
+    
+    // Only update if our internal state actually changed
+    if (JSON.stringify(prevSelectedPositionsRef.current) !== JSON.stringify(selectedPositions)) {
+      const positionsData = mapSelectionsToPositions(sortedPositions, selectedPositions);
+      onSelectionChange({ positions: positionsData });
+      prevSelectedPositionsRef.current = selectedPositions;
+    }
+  }, [sortedPositions, selectedPositions, onSelectionChange]);
 
   /**
    * Toggle position details expansion
@@ -78,7 +102,7 @@ export const Resume: React.FC<ResumeProps> = ({
   const handleSelectAll = (posIndex: number) => {
     if (isViewOnly) return;
     
-    const position = resume.positions[posIndex];
+    const position = sortedPositions[posIndex];
     setSelectedPositions(prev => ({
       ...prev,
       [posIndex]: {
@@ -101,22 +125,49 @@ export const Resume: React.FC<ResumeProps> = ({
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen py-10">
+    <div className={cn("bg-gray-100 min-h-screen py-10", className)}>
       <div className="container mx-auto px-4">
-        {resume.positions.map((position, posIndex) => (
-          <PositionCard
-            key={posIndex}
-            position={position}
-            isOpen={openPositionIndexes.includes(posIndex)}
-            isViewOnly={isViewOnly}
-            selectedActivities={selectedPositions[posIndex]?.selectedActivities ?? []}
-            selectedAccomplishments={selectedPositions[posIndex]?.selectedAccomplishments ?? []}
-            onToggleDetails={() => toggleDetails(posIndex)}
-            onCheckboxChange={(type, idx) => handleCheckboxChange(posIndex, type, idx)}
-            onSelectAll={() => handleSelectAll(posIndex)}
-            onClearAll={() => handleClearAll(posIndex)}
-          />
-        ))}
+        <div className="flex">
+          {/* Year sidebar */}
+          <div className="w-32 pr-4 flex-shrink-0">
+            <div className="sticky top-4">
+              <h4 className="text-base font-semibold mb-2 text-gray-600">Resume Years</h4>
+              <nav className="border-l border-gray-200">
+                <YearSidebar
+                  years={groupedPositions.map(([year]) => year)}
+                  prefix="resume-year-"
+                  parentId="resume-positions-container"
+                />
+              </nav>
+            </div>
+          </div>
+          
+          {/* Positions grouped by year */}
+          <div id="resume-positions-container" className="flex-1 overflow-y-auto h-[calc(100vh-10rem)]">
+            {groupedPositions.map(([year, positions]) => (
+              <div key={year} id={`resume-year-${year}`} className="mb-6">
+                <h3 className="text-lg font-semibold mb-2 sticky top-0 bg-gray-100 py-2 z-10">{year}</h3>
+                {positions.map((position) => {
+                  const posIndex = positionIndexMap[position.positionUuid];
+                  return (
+                    <PositionCard
+                      key={position.positionUuid}
+                      position={position}
+                      isOpen={openPositionIndexes.includes(posIndex)}
+                      isViewOnly={isViewOnly}
+                      selectedActivities={selectedPositions[posIndex]?.selectedActivities ?? []}
+                      selectedAccomplishments={selectedPositions[posIndex]?.selectedAccomplishments ?? []}
+                      onToggleDetails={() => toggleDetails(posIndex)}
+                      onCheckboxChange={(type, idx) => handleCheckboxChange(posIndex, type, idx)}
+                      onSelectAll={() => handleSelectAll(posIndex)}
+                      onClearAll={() => handleClearAll(posIndex)}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

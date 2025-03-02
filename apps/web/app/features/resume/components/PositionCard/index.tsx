@@ -1,14 +1,15 @@
-// File path: apps/web/app/_components/Resume/components/PositionCard/index.tsx
+'use client';
 
 import React from "react";
 import { Position } from "@fedjobs/types";
 import { SelectionControls } from "../SelectionControls";
 import { DetailsToggle } from "../DetailsToggle";
 import { PositionDetails } from "../PositionDetails";
-// File path: apps/web/app/_components/Resume/components/PositionCard/index.tsx
+import Card from '@/app/shared/components/ui/Card';
+import { cn } from "@/app/shared/utils/classNames";
 
 interface PositionCardProps {
-  id?: string; // New prop
+  id?: string;
   position: Position;
   isOpen: boolean;
   isViewOnly: boolean;
@@ -24,8 +25,12 @@ interface PositionCardProps {
   actions?: React.ReactNode;
   children?: React.ReactNode;
   similarPositions?: Position[];
+  className?: string;
 }
 
+/**
+ * PositionCard component displays a job position with selectable activities and accomplishments
+ */
 export const PositionCard: React.FC<PositionCardProps> = ({
   id,
   position,
@@ -40,8 +45,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   actions,
   children,
   similarPositions,
+  className,
 }) => {
-  // Only calculate selection stats if selection props are provided
   // Calculate if selection controls should be shown
   const hasSelection = onCheckboxChange && onSelectAll && onClearAll;
 
@@ -52,16 +57,23 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   const totalItems = totalActivities + totalAccomplishments;
   const selectedCount =
     selectedActivities.length + selectedAccomplishments.length;
-  // Ensure isAllSelected is always a boolean
   const isAllSelected = hasSelection
     ? selectedCount === totalItems && totalItems > 0
     : false;
+
   return (
-    <div id={id} className="card shadow-lg rounded-lg overflow-hidden mb-4">
-      <div className="card-body bg-white p-6">
-        <div className="flex justify-between items-center">
+    <div 
+      id={id} 
+      className={cn("mb-4 overflow-hidden", className)}
+      data-position-element="true"
+    >
+      <Card
+        className={cn("overflow-hidden")}
+        elevated
+      >
+        <Card.Header>
           <div>
-            <h4 className="card-title text-xl font-bold text-gray-800">
+            <h4 className="text-xl font-bold text-gray-800">
               {position.title.title} at {position.organization.name}
             </h4>
             <p className="text-gray-600">
@@ -78,52 +90,53 @@ export const PositionCard: React.FC<PositionCardProps> = ({
             )}
           </div>
           <DetailsToggle isOpen={isOpen} onToggle={onToggleDetails} />
-        </div>
+        </Card.Header>
 
-        {hasSelection && (
-          <SelectionControls
-            isViewOnly={isViewOnly}
-            totalItems={totalItems}
-            isAllSelected={isAllSelected}
-            selectedCount={selectedCount}
-            onSelectAll={onSelectAll!}
-            onClearAll={onClearAll!}
-          />
-        )}
+        <Card.Content>
+          {hasSelection && (
+            <SelectionControls
+              isViewOnly={isViewOnly}
+              totalItems={totalItems}
+              isAllSelected={isAllSelected}
+              selectedCount={selectedCount}
+              onSelectAll={onSelectAll!}
+              onClearAll={onClearAll!}
+            />
+          )}
 
-        {/* Custom Actions */}
-        {actions && (
-          <div className="mt-4 flex space-x-2">
-            {" "}
-            {/* Added flex and spacing */}
-            {actions}
-          </div>
-        )}
+          {/* Custom Actions */}
+          {actions && (
+            <div className="mt-4 flex space-x-2">
+              {actions}
+            </div>
+          )}
 
-        {isOpen && (
-          <>
-            {hasSelection ? (
-              <PositionDetails
-                position={position}
-                isViewOnly={isViewOnly}
-                selectedActivities={selectedActivities}
-                selectedAccomplishments={selectedAccomplishments}
-                onCheckboxChange={onCheckboxChange}
-              />
-            ) : (
-              <PositionDetails
-                position={position}
-                isViewOnly={isViewOnly}
-                // Pass empty arrays or handle absence of selection as needed
-                selectedActivities={[]}
-                selectedAccomplishments={[]}
-                onCheckboxChange={() => {}}
-              />
-            )}
-            {children}
-          </>
-        )}
-      </div>
+          {isOpen && (
+            <>
+              {hasSelection ? (
+                <PositionDetails
+                  position={position}
+                  isViewOnly={isViewOnly}
+                  selectedActivities={selectedActivities}
+                  selectedAccomplishments={selectedAccomplishments}
+                  onCheckboxChange={onCheckboxChange}
+                />
+              ) : (
+                <PositionDetails
+                  position={position}
+                  isViewOnly={isViewOnly}
+                  selectedActivities={[]}
+                  selectedAccomplishments={[]}
+                  onCheckboxChange={() => {}}
+                />
+              )}
+              {children}
+            </>
+          )}
+        </Card.Content>
+      </Card>
     </div>
   );
 };
+
+export default PositionCard;

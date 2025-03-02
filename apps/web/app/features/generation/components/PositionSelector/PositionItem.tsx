@@ -35,7 +35,7 @@ export function PositionItem({
   };
 
   return (
-    <div className="border p-4 rounded mb-4 bg-white">
+    <div className="border p-4 rounded mb-4 bg-white" data-position-element="true">
       <div className="flex justify-between items-start">
         <div>
           <h4 className="font-bold text-lg">{position.title.title}</h4>

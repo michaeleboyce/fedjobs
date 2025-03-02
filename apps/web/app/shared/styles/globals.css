@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * FedJobs CSS Component Library
+ * 
+ * This file contains custom CSS utilities and components used throughout the application.
+ * We use a combination of Tailwind's @apply directive and custom CSS when needed.
+ */
+
+/* ==============================
+ * Global Styles
+ * ============================== */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}
+
+/* ==============================
+ * Tailwind Component Classes
+ * ============================== */
+@layer components {
+  /* Filter components */
+  .filter-dropdown {
+    @apply text-base p-2 border border-gray-300 rounded-md bg-white w-full;
+  }
+  
+  .clear-filter-button {
+    @apply ml-2 text-blue-600 hover:text-blue-800;
+  }
+  
+  .clear-filter-link {
+    @apply ml-2 text-blue-600 hover:text-blue-800;
+  }
+  
+  .filter-container {
+    @apply max-w-lg my-4 pl-4;
+  }
+  
+  /* Nav components */
+  .breadcrumb {
+    @apply flex list-none p-0 m-0;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    @apply px-2 text-gray-500;
+  }
+  
+  /* Button styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-200;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-300;
+  }
+  
+  .btn-delete {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-300;
+  }
+  
+  /* Card components */
+  .card {
+    @apply relative bg-white border border-gray-200 rounded-lg p-4 transition-shadow hover:shadow-sm;
+  }
+  
+  .card-title {
+    @apply text-lg font-semibold text-gray-900 mb-2;
+  }
+  
+  .card-content {
+    @apply mt-2;
+  }
+  
+  /* Layout components */
+  .main-container {
+    @apply text-center p-10;
+  }
+  
+  .top-section {
+    @apply flex justify-between p-5 items-stretch;
+  }
+  
+  /* Loader */
+  .loader {
+    @apply border-4 border-gray-200 rounded-full w-12 h-12 animate-spin mx-auto my-5;
+    border-top-color: #3498db;
+  }
+  
+  /* Modal styles */
+  .modal {
+    @apply fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white p-5 rounded-lg shadow-lg text-center max-w-lg w-11/12 z-50;
+  }
+}

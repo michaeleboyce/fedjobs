@@ -87,6 +87,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     <div
       id={`position-${position.positionUuid}`}
       className="border p-4 rounded mb-4 shadow-sm bg-white"
+      data-position-element="true"
     >
       <PositionHeader
         position={position}

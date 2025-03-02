@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+// apps/web/app/features/generation/hooks/usePositionSelection.ts
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Position } from '@fedjobs/types';
 import { ResumeObject } from '@/app/shared/types/Resume';
 
@@ -16,6 +17,9 @@ export function usePositionSelection(
   // Generate button enabled state
   const [isGenerateEnabled, setIsGenerateEnabled] = useState(false);
   
+  // Add this ref to prevent effects from running unnecessarily
+  const initializedRef = useRef(false);
+  
   // Track whether any positions are selected
   useEffect(() => {
     const hasSelections = Object.values(selectedState).some(
@@ -24,14 +28,15 @@ export function usePositionSelection(
     setIsGenerateEnabled(hasSelections);
   }, [selectedState]);
   
-  // Handle selection changes
+  // Handle selection changes - use the ref to prevent infinite loops
   const handleSelectionChange = useCallback((newSelected: typeof selectedState) => {
     setSelectedState(newSelected);
   }, []);
   
-  // Initialize selections from resume if provided
+  // Initialize selections from resume if provided, but only once
   useEffect(() => {
-    if (resume) {
+    if (resume && !initializedRef.current) {
+      initializedRef.current = true; // Mark as initialized
       const initialSelections = resume.positions.reduce((acc, position) => {
         acc[position.positionUuid] = {
           selectedActivities: Array.from({ length: position.details.activities.length }, (_, i) => i),
