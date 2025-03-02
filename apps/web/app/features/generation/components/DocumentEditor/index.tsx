@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { FaSave } from 'react-icons/fa';
 import { Paragraph } from './Paragraph';
 import { StreamingTextArray } from '../../types';
 import { useParagraphKeyboardShortcuts } from '../../hooks/useParagraphKeyboardShortcuts';
 import { Button } from '@/app/shared/components/ui/Button';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { ParagraphInsertion } from './ParagraphInsertion';
 
 interface DocumentEditorProps {
   streamingTextArray: StreamingTextArray;
@@ -33,6 +36,22 @@ export function DocumentEditor({
   // State
   const [editingParagraphId, setEditingParagraphId] = useState<number | null>(null);
   const [regeneratingParagraphId, setRegeneratingParagraphId] = useState<number | null>(null);
+  const [insertionDialogOpen, setInsertionDialogOpen] = useState<number | null>(null);
+  
+  // Handle drag end event
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = streamingTextArray.findIndex(p => p.id === active.id);
+      const newIndex = streamingTextArray.findIndex(p => p.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(streamingTextArray, oldIndex, newIndex);
+        onSave(newOrder);
+      }
+    }
+  }, [streamingTextArray, onSave]);
   
   // Navigation
   const navigateParagraph = (direction: 'up' | 'down') => {
@@ -92,6 +111,20 @@ export function DocumentEditor({
   const handleCancelRegenerate = () => {
     setRegeneratingParagraphId(null);
   };
+
+  // Handle paragraph insertion
+  const handleInsertClick = (index: number) => {
+    setInsertionDialogOpen(index);
+  };
+
+  const handleInsertParagraph = (index: number, text: string, useAI: boolean) => {
+    // Logic for inserting a new paragraph will go here
+    // For AI generation, we'll use the onRegenerateParagraph function
+    // For manual entry, we'll create a new paragraph directly
+
+    // Close the dialog
+    setInsertionDialogOpen(null);
+  };
   
   // Register keyboard shortcuts
   useParagraphKeyboardShortcuts({
@@ -148,29 +181,58 @@ export function DocumentEditor({
 
       <div className="relative min-h-[400px] mb-4">
         {streamingTextArray.length > 0 ? (
-          <div className="space-y-4">
-            {streamingTextArray.map((paragraph) => (
-              <Paragraph
-                key={paragraph.id}
-                paragraph={paragraph}
-                isSelected={selectedParagraph === paragraph.id}
-                isEditMode={editingParagraphId === paragraph.id}
-                isRegenerateMode={regeneratingParagraphId === paragraph.id}
-                isStreamingComplete={isStreamingComplete}
+          <DndContext 
+            collisionDetection={closestCenter} 
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={streamingTextArray.map(p => p.id)} 
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-4">
+                {/* First insertion point */}
+                <ParagraphInsertion 
+                  index={0} 
+                  onClick={() => handleInsertClick(0)}
+                  isDialogOpen={insertionDialogOpen === 0}
+                  onInsert={handleInsertParagraph}
+                  onCancel={() => setInsertionDialogOpen(null)}
+                />
                 
-                onParagraphClick={onSelectParagraph}
-                onEditClick={handleEditClick}
-                onRegenerateClick={handleRegenerateClick}
-                onDeleteParagraph={onParagraphDelete}
-                onMoveParagraph={onMoveParagraph}
-                
-                onSaveEdit={handleSaveEdit}
-                onCancelEdit={handleCancelEdit}
-                onSubmitRegenerate={handleSubmitRegenerate}
-                onCancelRegenerate={handleCancelRegenerate}
-              />
-            ))}
-          </div>
+                {streamingTextArray.map((paragraph, index) => (
+                  <div key={paragraph.id} className="relative">
+                    <Paragraph
+                      paragraph={paragraph}
+                      isSelected={selectedParagraph === paragraph.id}
+                      isEditMode={editingParagraphId === paragraph.id}
+                      isRegenerateMode={regeneratingParagraphId === paragraph.id}
+                      isStreamingComplete={isStreamingComplete}
+                      
+                      onParagraphClick={onSelectParagraph}
+                      onEditClick={handleEditClick}
+                      onRegenerateClick={handleRegenerateClick}
+                      onDeleteParagraph={onParagraphDelete}
+                      onMoveParagraph={onMoveParagraph}
+                      
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      onSubmitRegenerate={handleSubmitRegenerate}
+                      onCancelRegenerate={handleCancelRegenerate}
+                    />
+                    
+                    {/* Insertion point after each paragraph except the last one */}
+                    <ParagraphInsertion 
+                      index={index + 1} 
+                      onClick={() => handleInsertClick(index + 1)}
+                      isDialogOpen={insertionDialogOpen === index + 1}
+                      onInsert={handleInsertParagraph}
+                      onCancel={() => setInsertionDialogOpen(null)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         ) : (
           <div className="text-center text-gray-500 py-10">
             The generated content will appear here...
