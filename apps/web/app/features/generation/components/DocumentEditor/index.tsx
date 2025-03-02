@@ -1,12 +1,23 @@
 import { useState, useCallback } from 'react';
 import { FaSave } from 'react-icons/fa';
 import { Paragraph } from './Paragraph';
+import { ParagraphInsertion } from './ParagraphInsertion';
 import { StreamingTextArray } from '../../types';
 import { useParagraphKeyboardShortcuts } from '../../hooks/useParagraphKeyboardShortcuts';
 import { Button } from '@/app/shared/components/ui/Button';
-import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { ParagraphInsertion } from './ParagraphInsertion';
+import { 
+  DndContext, 
+  closestCenter, 
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  PointerSensor
+} from '@dnd-kit/core';
+import { 
+  SortableContext, 
+  verticalListSortingStrategy, 
+  arrayMove 
+} from '@dnd-kit/sortable';
 
 interface DocumentEditorProps {
   streamingTextArray: StreamingTextArray;
@@ -37,6 +48,15 @@ export function DocumentEditor({
   const [editingParagraphId, setEditingParagraphId] = useState<number | null>(null);
   const [regeneratingParagraphId, setRegeneratingParagraphId] = useState<number | null>(null);
   const [insertionDialogOpen, setInsertionDialogOpen] = useState<number | null>(null);
+  
+  // Configure DnD sensors - using PointerSensor to improve drag behavior
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Only start dragging after moving 8px to avoid accidental drags
+      },
+    })
+  );
   
   // Handle drag end event
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -118,10 +138,37 @@ export function DocumentEditor({
   };
 
   const handleInsertParagraph = (index: number, text: string, useAI: boolean) => {
-    // Logic for inserting a new paragraph will go here
-    // For AI generation, we'll use the onRegenerateParagraph function
-    // For manual entry, we'll create a new paragraph directly
-
+    // Create a new ID for the paragraph
+    const newId = Math.max(0, ...streamingTextArray.map(p => p.id)) + 1;
+    
+    if (useAI) {
+      // For AI generation, insert a placeholder and then regenerate it
+      const newParagraph = { id: newId, text: "Generating..." };
+      const newArray = [
+        ...streamingTextArray.slice(0, index),
+        newParagraph,
+        ...streamingTextArray.slice(index)
+      ];
+      
+      // First update the array
+      onSave(newArray);
+      
+      // Then trigger AI regeneration with the provided text as prompt
+      setTimeout(() => {
+        onRegenerateParagraph(newId, text);
+      }, 100);
+    } else {
+      // For manual entry, just insert the new paragraph
+      const newParagraph = { id: newId, text };
+      const newArray = [
+        ...streamingTextArray.slice(0, index),
+        newParagraph,
+        ...streamingTextArray.slice(index)
+      ];
+      
+      onSave(newArray);
+    }
+    
     // Close the dialog
     setInsertionDialogOpen(null);
   };
@@ -184,12 +231,13 @@ export function DocumentEditor({
           <DndContext 
             collisionDetection={closestCenter} 
             onDragEnd={handleDragEnd}
+            sensors={sensors}
           >
             <SortableContext 
               items={streamingTextArray.map(p => p.id)} 
               strategy={verticalListSortingStrategy}
             >
-              <div className="space-y-4">
+              <div className="space-y-1">
                 {/* First insertion point */}
                 <ParagraphInsertion 
                   index={0} 
@@ -220,7 +268,7 @@ export function DocumentEditor({
                       onCancelRegenerate={handleCancelRegenerate}
                     />
                     
-                    {/* Insertion point after each paragraph except the last one */}
+                    {/* Insertion point after each paragraph */}
                     <ParagraphInsertion 
                       index={index + 1} 
                       onClick={() => handleInsertClick(index + 1)}
