@@ -11,6 +11,7 @@ import { ParseResponse } from '@/app/features/documents/types/ParseResponse';
 import usePageVisibility from '@/app/shared/hooks/usePageVisibility';
 import { AnalysisStatus } from '@/app/features/documents/types/AnalysisStatus';
 import { useDocumentPolling } from '@/app/features/documents/hooks/useDocumentPolling';
+import { Button } from '@/app/shared/components/ui/Button';
 
 
 
@@ -149,24 +150,38 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
             {isExpanded ? document.description : truncateDescription(document.description)}
           </p>
           {isTruncated && (
-            <button onClick={() => setIsExpanded(!isExpanded)} className="text-xs">
-              <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} /> 
+            <Button 
+              variant="link" 
+              size="sm" 
+              onClick={() => setIsExpanded(!isExpanded)}
+              leftIcon={<FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />}
+            >
               {isExpanded ? 'Show Less' : 'Show More'}
-            </button>
+            </Button>
           )}
         </div>
       )}
       <div className="flex items-center justify-between mt-4">
         {document.type === "resume" && isParsed && 
-        <Link href={`/resume/${document.id}`} className="btn btn-primary">
+        <Link 
+          href={`/resume/${document.id}`}
+          className="inline-flex items-center justify-center px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300"
+        >
           Open Resume
         </Link>}
-        <button onClick={() => handleViewClick(document.id)} className="btn btn-primary">
-            View Doc
-        </button>
-        <button onClick={() => handleDeleteClick(document.id)} className="btn btn-delete">
-            <FontAwesomeIcon icon={faTrashAlt} /> Delete
-        </button>
+        <Button 
+          variant="primary"
+          onClick={() => handleViewClick(document.id)}
+        >
+          View Doc
+        </Button>
+        <Button 
+          variant="danger"
+          onClick={() => handleDeleteClick(document.id)}
+          leftIcon={<FontAwesomeIcon icon={faTrashAlt} />}
+        >
+          Delete
+        </Button>
       </div>
     </div>
   );

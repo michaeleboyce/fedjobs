@@ -6,6 +6,7 @@ import {
 } from "@fedjobs/database";
 import DocumentCard from "./DocumentCard";
 import { useRouter } from "next/navigation";
+import { Button } from '@/app/shared/components/ui/Button';
 
 type DocumentsProps = { 
   documents: DocumentRecord[];
@@ -71,33 +72,34 @@ export const Documents: React.FC<DocumentsProps> = ({ documents, removeDocument 
       <div className="flex justify-end space-x-2">
         {selectionMode ? (
             <>
-            <button
+            <Button 
+                variant="primary"
                 disabled={!selectedDocumentId}
                 onClick={handleSelectResumeClick}
-                className={`btn btn-primary ${selectedDocumentId ? '' : 'opacity-50 cursor-not-allowed'} transition-all duration-300 ease-in-out rounded-lg px-4 py-2`}
+                className={selectedDocumentId ? '' : 'opacity-50 cursor-not-allowed'}
             >
                 Generate with Selected Resume
-            </button>
-            <button 
+            </Button>
+            <Button 
+                variant="secondary"
                 onClick={() => {}} 
-                className="btn btn-secondary transition-all duration-300 ease-in-out rounded-lg px-4 py-2"
             >
                 Generate without Selecting
-            </button>
-            <button 
+            </Button>
+            <Button 
+                variant="danger"
                 onClick={handleCancel} 
-                className="btn btn-cancel transition-all duration-300 ease-in-out rounded-lg px-4 py-2"
             >
                 Cancel
-            </button>
+            </Button>
             </>
         ) : (
-            <button 
-            onClick={handleGenerateClick} 
-            className="btn btn-primary transition-all duration-300 ease-in-out rounded-lg px-4 py-2"
+            <Button 
+              variant="primary"
+              onClick={handleGenerateClick} 
             >
-            Generate Document
-            </button>
+              Generate Document
+            </Button>
         )}
       </div>
 

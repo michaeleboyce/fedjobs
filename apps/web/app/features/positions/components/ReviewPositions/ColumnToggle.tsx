@@ -2,6 +2,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExpandAlt, faCompressAlt } from "@fortawesome/free-solid-svg-icons";
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface ColumnToggleProps {
   isExpanded: boolean;
@@ -14,16 +15,14 @@ export const ColumnToggle: React.FC<ColumnToggleProps> = ({
   onToggle,
   label
 }) => (
-  <button
+  <Button
     onClick={onToggle}
-    className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+    variant="secondary"
+    size="sm"
+    leftIcon={<FontAwesomeIcon icon={isExpanded ? faCompressAlt : faExpandAlt} className="h-4 w-4" />}
     aria-expanded={isExpanded}
-    aria-label={`${isExpanded ?  'Minimize' : 'Expand'  } ${label}`}
+    aria-label={`${isExpanded ? 'Minimize' : 'Expand'} ${label}`}
   >
-    <FontAwesomeIcon 
-      icon={isExpanded ? faCompressAlt : faExpandAlt } 
-      className="h-4 w-4" 
-    />
-    <span>{isExpanded ? `Minimize ${label} ` : `Expand ${label}`}</span>
-  </button>
+    {isExpanded ? `Minimize ${label}` : `Expand ${label}`}
+  </Button>
 );

@@ -51,7 +51,11 @@ body {
     @apply px-2 text-gray-500;
   }
   
-  /* Button styles */
+  /* 
+   * Button styles
+   * DEPRECATED: Use the Button component from @/app/shared/components/ui/Button instead
+   * These styles are kept for backward compatibility
+   */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 transition-colors;
   }

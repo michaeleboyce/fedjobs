@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { FaSave } from 'react-icons/fa';
 import { useAutosizeTextArea } from '../../hooks/useAutosizeTextArea';
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface ParagraphEditFormProps {
   text: string;
@@ -28,18 +29,23 @@ export function ParagraphEditForm({
         className="w-full min-h-[24px] max-h-[300px] p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 overflow-y-auto resize-none"
       />
       <div className="flex justify-end space-x-2">
-        <button
+        <Button
           onClick={() => onSave(editedText)}
-          className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center"
+          variant="primary"
+          size="sm"
+          leftIcon={<FaSave />}
+          className="bg-green-600 hover:bg-green-700"
         >
-          <FaSave className="mr-1" /> Save
-        </button>
-        <button
+          Save
+        </Button>
+        <Button
           onClick={onCancel}
-          className="px-3 py-1.5 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+          variant="secondary"
+          size="sm"
+          className="bg-gray-500 text-white hover:bg-gray-600"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

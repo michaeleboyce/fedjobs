@@ -9,15 +9,7 @@ import {
   faChevronUp, 
   faCheck 
 } from "@fortawesome/free-solid-svg-icons";
-
-const buttonBase = "inline-flex items-center gap-1 text-sm px-2 py-1 rounded";
-const buttonClasses = {
-  primary: `${buttonBase} bg-blue-600 text-white hover:bg-blue-700`,
-  secondary: `${buttonBase} bg-gray-100 text-gray-700 hover:bg-gray-200`,
-  danger: `${buttonBase} bg-red-600 text-white hover:bg-red-700`,
-  success: `${buttonBase} bg-green-600 text-white hover:bg-green-700`,
-  link: "text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-};
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface PositionHeaderProps {
   isEditing: boolean;
@@ -62,61 +54,65 @@ export const PositionHeader: React.FC<PositionHeaderProps> = ({
         <div className="flex items-center gap-2 mb-1">
           <div className="flex gap-1">
             {!isEditing && !isEmploymentHistory && (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={onAddToEmploymentHistory}
                 disabled={isLoading}
-                className={buttonClasses.primary}
+                leftIcon={<FontAwesomeIcon icon={faPlus} className="h-3 w-3" />}
               >
-                <FontAwesomeIcon icon={faPlus} className="h-3 w-3" />
                 <span>Create Employment History Position</span>
-              </button>
+              </Button>
             )}
             {!isEditing && isEmploymentHistory && !isGenerationView && (
-              <button
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={onRemoveFromEmploymentHistory}
                 disabled={isLoading}
-                className={buttonClasses.danger}
+                leftIcon={<FontAwesomeIcon icon={faTrash} className="h-3 w-3" />}
               >
-                <FontAwesomeIcon icon={faTrash} className="h-3 w-3" />
                 <span>Remove</span>
-              </button>
+              </Button>
             )}
             {isEditing ? (
               <>
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={onSaveEdit}
                   disabled={isLoading}
-                  className={buttonClasses.success}
+                  className="bg-green-600 hover:bg-green-700"
+                  leftIcon={<FontAwesomeIcon icon={faCheck} className="h-3 w-3" />}
                 >
-                  <FontAwesomeIcon icon={faCheck} className="h-3 w-3" />
                   <span>Save</span>
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={onCancelEdit}
-                  className={buttonClasses.secondary}
                 >
                   Cancel
-                </button>
+                </Button>
               </>
             ) : (
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={onEditToggle}
-                className={buttonClasses.secondary}
+                leftIcon={<FontAwesomeIcon icon={faPencil} className="h-3 w-3" />}
               >
-                <FontAwesomeIcon icon={faPencil} className="h-3 w-3" />
                 <span>Edit</span>
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onExpandToggle}
-              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1 text-sm"
+              rightIcon={<FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} className="h-3 w-3" />}
             >
-              <FontAwesomeIcon 
-                icon={isExpanded ? faChevronUp : faChevronDown} 
-                className="h-4 w-4" 
-              />
-              <span>{isExpanded ? "Hide" : "Expand"}</span>
-            </button>
+              {isExpanded ? 'Collapse' : 'Expand'}
+            </Button>
           </div>
         </div>
       </div>

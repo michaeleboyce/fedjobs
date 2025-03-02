@@ -1,4 +1,5 @@
 import { FaEdit, FaRedo, FaTrash, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface ParagraphControlsProps {
   onEdit: (e: React.MouseEvent) => void;
@@ -17,41 +18,46 @@ export function ParagraphControls({
 }: ParagraphControlsProps) {
   return (
     <div className="absolute right-2 top-2 flex space-x-1 bg-white bg-opacity-90 p-1 rounded-md shadow-sm z-10">
-      <button
+      <Button
         onClick={onEdit}
-        className="p-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+        variant="primary"
+        size="sm"
+        className="p-1.5 min-w-0"
         title="Edit paragraph"
-      >
-        <FaEdit size={14} />
-      </button>
-      <button
+        leftIcon={<FaEdit size={14} />}
+      />
+      <Button
         onClick={onRegenerate}
-        className="p-1.5 rounded-md bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
+        variant="primary"
+        size="sm"
+        className="p-1.5 min-w-0 bg-yellow-600 hover:bg-yellow-700"
         title="Regenerate paragraph"
-      >
-        <FaRedo size={14} />
-      </button>
-      <button
+        leftIcon={<FaRedo size={14} />}
+      />
+      <Button
         onClick={onDelete}
-        className="p-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+        variant="danger"
+        size="sm"
+        className="p-1.5 min-w-0"
         title="Delete paragraph"
-      >
-        <FaTrash size={14} />
-      </button>
-      <button
+        leftIcon={<FaTrash size={14} />}
+      />
+      <Button
         onClick={onMoveUp}
-        className="p-1.5 rounded-md bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+        variant="secondary"
+        size="sm"
+        className="p-1.5 min-w-0 bg-gray-600 text-white hover:bg-gray-700"
         title="Move paragraph up"
-      >
-        <FaArrowUp size={14} />
-      </button>
-      <button
+        leftIcon={<FaArrowUp size={14} />}
+      />
+      <Button
         onClick={onMoveDown}
-        className="p-1.5 rounded-md bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+        variant="secondary"
+        size="sm"
+        className="p-1.5 min-w-0 bg-gray-600 text-white hover:bg-gray-700"
         title="Move paragraph down"
-      >
-        <FaArrowDown size={14} />
-      </button>
+        leftIcon={<FaArrowDown size={14} />}
+      />
     </div>
   );
 }

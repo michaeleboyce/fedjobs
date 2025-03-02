@@ -1,4 +1,5 @@
 import { FaSave } from 'react-icons/fa';
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface SaveButtonProps {
   onClick: () => Promise<void>;
@@ -7,16 +8,14 @@ interface SaveButtonProps {
 
 export function SaveButton({ onClick, isDisabled }: SaveButtonProps) {
   return (
-    <button
+    <Button
+      variant="primary"
       onClick={onClick}
       disabled={isDisabled}
-      className={`px-4 py-2 rounded font-semibold flex items-center ${
-        isDisabled
-          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          : 'bg-green-600 text-white hover:bg-green-700'
-      }`}
+      leftIcon={<FaSave />}
+      className="bg-green-600 hover:bg-green-700"
     >
-      <FaSave className="mr-2" /> Save Document
-    </button>
+      Save Document
+    </Button>
   );
 }

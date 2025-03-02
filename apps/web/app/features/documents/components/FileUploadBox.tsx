@@ -6,6 +6,7 @@ import { DocumentRecord } from "@fedjobs/database";
 import { ProcessDocumentResponse } from "@/app/features/documents/types/FunctionReturns";
 import { DocumentType } from "@fedjobs/types";
 import axios from "axios";
+import { Button } from '@/app/shared/components/ui/Button';
 
 //TODO: Ensure that the API_URL is standard across the application
 console.log("process.env.NEXT_PUBLIC_VERCEL_ENV", process.env.NEXT_PUBLIC_VERCEL_ENV);
@@ -183,13 +184,14 @@ const FileUploadBox: React.FC<FileUploaderProps> = ({
           placeholder="Enter description"
           className="mb-4 w-full text-base p-2 border border-gray-300 rounded-md bg-white"
         />
-        <button
-          className="selection-button mt-2 self-start"
+        <Button
+          variant="primary"
           onClick={handleUpload}
           disabled={isLoading || uploadStatus !== ""}
+          className="mt-2 self-start"
         >
           {uploadStatus || "Upload"}
-        </button>
+        </Button>
       </div>
     </div>
   );

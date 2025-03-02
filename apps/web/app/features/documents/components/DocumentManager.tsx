@@ -33,11 +33,6 @@ export const DocumentManager: React.FC<DocumentsProps> = ({userId, initialDocume
   return (
     <div>
       <QueryClientProvider client={queryClient}>
-        <div className="flex justify-end mb-4">
-          <Link href="/review-positions" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            Go to Review Positions
-          </Link>
-        </div>
         <FileUploadBox addDocument={addDocument} processDocumentFromFormData={processDocumentFromFormData}/>
         <Documents documents={documents} removeDocument={removeDocument} />
       </QueryClientProvider>

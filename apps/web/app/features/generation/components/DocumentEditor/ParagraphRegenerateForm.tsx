@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { FaRedo } from 'react-icons/fa';
 import { useAutosizeTextArea } from '../../hooks/useAutosizeTextArea';
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface ParagraphRegenerateFormProps {
   text: string;
@@ -49,23 +50,26 @@ export function ParagraphRegenerateForm({
         />
       </div>
       <div className="flex justify-end space-x-2">
-        <button
+        <Button
           onClick={() => onRegenerate(instructions)}
           disabled={!instructions.trim()}
-          className={`px-3 py-1.5 rounded-md transition-colors flex items-center ${
-            instructions.trim() 
-              ? 'bg-yellow-600 text-white hover:bg-yellow-700' 
-              : 'bg-yellow-300 text-white cursor-not-allowed'
-          }`}
+          variant="primary"
+          size="sm"
+          leftIcon={<FaRedo />}
+          className={instructions.trim() 
+            ? 'bg-yellow-600 hover:bg-yellow-700' 
+            : 'bg-yellow-300 cursor-not-allowed'}
         >
-          <FaRedo className="mr-1" /> Regenerate
-        </button>
-        <button
+          Regenerate
+        </Button>
+        <Button
           onClick={onCancel}
-          className="px-3 py-1.5 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+          variant="secondary"
+          size="sm"
+          className="bg-gray-500 text-white hover:bg-gray-600"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

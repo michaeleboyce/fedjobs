@@ -3,6 +3,7 @@ import { FaSave } from 'react-icons/fa';
 import { Paragraph } from './Paragraph';
 import { StreamingTextArray } from '../../types';
 import { useParagraphKeyboardShortcuts } from '../../hooks/useParagraphKeyboardShortcuts';
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface DocumentEditorProps {
   streamingTextArray: StreamingTextArray;
@@ -111,12 +112,14 @@ export function DocumentEditor({
         
         {isStreamingComplete && (
           <div className="flex space-x-2">
-            <button
+            <Button
               onClick={() => onSave(streamingTextArray)}
-              className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center"
+              variant="primary"
+              leftIcon={<FaSave />}
+              className="bg-green-600 hover:bg-green-700"
             >
-              <FaSave className="mr-1" /> Save
-            </button>
+              Save
+            </Button>
           </div>
         )}
       </div>
@@ -130,7 +133,14 @@ export function DocumentEditor({
           ) : (
             saveResult.message
           )}
-          <button onClick={() => {}}>×</button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {}}
+            className="p-0.5 min-h-0 min-w-0"
+          >
+            ×
+          </Button>
         </div>
       )}
 
@@ -177,20 +187,24 @@ export function DocumentEditor({
       {selectedParagraph !== null && isStreamingComplete && !editingParagraphId && !regeneratingParagraphId && (
         <div className="border-t border-gray-200 pt-4 flex justify-center">
           <div className="flex space-x-4">
-            <button
+            <Button
               onClick={() => navigateParagraph('up')}
-              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1"
+              variant="secondary"
+              size="sm"
               disabled={streamingTextArray.findIndex(p => p.id === selectedParagraph) === 0}
+              leftIcon={<span>↑</span>}
             >
-              <span>↑ Previous Paragraph</span>
-            </button>
-            <button
+              Previous Paragraph
+            </Button>
+            <Button
               onClick={() => navigateParagraph('down')}
-              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center space-x-1"
+              variant="secondary"
+              size="sm"
               disabled={streamingTextArray.findIndex(p => p.id === selectedParagraph) === streamingTextArray.length - 1}
+              rightIcon={<span>↓</span>}
             >
-              <span>↓ Next Paragraph</span>
-            </button>
+              Next Paragraph
+            </Button>
           </div>
         </div>
       )}

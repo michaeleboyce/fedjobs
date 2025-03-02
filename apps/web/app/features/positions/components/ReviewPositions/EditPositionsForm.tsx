@@ -7,6 +7,7 @@ import {
   faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Position } from "@fedjobs/types";
+import { Button } from '@/app/shared/components/ui/Button';
 
 interface EditPositionFormProps {
   position: Position;
@@ -159,21 +160,23 @@ export const EditPositionForm: React.FC<EditPositionFormProps> = ({
 
       {/* Save and Cancel Buttons */}
       <div className="flex space-x-2 mt-4">
-        <button
+        <Button
           onClick={onSave}
-          className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+          variant="primary"
           disabled={isLoading}
+          leftIcon={<FontAwesomeIcon icon={faCheckCircle} />}
+          className="bg-green-500 hover:bg-green-600"
         >
-          <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
           Save
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onCancel}
-          className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+          variant="secondary"
+          leftIcon={<FontAwesomeIcon icon={faTimesCircle} />}
+          className="bg-gray-500 text-white hover:bg-gray-600"
         >
-          <FontAwesomeIcon icon={faTimesCircle} className="mr-2" />
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );
