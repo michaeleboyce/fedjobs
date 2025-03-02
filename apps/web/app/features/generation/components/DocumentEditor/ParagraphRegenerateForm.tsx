@@ -58,7 +58,7 @@ export function ParagraphRegenerateForm({
           leftIcon={<FaRedo />}
           className={instructions.trim() 
             ? 'bg-yellow-600 hover:bg-yellow-700' 
-            : 'bg-yellow-300 cursor-not-allowed'}
+            : 'bg-yellow-300 text-gray-500 cursor-not-allowed'}
         >
           Regenerate
         </Button>

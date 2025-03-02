@@ -76,8 +76,10 @@ export function DocumentEditor({
   
   // Submit regeneration
   const handleSubmitRegenerate = (regenerationText: string) => {
-    if (regeneratingParagraphId !== null && regenerationText.trim()) {
-      onRegenerateParagraph(regeneratingParagraphId, regenerationText);
+    // Only proceed if we have a valid paragraph ID and non-empty text
+    const trimmedText = regenerationText.trim();
+    if (regeneratingParagraphId !== null && trimmedText.length > 0) {
+      onRegenerateParagraph(regeneratingParagraphId, trimmedText);
       setRegeneratingParagraphId(null);
     }
   };

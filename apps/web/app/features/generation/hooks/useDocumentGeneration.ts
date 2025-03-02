@@ -28,11 +28,12 @@ export function useDocumentGeneration({
   const settings = useGenerationSettings();
   const editor = useDocumentEditor();
   const selection = usePositionSelection(employmentHistory, otherPositions, resume);
-  
+
   // Model selection
   const [model, setModel] = useState("claude-3-7-sonnet-20250219");
-  
+
   // Handle document generation
+  // In useDocumentGeneration.ts
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
     // Build selection data for generation
     const generationSelection = buildGenerationSelection(
@@ -43,59 +44,62 @@ export function useDocumentGeneration({
       settings.jobInfo,
       settings.otherInfo
     );
-    
+
     if (generationSelection.positions.length === 0) {
       console.warn("No positions selected!");
       return;
     }
-    
-    // Reset and prepare editor state
-    editor.resetEditor();
-    
+
+    // Only reset editor for full document generation, not for paragraph regeneration
+    if (paragraphId === undefined) {
+      editor.resetEditor();
+    }
+    // We don't need to manually exit edit/regenerate modes since resetEditor already does that
+    // and for paragraph regeneration the UI component will handle these states
+
     // Generate content through API
     const api = createAPI(
-      docInfo.isDummy, 
-      docInfo.type, 
-      paragraphId, 
-      generationSelection, 
+      docInfo.isDummy,
+      docInfo.type,
+      paragraphId,
+      generationSelection,
       editor.streamingTextArray,
       model
     );
-    
+
     try {
       await api.generateContent(
         paragraphId,
         regenerationText,
         (content) => editor.updateContent(content, paragraphId)
       );
-      
+
       editor.completeEditing();
     } catch (error) {
       console.error("Error in generation:", error);
     }
   };
-  
   // Handle document saving
   const handleSaveDocument = async () => {
     // Implement document saving logic
     // ...
   };
-  
+
   // Combine everything for the public API
   return {
     // Document settings
     ...settings,
-    
+
     // Editor state and handlers
     ...editor,
-    
+
     // Position selection state and handlers
     ...selection,
-    
+
     // Model selection
     model,
     setModel,
-    
+
     // Primary actions
     handleGenerateClick,
     handleSaveDocument,
@@ -132,7 +136,7 @@ function buildGenerationSelection(
       ];
     }
   );
-  
+
   return {
     positions: selectedPositions,
     docInfo,
