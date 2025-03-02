@@ -146,7 +146,8 @@ export const Resume: React.FC<ResumeProps> = ({
           <div id="resume-positions-container" className="flex-1 overflow-y-auto h-[calc(100vh-10rem)]">
             {groupedPositions.map(([year, positions]) => (
               <div key={year} id={`resume-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold mb-2 sticky top-0 bg-gray-100 py-2 z-10">{year}</h3>
+                <h3 className="text-lg font-semibold sticky top-0 bg-gray-100 py-2 z-10 border-b border-gray-200 shadow-sm">{year}</h3>
+                <div className="mt-6"></div>
                 {positions.map((position) => {
                   const posIndex = positionIndexMap[position.positionUuid];
                   return (

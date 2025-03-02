@@ -17,8 +17,8 @@ export function groupPositionsByYear(
     
     if (!hasValidDate) {
       key = "No Date";
-    } else if (pos.date.present || pos.date.isPresent) {
-      // If position is current (present), use current year (checking both fields for compatibility)
+    } else if (pos.date.present) {
+      // If position is current (present), use current year
       key = currentYear;
     } else {
       const baseDate = pos.date.endDate || pos.date.startDate;
@@ -57,9 +57,9 @@ export function groupPositionsByYear(
  */
 export function sortPositions(positions: Position[]): Position[] {
   return [...positions].sort((a, b) => {
-    // Check if either position ends in the present (check both fields)
-    const aPresent = a.date.present || a.date.isPresent;
-    const bPresent = b.date.present || b.date.isPresent;
+    // Check if either position ends in the present
+    const aPresent = a.date.present;
+    const bPresent = b.date.present;
     
     // Handle positions ending in the present (they come first)
     if (aPresent && !bPresent) return -1;

@@ -106,8 +106,8 @@ const ReviewPositions: React.FC = () => {
           ) : (
             groupedEmployment.map(([year, positions]) => (
               <div key={year} id={`eh-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold mb-4 sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg">{year}</h3>
-                <div className="mt-2"></div>
+                <h3 className="text-lg font-semibold sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">{year}</h3>
+                <div className="mt-6"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}
@@ -161,10 +161,10 @@ const ReviewPositions: React.FC = () => {
           ) : (
             groupedOther.map(([year, positions]) => (
               <div key={year} id={`other-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold mb-4 sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg">
+                <h3 className="text-lg font-semibold sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">
                   {typeof year === "number" ? year : "No Date"}
                 </h3>
-                <div className="mt-2"></div>
+                <div className="mt-6"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}

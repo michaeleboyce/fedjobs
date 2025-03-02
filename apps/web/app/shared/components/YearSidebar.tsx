@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from '@/app/shared/utils/classNames';
 
 interface YearSidebarProps {
@@ -21,87 +21,80 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
   className,
 }) => {
   const [activeYear, setActiveYear] = useState<number | string | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const [yearElements, setYearElements] = useState<HTMLElement[]>([]);
 
-  // Set up intersection observer for tracking which year section is visible
+  // Track visible years as user scrolls
   useEffect(() => {
-    // First get all the year elements
-    const elements = years
-      .map(year => document.getElementById(`${prefix}${year}`))
-      .filter((el): el is HTMLElement => el !== null);
+    // Make sure the DOM is ready
+    const parent = document.getElementById(parentId);
+    if (!parent) return;
+
+    // Function to determine which year is currently visible
+    const updateActiveYear = () => {
+      
+      const parent = document.getElementById(parentId);
+      if (!parent) return;
     
-    setYearElements(elements);
+      const yearElements = years
+        .map(year => document.getElementById(`${prefix}${year}`))
+        .filter((el): el is HTMLElement => el !== null);
+    
+      if (yearElements.length === 0) return;
 
-    if (elements.length === 0) return;
-
-    // Create an intersection observer
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        // First check if any entries are intersecting
-        const visibleEntries = entries.filter(entry => entry.isIntersecting);
-        
-        if (visibleEntries.length > 0) {
-          // Sort entries by their position in the viewport (top to bottom)
-          visibleEntries.sort((a, b) => {
-            const rectA = a.boundingClientRect;
-            const rectB = b.boundingClientRect;
-            return rectA.top - rectB.top;
-          });
-          
-          // Select the top-most visible year section
-          const topEntry = visibleEntries[0];
-          
-          // Get the year from the element ID
-          const yearStr = topEntry.target.id.replace(prefix, '');
-          const parsedYear = parseInt(yearStr);
-          setActiveYear(isNaN(parsedYear) ? yearStr : parsedYear);
-        }
-      },
-      {
-        root: document.getElementById(parentId), // Observe within the parent element
-        rootMargin: '0px 0px -80% 0px', // Focus on the top 20% of the viewport
-        threshold: [0, 0.1] // Low thresholds to detect when section enters viewport
+      
+      const parentRect = parent.getBoundingClientRect();
+      
+      // Find the first element that is at or above the top of the container
+      let activeEl = yearElements.find(el => el.getBoundingClientRect().top >= parentRect.top);
+    
+      if (!activeEl) {
+        // If none are above the top, take the last visible one
+        activeEl = yearElements[yearElements.length - 1];
       }
-    );
     
-    // Observe all year elements
-    elements.forEach(el => {
-      observerRef.current?.observe(el);
-    });
+      if (activeEl) {
+        const yearStr = activeEl.id.replace(prefix, '');
+        const parsedYear = parseInt(yearStr);
+        setActiveYear(isNaN(parsedYear) ? yearStr : parsedYear);
+      }
+
+      console.log(yearElements.map(el => ({
+        id: el.id,
+        top: el.getBoundingClientRect().top,
+      })));
+    };
+    // Add scroll event listener
+    parent.addEventListener('scroll', updateActiveYear);
     
+    // Initial update
+    updateActiveYear();
+
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      parent.removeEventListener('scroll', updateActiveYear);
     };
   }, [years, prefix, parentId]);
-  
+
+  // Handle click on a year link
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, year: number | string) => {
     e.preventDefault();
-    const target = document.getElementById(`${prefix}${year}`);
-    const parent = document.getElementById(parentId);
     
-    if (target && parent) {
-      // Find the first position element within this year section
-      const firstPositionElement = target.querySelector('[data-position-element="true"]');
-      
-      // Calculate scroll position (either to the year header or first position)
-      const targetPosition = firstPositionElement 
-        ? (firstPositionElement as HTMLElement).offsetTop 
-        : target.offsetTop;
-        
-      const headerHeight = 85; // Estimated height of sticky headers + year header + spacing
-      
-      // Scroll the parent container
-      parent.scrollTo({
-        top: targetPosition - headerHeight,
-        behavior: 'smooth'
-      });
-      
-      // Update active year immediately for a responsive feel
-      setActiveYear(year);
-    }
+    const parent = document.getElementById(parentId);
+    const target = document.getElementById(`${prefix}${year}`);
+  
+    if (!parent || !target) return;
+  
+    // Get the target position relative to the parent
+    const targetRect = target.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+  
+    const targetScrollTop = parent.scrollTop + (targetRect.top - parentRect.top) - 20; // Adjust for sticky headers
+  
+    parent.scrollTo({
+      top: targetScrollTop,
+      behavior: 'smooth',
+    });
+  
+    setActiveYear(year);
+    console.log(`Scrolling to: ${targetScrollTop}, Parent scrollTop: ${parent.scrollTop}`);
   };
 
   return (

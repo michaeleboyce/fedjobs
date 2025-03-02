@@ -3,6 +3,7 @@ import { PositionItem } from './PositionItem';
 import { PositionSelectionState } from '@/app/features/generation/types';
 import { sortPositions, groupPositionsByYear } from '@/app/shared/utils/positionSorting';
 import { YearSidebar } from '@/app/shared/components/YearSidebar';
+import { useEffect, useRef } from 'react';
 
 interface PositionListSelectorProps {
   employmentHistory: Position[];
@@ -95,6 +96,27 @@ export function PositionListSelector({
   const groupedEmployment = groupPositionsByYear(sortedEmploymentHistory);
   const groupedOther = groupPositionsByYear(sortedOtherPositions);
 
+  // Ref to track if we've scrolled to the initial year
+  const initialScrollRef = useRef(false);
+
+  // Effect to setup scrolling and highlight initial year properly
+  useEffect(() => {
+    setTimeout(() => {
+      const employmentContainer = document.getElementById('employment-history-container');
+      const otherContainer = document.getElementById('other-positions-container');
+  
+      if (employmentContainer) {
+        employmentContainer.scrollTo({ top: 0, behavior: 'auto' });
+      }
+  
+      if (otherContainer) {
+        otherContainer.scrollTo({ top: 0, behavior: 'auto' });
+      }
+  
+      initialScrollRef.current = true;
+    }, 200); // Increased timeout to account for rendering lag
+  }, []);
+
   return (
     <div className="bg-white p-4 my-4 rounded border">
       <h2 className="text-xl font-bold mb-4">Select Positions for Generation</h2>
@@ -122,7 +144,8 @@ export function PositionListSelector({
             <div id="employment-history-container" className="flex-1 overflow-y-auto h-[calc(100vh-16rem)]">
               {groupedEmployment.map(([year, positions]) => (
                 <div key={year} id={`gen-eh-year-${year}`} className="mb-6">
-                  <h4 className="text-md font-medium mb-2 sticky top-0 bg-white py-2 z-10">{year}</h4>
+                  <h4 className="text-md font-medium sticky top-0 bg-white py-2 z-10 border-b shadow-sm">{year}</h4>
+                  <div className="mt-6"></div>
                   {positions.map((position) => (
                     <PositionItem
                       key={position.positionUuid}
@@ -166,7 +189,8 @@ export function PositionListSelector({
             <div id="other-positions-container" className="flex-1 overflow-y-auto h-[calc(100vh-16rem)]">
               {groupedOther.map(([year, positions]) => (
                 <div key={year} id={`gen-other-year-${year}`} className="mb-6">
-                  <h4 className="text-md font-medium mb-2 sticky top-0 bg-white py-2 z-10">{year}</h4>
+                  <h4 className="text-md font-medium sticky top-0 bg-white py-2 z-10 border-b shadow-sm">{year}</h4>
+                  <div className="mt-6"></div>
                   {positions.map((position) => (
                     <PositionItem
                       key={position.positionUuid}
