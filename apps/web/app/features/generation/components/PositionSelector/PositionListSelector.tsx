@@ -1,11 +1,11 @@
 import { Position } from '@fedjobs/types';
 import { PositionItem } from './PositionItem';
-
+import { PositionSelectionState } from '@/app/features/generation/types';
 interface PositionListSelectorProps {
   employmentHistory: Position[];
   otherPositions: Position[];
   selectedState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>;
-  onSelectionChange: (newState: typeof selectedState) => void;
+  onSelectionChange: (newState: PositionSelectionState) => void;
 }
 
 export function PositionListSelector({

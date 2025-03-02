@@ -94,7 +94,7 @@ export function DocumentEditor({
   useParagraphKeyboardShortcuts({
     editMode: editingParagraphId !== null,
     regenerateMode: regeneratingParagraphId !== null,
-    selectedParagraphId: selectedParagraph,
+    selectedParagraphId: selectedParagraph ?? null, // Use nullish coalescing to ensure we never pass undefined
     paragraphs: streamingTextArray,
     onNavigateParagraph: navigateParagraph,
     onEditClick: handleEditClick,

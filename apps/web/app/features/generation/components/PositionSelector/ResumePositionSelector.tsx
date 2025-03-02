@@ -1,10 +1,11 @@
+// apps/web/app/features/generation/components/PositionSelector/ResumePositionSelector.tsx
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { Resume } from '@/app/features/resume/components/ResumeView';
 
 interface ResumePositionSelectorProps {
   resume: ResumeObject;
   selectedState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>;
-  onSelectionChange: (newState: typeof selectedState) => void;
+  onSelectionChange: (newState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>) => void;
 }
 
 export function ResumePositionSelector({
@@ -35,7 +36,7 @@ export function ResumePositionSelector({
         selectedAccomplishments: item.selectedAccomplishments,
       };
       return acc;
-    }, {} as typeof selectedState);
+    }, {} as Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>);
     
     onSelectionChange(newState);
   };

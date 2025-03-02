@@ -1,11 +1,11 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { getAllPositions } from "@/app/features/positions/actions/reviewPositionActions";
-import { GenerationProvider } from "../../features/generation/providers/GenerationProvider";
-import { DocumentGenerationManager } from "../../features/generation/components/DocumentGenerationManager";
-import { PositionsProvider } from "@/app/features/positions/context";
+import { GenerationProvider } from "@/app/features/generation/providers/GenerationProvider";
+import { DocumentGeneration } from "@/app/features/generation/components/DocumentGeneration";
 
 export default async function GeneratePage() {
+  //TODO: Refactor authnetication into a server
   const { isAuthenticated, getUser } = await getKindeServerSession();
   if (!(await isAuthenticated())) {
     redirect("/api/auth/signin");
@@ -25,14 +25,12 @@ export default async function GeneratePage() {
   const { employmentHistory, otherPositions } = positionsResponse;
 
   return (
-    <PositionsProvider>
-      <GenerationProvider>
-        <DocumentGenerationManager
-          employmentHistory={employmentHistory}
-          otherPositions={otherPositions}
-          userEmail={user.email ?? ""}
-        />
-      </GenerationProvider>
-    </PositionsProvider>
+    <GenerationProvider>
+      <DocumentGeneration
+        employmentHistory={employmentHistory}
+        otherPositions={otherPositions}
+        userEmail={user.email ?? ""}
+      />
+    </GenerationProvider>
   );
 }

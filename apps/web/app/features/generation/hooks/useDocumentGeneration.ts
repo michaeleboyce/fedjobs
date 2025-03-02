@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Position } from "@fedjobs/types";
-import { StreamingTextArray } from "../types";
+import { JobInfo, Position } from "@fedjobs/types";
+import { DocumentInfo, StreamingTextArray } from "../types";
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { useGenerationSettings } from './useGenerationSettings';
 import { useDocumentEditor } from './useDocumentEditor';
@@ -8,6 +8,14 @@ import { usePositionSelection } from './usePositionSelection';
 import { GenerationSelection } from '../types/GenerationSelection';
 import { createAPI } from '../utils';
 
+interface DocumentGenerationProps {
+  employmentHistory: Position[];
+  otherPositions: Position[];
+  resume?: ResumeObject;
+  docInfo: DocumentInfo;
+  jobInfo: JobInfo;
+  otherInfo: string;
+}
 export function useDocumentGeneration({
   employmentHistory,
   otherPositions,
@@ -15,7 +23,7 @@ export function useDocumentGeneration({
   docInfo,
   jobInfo,
   otherInfo
-}) {
+}: DocumentGenerationProps) {
   // Get settings, editor and position selection state
   const settings = useGenerationSettings();
   const editor = useDocumentEditor();
@@ -96,12 +104,12 @@ export function useDocumentGeneration({
 
 // Helper to build the generation selection object
 function buildGenerationSelection(
-  selectedState,
-  employmentHistory,
-  otherPositions,
-  docInfo,
-  jobInfo,
-  otherInfo
+  selectedState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>,
+  employmentHistory: Position[],
+  otherPositions: Position[],
+  docInfo: DocumentInfo,
+  jobInfo: JobInfo,
+  otherInfo: string
 ): GenerationSelection {
   const selectedPositions = Object.entries(selectedState).flatMap(
     ([positionUuid, selections]) => {

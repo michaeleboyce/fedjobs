@@ -21,6 +21,9 @@ export class GeneratorFactory {
     ): EssayGenerator {
         switch (type) {
             case 'ecq':
+                if (!generationSelection.docInfo.ecqShortTitle) {
+                    throw new Error("ECQ Short Title is required for ECQ generation");
+                }
                 return new ECQGenerator(generationSelection.docInfo.ecqShortTitle, generationSelection);
             case 'tcq':
                 return new TCQGenerator(generationSelection);

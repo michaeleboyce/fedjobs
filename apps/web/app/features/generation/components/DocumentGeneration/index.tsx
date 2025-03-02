@@ -96,7 +96,9 @@ export function DocumentGeneration({
         onGenerateClick={handleGenerateClick}
         isGenerateDisabled={!isGenerateEnabled}
         generatedDocuments={generatedDocuments}
-        onViewDocument={(docId: string) => window.open(`/document/${docId}`, "_blank")}
+        onViewDocument={(documentId: number) => {
+          window.open(`/document/${documentId}`, "_blank");
+        }}
         onSaveDocument={handleSaveDocument}
         isSaveEnabled={streamingTextArray.length > 0 && isStreamingComplete}
         showModelSelector={showModelSelector}
