@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
-import { JobInfo, Position } from "@fedjobs/types";
+import { JobInfo, Position, DocumentType} from "@fedjobs/types";
 import { DocumentInfo, StreamingTextArray } from "../types";
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { useGenerationSettings } from './useGenerationSettings';
 import { useDocumentEditor } from './useDocumentEditor';
 import { usePositionSelection } from './usePositionSelection';
 import { GenerationSelection } from '../types/GenerationSelection';
+import { saveGeneratedDocument } from '@/app/features/generation/actions/documentActions';
 import { createAPI } from '../utils';
 
 interface DocumentGenerationProps {
@@ -128,14 +129,59 @@ export function useDocumentGeneration({
 
   // Handle document saving
   const handleSaveDocument = async () => {
-    // Implement document saving logic
+    if (!editor.streamingTextArray.length) {
+      editor.setSaveResult({
+        url: "",
+        message: "No content to save"
+      });
+      return;
+    }
+
     try {
-      // Call your save document API here
-      const saveResult = {
-        url: `/document/${Date.now()}`,
-        message: "Document saved successfully!"
-      };
-      editor.setSaveResult(saveResult);
+      // Convert streaming text array to document content
+      const documentContent = editor.streamingTextArray.map(p => p.text).join('\n\n');
+      
+      // Determine document title based on document type
+      const documentType = docInfo.type as DocumentType;
+      const title = getDocumentTitle(documentType, docInfo);
+      
+      // Create description with relevant metadata
+      const description = createDocumentDescription(documentType, docInfo, jobInfo);
+      
+      // Call server action to save the document
+      const result = await saveGeneratedDocument(
+        documentContent,
+        documentType,
+        title,
+        description
+      );
+      
+      if (result.status === 'ok') {
+        // Update the save result in the UI
+        editor.setSaveResult({
+          url: result.body.url || '',
+          message: "Document successfully saved - Click here to view"
+        });
+        
+        // Add the new document to the generated documents list
+        if (result.body.documentId) {
+          editor.setGeneratedDocuments([
+            ...editor.generatedDocuments,
+            {
+              documentId: result.body.documentId,
+              title: result.body.documentName || title,
+              type: documentType,
+              ecqName: documentType === 'ecq' ? docInfo.ecqShortTitle : undefined,
+              dateCreated: new Date().toISOString()
+            }
+          ]);
+        }
+      } else {
+        editor.setSaveResult({
+          url: '',
+          message: result.body.message || "Error saving document"
+        });
+      }
     } catch (error) {
       console.error("Error saving document:", error);
       editor.setSaveResult({
@@ -145,6 +191,47 @@ export function useDocumentGeneration({
     }
   };
 
+    // Helper function to generate document title
+    const getDocumentTitle = (docType: DocumentType, docInfo: DocumentInfo): string => {
+      switch (docType) {
+        case 'ecq':
+          return `ECQ Essay - ${docInfo.ecqShortTitle || 'Untitled'}`;
+        case 'tcq':
+          return `TCQ Document - ${new Date().toLocaleDateString()}`;
+        case 'cover_letter':
+          return `Cover Letter - ${new Date().toLocaleDateString()}`;
+        case 'resume':
+          return `Resume - ${new Date().toLocaleDateString()}`;
+        default:
+          return `Generated Document - ${new Date().toLocaleDateString()}`;
+      }
+    };
+  
+    // Helper function to create meaningful description
+    const createDocumentDescription = (
+      docType: DocumentType, 
+      docInfo: DocumentInfo, 
+      jobInfo: JobInfo
+    ): string => {
+      const parts = [];
+      
+      if (docType === 'ecq' && docInfo.ecqShortTitle) {
+        parts.push(`ECQ Topic: ${docInfo.ecqShortTitle}`);
+      }
+      
+      if (docInfo.additionalDocInfo) {
+        parts.push(docInfo.additionalDocInfo);
+      }
+      
+      if (jobInfo.jobPostingURL) {
+        parts.push(`Job URL: ${jobInfo.jobPostingURL}`);
+      }
+      
+      // Add date for reference
+      parts.push(`Generated on ${new Date().toLocaleDateString()}`);
+      
+      return parts.join(' | ');
+    };
   // Combine everything for the public API
   return {
     // Document settings
@@ -207,3 +294,4 @@ function buildGenerationSelection(
     lengthUnit: docInfo.lengthUnit,
   };
 }
+
