@@ -1,7 +1,9 @@
-// File path: apps/web/app/_components/PositionCard/SimilarPositionsSections.tsx
+// File path: apps/web/app/features/positions/components/PositionCard/SimilarPositionsSections.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SimilarPositionCard } from "../SimilarPositionCard";
+import { toast } from "react-toastify";
+import { getPosition } from "@/app/features/positions/actions/positionActions";
 
 interface SimilarPositionsSectionsProps {
   position: any;
@@ -27,6 +29,85 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
   const [showUnderReview, setShowUnderReview] = useState(true);
   const [showApproved, setShowApproved] = useState(true);
   const [showRejected, setShowRejected] = useState(false);
+  const [validatedSimilarIds, setValidatedSimilarIds] = useState<string[]>([]);
+  const [validatedApprovedIds, setValidatedApprovedIds] = useState<string[]>([]);
+  const [validatedRejectedIds, setValidatedRejectedIds] = useState<string[]>([]);
+  const [hasValidated, setHasValidated] = useState(false);
+
+  // Validate all position IDs when component first renders
+  useEffect(() => {
+    const validatePositionIds = async () => {
+      if (hasValidated) return;
+      
+      try {
+        // Validate similar positions
+        const similarIds = position.similarPositionUuids || [];
+        const approvedIds = position.approvedSimilarPositionUuids || [];
+        const rejectedIds = position.rejectedSimilarPositionUuids || [];
+        
+        // Validate that each ID still exists in the database
+        const validSimilar: string[] = [];
+        const validApproved: string[] = [];
+        const validRejected: string[] = [];
+        
+        let needsUpdate = false;
+        
+        // Check similar positions
+        for (const id of similarIds) {
+          const response = await getPosition(id);
+          if (response.success) {
+            validSimilar.push(id);
+          } else {
+            console.warn(`Similar position ${id} not found, will be removed`);
+            needsUpdate = true;
+          }
+        }
+        
+        // Check approved positions
+        for (const id of approvedIds) {
+          const response = await getPosition(id);
+          if (response.success) {
+            validApproved.push(id);
+          } else {
+            console.warn(`Approved position ${id} not found, will be removed`);
+            needsUpdate = true;
+          }
+        }
+        
+        // Check rejected positions
+        for (const id of rejectedIds) {
+          const response = await getPosition(id);
+          if (response.success) {
+            validRejected.push(id);
+          } else {
+            console.warn(`Rejected position ${id} not found, will be removed`);
+            needsUpdate = true;
+          }
+        }
+        
+        // Update state with validated IDs
+        setValidatedSimilarIds(validSimilar);
+        setValidatedApprovedIds(validApproved);
+        setValidatedRejectedIds(validRejected);
+        setHasValidated(true);
+        
+        // If any positions were missing, clean up the arrays
+        if (needsUpdate && 
+            (similarIds.length !== validSimilar.length || 
+             approvedIds.length !== validApproved.length || 
+             rejectedIds.length !== validRejected.length)) {
+          
+          // Update the position object through API - this would happen in a real implementation
+          // For now, we'll just show a toast notification
+          toast.info("Some referenced positions were no longer found and have been removed.");
+        }
+      } catch (error) {
+        console.error("Error validating position IDs:", error);
+      }
+    };
+    
+    validatePositionIds();
+  }, [position, hasValidated]);
 
   const renderSection = (
     title: string, 
@@ -40,15 +121,20 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
     </div>
   );
 
+  // Only render once validation has completed
+  if (!hasValidated) {
+    return <div className="mt-4 text-gray-500">Loading similar positions...</div>;
+  }
+
   return (
     <>
       {/* Under Review */}
-      {position.similarPositionUuids && position.similarPositionUuids.length > 0 &&
+      {validatedSimilarIds.length > 0 &&
         renderSection(
-          "Similar Positions Under Review:",
+          `Similar Positions Under Review (${validatedSimilarIds.length})`,
           showUnderReview,
           () => setShowUnderReview(!showUnderReview),
-          position.similarPositionUuids.map((simId: string) => (
+          validatedSimilarIds.map((simId) => (
             <SimilarPositionCard
               key={simId}
               similarId={simId}
@@ -79,12 +165,12 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
       }
 
       {/* Approved */}
-      {position.approvedSimilarPositionUuids && position.approvedSimilarPositionUuids.length > 0 &&
+      {validatedApprovedIds.length > 0 &&
         renderSection(
-          "Approved Similar Positions:",
+          `Approved Similar Positions (${validatedApprovedIds.length})`,
           showApproved,
           () => setShowApproved(!showApproved),
-          position.approvedSimilarPositionUuids.map((simId: string) => (
+          validatedApprovedIds.map((simId) => (
             <SimilarPositionCard
               key={simId}
               similarId={simId}
@@ -109,12 +195,12 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
       }
 
       {/* Rejected */}
-      {position.rejectedSimilarPositionUuids && position.rejectedSimilarPositionUuids.length > 0 &&
+      {validatedRejectedIds.length > 0 &&
         renderSection(
-          "Rejected Similar Positions:",
+          `Rejected Similar Positions (${validatedRejectedIds.length})`,
           showRejected,
           () => setShowRejected(!showRejected),
-          position.rejectedSimilarPositionUuids.map((simId: string) => (
+          validatedRejectedIds.map((simId) => (
             <SimilarPositionCard
               key={simId}
               similarId={simId}

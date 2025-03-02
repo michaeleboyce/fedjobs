@@ -1,8 +1,8 @@
-// File path: apps/web/app/_components/ReviewPositions/index.tsx
+// File path: apps/web/app/features/positions/components/ReviewPositions/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
 import { usePositionsManagement } from "@/app/features/positions/hooks/usePositionsManagement";
-import { PositionCard } from "@/app/features/positions/components/PositionCard"
+import { PositionCard } from "@/app/features/positions/components/PositionCard";
 import { SearchBar } from "@/app/shared/components/SearchBar";
 import { YearSidebar } from "@/app/shared/components/YearSidebar";
 import { ColumnToggle } from "@/app/features/positions/components/ReviewPositions/ColumnToggle";
@@ -21,6 +21,7 @@ const ReviewPositions: React.FC = () => {
   const { employmentHistory, otherPositions, isLoading } = usePositionsManagement();
   const [hiddenColumn, setHiddenColumn] = useState<HiddenColumn>("none");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showOnlyUnreviewedPositions, setShowOnlyUnreviewedPositions] = useState(true);
 
   const getColumnStyles = (columnType: ColumnType): ColumnConfig => ({
     width:
@@ -39,13 +40,29 @@ const ReviewPositions: React.FC = () => {
     );
   };
 
+  // Filter other positions based on search term and review status
   const filteredOtherPositions = otherPositions.filter((pos) => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      pos.title.title.toLowerCase().includes(searchLower) ||
-      pos.organization.name.toLowerCase().includes(searchLower)
-    );
+    // First apply search term filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        pos.title.title.toLowerCase().includes(searchLower) ||
+        pos.organization.name.toLowerCase().includes(searchLower);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Then apply "unreviewed only" filter if enabled
+    if (showOnlyUnreviewedPositions) {
+      // Check if this position has been reviewed (approved or rejected)
+      const isReviewed = 
+        pos.approvedSimilarPositionUuids.length > 0 || 
+        pos.rejectedSimilarPositionUuids.length > 0;
+      
+      return !isReviewed;
+    }
+    
+    return true;
   });
 
   const groupedEmployment = groupPositionsByYear(
@@ -69,7 +86,7 @@ const ReviewPositions: React.FC = () => {
   }
 
   return (
-    <div className="flex gap-2 p-4 min-h-screen">
+    <div className="flex gap-4 p-6 min-h-screen">
       {/* Employment History Column */}
       <div className="flex" style={getColumnStyles("employment")}>
         <div className="w-40 pr-4 flex-shrink-0">
@@ -90,13 +107,18 @@ const ReviewPositions: React.FC = () => {
           id="employment-history"
           className="flex-1 overflow-y-auto h-[calc(100vh-6rem)] relative"
         >
-          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-20 py-2 border-b">
-            <h2 className="text-xl font-bold">Employment History</h2>
-            <ColumnToggle
-              isExpanded={hiddenColumn === "other"}
-              onToggle={() => toggleColumn("other")}
-              label="Employment History"
-            />
+          {/* Improved header styling */}
+          <div className="sticky top-0 z-20 pb-2 pt-1 bg-gradient-to-b from-gray-50 to-transparent">
+            <h2 className="text-xl font-bold text-blue-700 pb-2 border-b border-gray-200">
+              Employment History
+            </h2>
+            <div className="flex justify-end mt-2">
+              <ColumnToggle
+                isExpanded={hiddenColumn === "other"}
+                onToggle={() => toggleColumn("other")}
+                label="Employment History"
+              />
+            </div>
           </div>
 
           {employmentHistory.length === 0 ? (
@@ -106,8 +128,8 @@ const ReviewPositions: React.FC = () => {
           ) : (
             groupedEmployment.map(([year, positions]) => (
               <div key={year} id={`eh-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">{year}</h3>
-                <div className="mt-6"></div>
+                <h3 className="text-lg font-semibold sticky top-16 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">{year}</h3>
+                <div className="mt-4"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}
@@ -141,13 +163,30 @@ const ReviewPositions: React.FC = () => {
           id="other-positions"
           className="flex-1 overflow-y-auto h-[calc(100vh-6rem)] relative"
         >
-          <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-20 py-2 border-b">
-            <h2 className="text-xl font-bold">Other Positions</h2>
-            <ColumnToggle
-              isExpanded={hiddenColumn === "employment"}
-              onToggle={() => toggleColumn("employment")}
-              label="Other Positions"
-            />
+          {/* Improved header styling */}
+          <div className="sticky top-0 z-20 pb-2 pt-1 bg-gradient-to-b from-gray-50 to-transparent">
+            <h2 className="text-xl font-bold text-blue-700 pb-2 border-b border-gray-200">
+              Other Positions
+            </h2>
+            <div className="flex justify-between items-center mt-2">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="unreviewedOnly"
+                  checked={showOnlyUnreviewedPositions}
+                  onChange={() => setShowOnlyUnreviewedPositions(!showOnlyUnreviewedPositions)}
+                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="unreviewedOnly" className="text-sm text-gray-700">
+                  Show only unreviewed positions
+                </label>
+              </div>
+              <ColumnToggle
+                isExpanded={hiddenColumn === "employment"}
+                onToggle={() => toggleColumn("employment")}
+                label="Other Positions"
+              />
+            </div>
           </div>
 
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
@@ -156,15 +195,17 @@ const ReviewPositions: React.FC = () => {
             <div className="text-center py-8 text-gray-500">
               {searchTerm 
                 ? "No positions match your search criteria." 
-                : "No positions available."}
+                : showOnlyUnreviewedPositions
+                  ? "No unreviewed positions available."
+                  : "No positions available."}
             </div>
           ) : (
             groupedOther.map(([year, positions]) => (
               <div key={year} id={`other-year-${year}`} className="mb-6">
-                <h3 className="text-lg font-semibold sticky top-14 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold sticky top-28 bg-gray-50 py-2 z-10 px-2 rounded-lg shadow-sm">
                   {typeof year === "number" ? year : "No Date"}
                 </h3>
-                <div className="mt-6"></div>
+                <div className="mt-4"></div>
                 {positions.map((position) => (
                   <PositionCard
                     key={position.positionUuid}

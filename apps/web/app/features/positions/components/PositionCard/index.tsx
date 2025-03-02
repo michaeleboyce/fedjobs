@@ -1,5 +1,5 @@
-// File path: apps/web/app/_components/PositionCard/index.tsx
-import React, { useState } from "react";
+// File path: apps/web/app/features/positions/components/PositionCard/index.tsx
+import React, { useState, useEffect } from "react";
 import { Position } from "@fedjobs/types";
 import { usePositions } from "../../context/PositionsContext";
 import { PositionHeader } from "./PositionHeader";
@@ -46,10 +46,13 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     handleRemoveRejectedSimilar,
   } = usePositions();
 
+  // Default to closed state
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  // Track whether similar positions have been loaded
+  const [similarPositionsLoaded, setSimilarPositionsLoaded] = useState(false);
 
-  // Local “edit” state
+  // Local "edit" state
   const [tempTitle, setTempTitle] = useState(position.title.title);
   const [tempOrg, setTempOrg] = useState(position.organization.name);
   const [tempStartDate, setTempStartDate] = useState(position.date.startDate);
@@ -63,6 +66,17 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   ]);
 
   const isLoading = loadingPositions.has(position.positionUuid);
+
+  // Toggle expansion and handle similiar positions loading
+  const toggleExpansion = () => {
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    
+    // Mark similar positions as loaded when first expanded
+    if (newExpandedState && !similarPositionsLoaded) {
+      setSimilarPositionsLoaded(true);
+    }
+  };
 
   async function saveEdit() {
     await handleUpdatePosition(position.positionUuid, {
@@ -104,12 +118,12 @@ export const PositionCard: React.FC<PositionCardProps> = ({
           handleRemoveFromEmploymentHistory(position.positionUuid)
         }
         onEditToggle={() => setIsEditing(!isEditing)}
-        onExpandToggle={() => setIsExpanded(!isExpanded)}
+        onExpandToggle={toggleExpansion}
         onSaveEdit={saveEdit}
         onCancelEdit={() => setIsEditing(false)}
       />
 
-      {/* If selectionMode => show “Select All” + “Clear All” */}
+      {/* If selectionMode => show "Select All" + "Clear All" */}
       {selectionMode && (
         <div className="mt-2 flex items-center gap-2">
           <button
@@ -132,7 +146,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         position={position}
         similarCount={similarCount}
         isEmploymentHistory={isEmploymentHistory}
-        onExpandToggle={() => setIsExpanded(!isExpanded)}
+        onExpandToggle={toggleExpansion}
       />
 
       {isEditing && (
@@ -201,18 +215,20 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         </>
       )}
 
-      {/* Similar Positions */}
-      <SimilarPositionsSections
-        position={position}
-        isEmploymentHistory={isEmploymentHistory}
-        /** Pass the new prop so it hides “remove” or “approve/reject” for generation */
-        isGenerationView={isGenerationView}
-        loadingPositions={loadingPositions}
-        handleApproveSimilar={handleApproveSimilar}
-        handleRejectSimilar={handleRejectSimilar}
-        handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
-        handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
-      />
+      {/* Only render similar positions when expanded AND loaded */}
+      {isExpanded && similarPositionsLoaded && (
+        <SimilarPositionsSections
+          position={position}
+          isEmploymentHistory={isEmploymentHistory}
+          /** Pass the new prop so it hides "remove" or "approve/reject" for generation */
+          isGenerationView={isGenerationView}
+          loadingPositions={loadingPositions}
+          handleApproveSimilar={handleApproveSimilar}
+          handleRejectSimilar={handleRejectSimilar}
+          handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
+          handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
+        />
+      )}
     </div>
   );
 };

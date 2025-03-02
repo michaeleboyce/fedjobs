@@ -57,10 +57,6 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
         setActiveYear(isNaN(parsedYear) ? yearStr : parsedYear);
       }
 
-      console.log(yearElements.map(el => ({
-        id: el.id,
-        top: el.getBoundingClientRect().top,
-      })));
     };
     // Add scroll event listener
     parent.addEventListener('scroll', updateActiveYear);
@@ -94,7 +90,6 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
     });
   
     setActiveYear(year);
-    console.log(`Scrolling to: ${targetScrollTop}, Parent scrollTop: ${parent.scrollTop}`);
   };
 
   return (
