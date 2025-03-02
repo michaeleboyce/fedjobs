@@ -1,14 +1,10 @@
-import React from 'react';
 import ReactMarkdown from 'react-markdown';
 
 interface ParagraphContentProps {
   text: string;
 }
 
-/**
- * Component for displaying the paragraph content with markdown formatting
- */
-const ParagraphContent: React.FC<ParagraphContentProps> = ({ text }) => {
+export function ParagraphContent({ text }: ParagraphContentProps) {
   return (
     <ReactMarkdown components={{
       p: ({children}) => <p className="prose max-w-none">{children}</p>
@@ -16,6 +12,4 @@ const ParagraphContent: React.FC<ParagraphContentProps> = ({ text }) => {
       {text}
     </ReactMarkdown>
   );
-};
-
-export default ParagraphContent;
+}

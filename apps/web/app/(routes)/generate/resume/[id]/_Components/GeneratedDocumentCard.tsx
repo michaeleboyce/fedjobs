@@ -1,5 +1,4 @@
 // File path: apps/web/app/(routes)/generate/resume/[id]/_Components/GeneratedDocumentCard.tsx
-import React from 'react';
 
 type GeneratedDocumentCardProps = {
     title: string;

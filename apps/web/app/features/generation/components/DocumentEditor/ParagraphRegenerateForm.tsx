@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { FaRedo } from 'react-icons/fa';
-import useAutosizeTextArea from '@/app/features/generation/hooks/useAutosizeTextArea';
+import { useAutosizeTextArea } from '../../hooks/useAutosizeTextArea';
 
 interface ParagraphRegenerateFormProps {
   text: string;
@@ -9,18 +9,15 @@ interface ParagraphRegenerateFormProps {
   onCancel: () => void;
 }
 
-/**
- * Component for handling paragraph regeneration with instructions
- */
-const ParagraphRegenerateForm: React.FC<ParagraphRegenerateFormProps> = ({ 
-  text, 
-  onRegenerate, 
-  onCancel 
-}) => {
+export function ParagraphRegenerateForm({
+  text,
+  onRegenerate,
+  onCancel
+}: ParagraphRegenerateFormProps) {
   const [instructions, setInstructions] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  // Use the shared hook for textarea auto-resizing
+  // Use the autosize hook
   useAutosizeTextArea(textareaRef, instructions);
   
   // Auto-focus the textarea when the component mounts
@@ -29,13 +26,7 @@ const ParagraphRegenerateForm: React.FC<ParagraphRegenerateFormProps> = ({
       textareaRef.current.focus();
     }
   }, []);
-  
-  const handleRegenerate = () => {
-    if (instructions.trim()) {
-      onRegenerate(instructions);
-    }
-  };
-  
+
   return (
     <div className="space-y-2">
       <div className="p-3 bg-gray-100 rounded-md">
@@ -59,7 +50,7 @@ const ParagraphRegenerateForm: React.FC<ParagraphRegenerateFormProps> = ({
       </div>
       <div className="flex justify-end space-x-2">
         <button
-          onClick={handleRegenerate}
+          onClick={() => onRegenerate(instructions)}
           disabled={!instructions.trim()}
           className={`px-3 py-1.5 rounded-md transition-colors flex items-center ${
             instructions.trim() 
@@ -78,6 +69,4 @@ const ParagraphRegenerateForm: React.FC<ParagraphRegenerateFormProps> = ({
       </div>
     </div>
   );
-};
-
-export default ParagraphRegenerateForm;
+}

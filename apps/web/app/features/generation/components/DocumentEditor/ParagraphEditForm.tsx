@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { FaSave } from 'react-icons/fa';
-import useAutosizeTextArea from '@/app/features/generation/hooks/useAutosizeTextArea';
+import { useAutosizeTextArea } from '../../hooks/useAutosizeTextArea';
 
 interface ParagraphEditFormProps {
   text: string;
@@ -8,23 +8,16 @@ interface ParagraphEditFormProps {
   onCancel: () => void;
 }
 
-/**
- * Component for editing paragraph text
- */
-const ParagraphEditForm: React.FC<ParagraphEditFormProps> = ({ 
-  text, 
-  onSave, 
-  onCancel 
-}) => {
+export function ParagraphEditForm({
+  text,
+  onSave,
+  onCancel
+}: ParagraphEditFormProps) {
   const [editedText, setEditedText] = useState(text);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  // Use the shared hook for textarea auto-resizing
+  // Use the autosize hook
   useAutosizeTextArea(textareaRef, editedText);
-
-  const handleSave = () => {
-    onSave(editedText);
-  };
 
   return (
     <div className="space-y-2">
@@ -36,7 +29,7 @@ const ParagraphEditForm: React.FC<ParagraphEditFormProps> = ({
       />
       <div className="flex justify-end space-x-2">
         <button
-          onClick={handleSave}
+          onClick={() => onSave(editedText)}
           className="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center"
         >
           <FaSave className="mr-1" /> Save
@@ -50,6 +43,4 @@ const ParagraphEditForm: React.FC<ParagraphEditFormProps> = ({
       </div>
     </div>
   );
-};
-
-export default ParagraphEditForm;
+}

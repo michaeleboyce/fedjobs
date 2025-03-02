@@ -5,10 +5,10 @@ import { useEffect } from 'react';
  * @param textAreaRef Reference to the textarea element
  * @param value The text content of the textarea
  */
-export const useAutosizeTextArea = (
+export function useAutosizeTextArea(
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>,
   value: string
-) => {
+) {
   useEffect(() => {
     if (textAreaRef.current) {
       // Reset height to ensure accurate scrollHeight measurement
@@ -19,6 +19,4 @@ export const useAutosizeTextArea = (
       textAreaRef.current.style.height = `${scrollHeight}px`;
     }
   }, [textAreaRef, value]);
-};
-
-export default useAutosizeTextArea;
+}

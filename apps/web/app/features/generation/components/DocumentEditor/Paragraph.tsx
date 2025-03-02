@@ -1,52 +1,52 @@
-import React, { useState } from 'react';
-import { FaGripVertical } from 'react-icons/fa';
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { FaGripVertical } from 'react-icons/fa';
+import { ParagraphContent } from './ParagraphContent';
+import { ParagraphEditForm } from './ParagraphEditForm';
+import { ParagraphRegenerateForm } from './ParagraphRegenerateForm';
+import { ParagraphControls } from './ParagraphControls'
 
-import ParagraphContent from './_components/ParagraphContent';
-import ParagraphEditForm from './_components/ParagraphEditForm';
-import ParagraphRegenerateForm from './_components/ParagraphRegenerateForm';
-import ParagraphActionButtons from './_components/ParagraphActionButtons';
-
-interface DocumentParagraphProps {
+interface ParagraphProps {
   paragraph: {
     id: number;
     text: string;
   };
   isSelected: boolean;
-  isStreamingComplete: boolean;
   isEditMode: boolean;
   isRegenerateMode: boolean;
+  isStreamingComplete: boolean;
+  
   onParagraphClick: (id: number) => void;
   onEditClick: (id: number) => void;
   onRegenerateClick: (id: number) => void;
   onDeleteParagraph: (id: number) => void;
   onMoveParagraph: (id: number, direction: 'up' | 'down') => void;
+  
   onSaveEdit: (newText: string) => void;
   onCancelEdit: () => void;
   onSubmitRegenerate: (regenerationText: string) => void;
   onCancelRegenerate: () => void;
 }
 
-/**
- * Component for rendering, editing, regenerating paragraphs with drag-and-drop support
- */
-const DocumentParagraph: React.FC<DocumentParagraphProps> = ({
+export function Paragraph({
   paragraph,
   isSelected,
-  isStreamingComplete,
   isEditMode,
   isRegenerateMode,
+  isStreamingComplete,
+  
   onParagraphClick,
   onEditClick,
   onRegenerateClick,
   onDeleteParagraph,
   onMoveParagraph,
+  
   onSaveEdit,
   onCancelEdit,
   onSubmitRegenerate,
   onCancelRegenerate,
-}) => {
+}: ParagraphProps) {
   const [hoveredParagraph, setHoveredParagraph] = useState(false);
 
   // Setup sortable
@@ -97,7 +97,7 @@ const DocumentParagraph: React.FC<DocumentParagraphProps> = ({
       {/* Action buttons */}
       {isStreamingComplete && (hoveredParagraph || isSelected) && 
         !isEditMode && !isRegenerateMode && (
-        <ParagraphActionButtons
+        <ParagraphControls
           onEdit={(e) => {
             e.stopPropagation();
             onEditClick(paragraph.id);
@@ -136,12 +136,9 @@ const DocumentParagraph: React.FC<DocumentParagraphProps> = ({
             onCancel={onCancelRegenerate}
           />
         ) : (
-          /* Otherwise, render as markdown */
           <ParagraphContent text={paragraph.text} />
         )}
       </div>
     </div>
   );
-};
-
-export default DocumentParagraph;
+}

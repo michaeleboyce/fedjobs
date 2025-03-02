@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StreamingTextArray } from '@/app/features/generation/types/StreamingTextArray';
+import { StreamingTextArray } from '../types';
 
 interface UseParagraphKeyboardShortcutsProps {
   editMode: boolean;
@@ -17,7 +17,7 @@ interface UseParagraphKeyboardShortcutsProps {
 /**
  * Custom hook for handling keyboard shortcuts in paragraph editing
  */
-export const useParagraphKeyboardShortcuts = ({
+export function useParagraphKeyboardShortcuts({
   editMode,
   regenerateMode,
   selectedParagraphId,
@@ -28,35 +28,44 @@ export const useParagraphKeyboardShortcuts = ({
   onDeleteParagraph,
   onSaveDocument,
   onMoveParagraph,
-}: UseParagraphKeyboardShortcutsProps) => {
+}: UseParagraphKeyboardShortcutsProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (editMode || regenerateMode) return; // Don't handle shortcuts in edit/regenerate mode
       
+      // Navigation shortcuts
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         onNavigateParagraph('up');
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         onNavigateParagraph('down');
-      } else if (e.key === 'e' && selectedParagraphId !== null) {
-        e.preventDefault();
-        onEditClick(selectedParagraphId);
-      } else if (e.key === 'r' && selectedParagraphId !== null) {
-        e.preventDefault();
-        onRegenerateClick(selectedParagraphId);
-      } else if (e.key === 'd' && selectedParagraphId !== null) {
-        e.preventDefault();
-        onDeleteParagraph(selectedParagraphId);
-      } else if (e.key === 's' && e.ctrlKey) {
+      } 
+      
+      // Action shortcuts (only when a paragraph is selected)
+      else if (selectedParagraphId !== null) {
+        if (e.key === 'e') {
+          e.preventDefault();
+          onEditClick(selectedParagraphId);
+        } else if (e.key === 'r') {
+          e.preventDefault();
+          onRegenerateClick(selectedParagraphId);
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          onDeleteParagraph(selectedParagraphId);
+        } else if (e.key === 'PageUp') {
+          e.preventDefault();
+          onMoveParagraph(selectedParagraphId, 'up');
+        } else if (e.key === 'PageDown') {
+          e.preventDefault();
+          onMoveParagraph(selectedParagraphId, 'down');
+        }
+      }
+      
+      // Global shortcuts
+      if (e.key === 's' && e.ctrlKey) {
         e.preventDefault();
         onSaveDocument();
-      } else if (e.key === 'PageUp' && selectedParagraphId !== null) {
-        e.preventDefault();
-        onMoveParagraph(selectedParagraphId, 'up');
-      } else if (e.key === 'PageDown' && selectedParagraphId !== null) {
-        e.preventDefault();
-        onMoveParagraph(selectedParagraphId, 'down');
       }
     };
 
@@ -76,6 +85,4 @@ export const useParagraphKeyboardShortcuts = ({
     onSaveDocument,
     onMoveParagraph
   ]);
-};
-
-export default useParagraphKeyboardShortcuts;
+}

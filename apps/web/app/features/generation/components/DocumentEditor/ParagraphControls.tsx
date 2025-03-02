@@ -1,7 +1,6 @@
-import React from 'react';
 import { FaEdit, FaRedo, FaTrash, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 
-interface ParagraphActionButtonsProps {
+interface ParagraphControlsProps {
   onEdit: (e: React.MouseEvent) => void;
   onRegenerate: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
@@ -9,16 +8,13 @@ interface ParagraphActionButtonsProps {
   onMoveDown: (e: React.MouseEvent) => void;
 }
 
-/**
- * Component for paragraph action buttons (edit, regenerate, delete, move)
- */
-const ParagraphActionButtons: React.FC<ParagraphActionButtonsProps> = ({
+export function ParagraphControls({
   onEdit,
   onRegenerate,
   onDelete,
   onMoveUp,
   onMoveDown
-}) => {
+}: ParagraphControlsProps) {
   return (
     <div className="absolute right-2 top-2 flex space-x-1 bg-white bg-opacity-90 p-1 rounded-md shadow-sm z-10">
       <button
@@ -58,6 +54,4 @@ const ParagraphActionButtons: React.FC<ParagraphActionButtonsProps> = ({
       </button>
     </div>
   );
-};
-
-export default ParagraphActionButtons;
+}
