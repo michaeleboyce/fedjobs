@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentInfo/index.tsx
 import { useGenerationContext } from "../../providers/GenerationProvider";
 import { DocumentTypeSelector } from "./DocumentTypeSelector";
 import { ECQSelector } from "./ECQSelector";

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentInfo/JobInfoInput.tsx
 import React from 'react';
 import { useGenerationContext } from '../../providers/GenerationProvider';
 import { JobSearch } from './JobSearch';

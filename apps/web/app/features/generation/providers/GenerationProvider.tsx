@@ -1,4 +1,4 @@
-// File path: apps/web/app/(routes)/generate/_Providers/GenerationProvider.tsx
+// File path: apps/web/app/features/generation/providers/GenerationProvider.tsx
 'use client'
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DocumentInfo } from '@/app/features/generation/types/DocumentInfo';

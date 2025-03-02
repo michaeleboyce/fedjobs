@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/resume/[id]/page.tsx
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { DocumentRepository } from '@fedjobs/database'; // Use the repository abstraction
 import { Resume } from '@/app/shared/types/Resume';

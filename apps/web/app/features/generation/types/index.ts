@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/types/index.ts
 export * from './DocumentInfo';
 export * from './ECQCompetencies';
 export * from './GeneratedDocumentInformation';

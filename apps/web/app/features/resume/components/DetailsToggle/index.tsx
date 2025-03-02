@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/components/DetailsToggle/index.tsx
+// File path: apps/web/app/features/resume/components/DetailsToggle/index.tsx
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';

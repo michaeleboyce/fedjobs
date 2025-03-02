@@ -1,3 +1,4 @@
+// File path: apps/web/app/store/documentsStore.ts
 'use client';
 
 import { create } from 'zustand';

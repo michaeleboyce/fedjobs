@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/fileHelpers.ts
+// File path: apps/web/app/features/documents/utils/fileHelpers.ts
 import { mkdir } from 'fs/promises';
 import { PassThrough } from "stream";
 
@@ -9,7 +9,6 @@ import { PassThrough } from "stream";
 export async function createFolderIfNotExists(dirPath: string) {
     try {
         await mkdir(dirPath, { recursive: true });
-        console.log(`Directory created successfully: ${dirPath}`);
      } catch (error: any) {
         if (error instanceof Error) {
             console.error(`An error occurred: ${error.message}`);

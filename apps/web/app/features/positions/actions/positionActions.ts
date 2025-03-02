@@ -1,4 +1,4 @@
-// File path: apps/web/app/_actions/positions/positionActions.ts
+// File path: apps/web/app/features/positions/actions/positionActions.ts
 'use server';
 
 import { authenticateUser } from "@fedjobs/utils";

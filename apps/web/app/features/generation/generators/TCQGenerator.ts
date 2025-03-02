@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/_generationClasses/TCQGenerator.ts
+// File path: apps/web/app/features/generation/generators/TCQGenerator.ts
 // TCQGenerator.ts
 import { EssayGenerator } from "./EssayGenerator";
 import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";

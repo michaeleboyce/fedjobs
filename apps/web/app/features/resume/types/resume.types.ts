@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/resume/types/resume.types.ts
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { PositionObject } from '@/app/shared/types/Position';
 

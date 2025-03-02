@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/useGenerationManagement.ts
 'use client';
 
 import { useGenerationStore } from '@/app/store';

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/ColumnHeader.tsx
 // New file: apps/web/app/features/positions/components/ReviewPositions/ColumnHeader.tsx
 import React from 'react';
 import { ColumnToggle } from './ColumnToggle';

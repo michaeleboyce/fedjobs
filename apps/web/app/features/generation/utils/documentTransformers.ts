@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/utils/documentTransformers.ts
 import { StreamingTextArray } from '../types';
 
 /**

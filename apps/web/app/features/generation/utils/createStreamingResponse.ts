@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/utils/createStreamingResponse.ts
 import { StreamingTextArray } from '../types';
 import { createMockReader } from '@/app/shared/utils/mockReader';
 import { GenerationSelection } from '../types';

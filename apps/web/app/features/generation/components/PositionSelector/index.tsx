@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/PositionSelector/index.tsx
 import { Position } from '@fedjobs/types';
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { ResumePositionSelector } from './ResumePositionSelector';

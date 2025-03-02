@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/ui/Card/index.tsx
 'use client';
 
 import React from 'react';

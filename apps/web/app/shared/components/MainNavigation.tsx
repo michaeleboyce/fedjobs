@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/MainNavigation.tsx
 'use client';
 
 import React from 'react';

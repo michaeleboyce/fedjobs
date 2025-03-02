@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Breadcrumbs.tsx
+// File path: apps/web/app/shared/components/Breadcrumbs.tsx
 "use client";
 
 import React from 'react';

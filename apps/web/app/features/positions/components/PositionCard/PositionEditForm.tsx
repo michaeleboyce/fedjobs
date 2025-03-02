@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/PositionCard/PositionEditForm.tsx
+// File path: apps/web/app/features/positions/components/PositionCard/PositionEditForm.tsx
 
 import React, { useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

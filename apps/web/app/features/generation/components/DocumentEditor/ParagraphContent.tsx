@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ParagraphContent.tsx
 import ReactMarkdown from 'react-markdown';
 
 interface ParagraphContentProps {

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentInfo/DocumentTypeSelector.tsx
 import { DOCUMENT_TYPES } from '@fedjobs/utils';
 import { getPrettyPrintType } from '@/app/shared/utils/Constants';
 

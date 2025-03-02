@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/useDocumentGeneration.ts
 import { useState, useCallback } from 'react';
 import { JobInfo, Position, DocumentType} from "@fedjobs/types";
 import { DocumentInfo, StreamingTextArray } from "../types";

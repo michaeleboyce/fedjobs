@@ -1,4 +1,4 @@
-// File path: apps/web/app/_types/ParseResponse.ts
+// File path: apps/web/app/features/documents/types/ParseResponse.ts
 export type ParseResponse = {
     status: 'pending',
     percent: number,

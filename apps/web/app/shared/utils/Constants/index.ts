@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/Constants/index.ts
+// File path: apps/web/app/shared/utils/Constants/index.ts
 export * from './ECQConstants';
 
 export const DUMMY_ANNOTATED_TEXT = `<html> 

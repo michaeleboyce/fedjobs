@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/components/PositionCard/styles.ts
+// File path: apps/web/app/features/resume/components/PositionCard/styles.ts
 export const styles = {
   card: `
     bg-white

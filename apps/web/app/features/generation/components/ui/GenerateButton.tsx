@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/ui/GenerateButton.tsx
 import { useState } from 'react';
 
 interface GenerateButtonProps {

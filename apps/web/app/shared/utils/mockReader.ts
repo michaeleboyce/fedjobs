@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/mockReader.ts
+// File path: apps/web/app/shared/utils/mockReader.ts
 export function createMockReader(text: string, chunkSizeRange: [number, number], paragraphId?: number) {
   let currentPosition = 0;
   return {

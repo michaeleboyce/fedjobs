@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/YearSection.tsx
 // New file: apps/web/app/features/positions/components/ReviewPositions/YearSection.tsx
 import React from 'react';
 import { Position } from '@fedjobs/types';

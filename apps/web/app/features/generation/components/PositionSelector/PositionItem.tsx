@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/PositionSelector/PositionItem.tsx
 import { useState } from 'react';
 import { Position } from '@fedjobs/types';
 

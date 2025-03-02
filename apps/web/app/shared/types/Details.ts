@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/Details.ts
+// File path: apps/web/app/shared/types/Details.ts
 //
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../utils/Compare";
 

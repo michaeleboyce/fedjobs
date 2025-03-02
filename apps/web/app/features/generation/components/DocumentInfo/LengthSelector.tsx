@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentInfo/LengthSelector.tsx
 import { useState, useEffect } from 'react';
 
 interface LengthSelectorProps {

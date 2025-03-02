@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/ui/Checkbox/index.tsx
 'use client';
 
 import React, { forwardRef } from 'react';

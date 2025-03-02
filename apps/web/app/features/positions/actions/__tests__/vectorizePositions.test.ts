@@ -1,4 +1,4 @@
-// File path: apps/web/app/_actions/vectorize/__tests__/vectorizePositions.test.ts
+// File path: apps/web/app/features/positions/actions/__tests__/vectorizePositions.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { vectorizePositions, generatePositionEmbeddings, createPineconeRecords, EmbeddingResult } from '../vectorizePositions';
 import { Pinecone } from '@pinecone-database/pinecone';

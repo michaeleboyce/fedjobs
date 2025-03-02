@@ -1,3 +1,4 @@
+// File path: apps/web/app/providers/AppProviders.tsx
 'use client';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';

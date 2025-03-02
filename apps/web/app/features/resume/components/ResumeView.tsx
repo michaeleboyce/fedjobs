@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/resume/components/ResumeView.tsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';

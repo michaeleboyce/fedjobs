@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ShortcutGuide.tsx
 // Create a new component app/features/generation/components/DocumentEditor/ShortcutGuide.tsx
 import React from 'react';
 import { Key } from './Key';

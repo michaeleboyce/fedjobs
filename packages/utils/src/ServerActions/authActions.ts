@@ -1,3 +1,4 @@
+// File path: packages/utils/src/ServerActions/authActions.ts
 // packages/utils/src/ServerActions/authActions.ts
 'use server'
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";

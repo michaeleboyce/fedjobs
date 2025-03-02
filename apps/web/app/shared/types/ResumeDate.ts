@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/ResumeDate.ts
+// File path: apps/web/app/shared/types/ResumeDate.ts
 import { StringValueElement } from "docx";
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../utils/Compare";
 

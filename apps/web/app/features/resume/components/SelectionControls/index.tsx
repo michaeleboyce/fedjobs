@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/components/SelectionControls/index.tsx
+// File path: apps/web/app/features/resume/components/SelectionControls/index.tsx
 import React from 'react';
 
 /**

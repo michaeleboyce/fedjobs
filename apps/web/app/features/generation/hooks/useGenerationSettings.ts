@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/useGenerationSettings.ts
 import { useState, useEffect } from 'react';
 import { DOCUMENT_TYPES } from '@fedjobs/utils';
 import { DocumentInfo } from '../types';

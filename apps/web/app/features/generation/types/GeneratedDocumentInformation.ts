@@ -1,4 +1,4 @@
-// File path: apps/web/app/_types/GeneratedDocumentInformation.ts
+// File path: apps/web/app/features/generation/types/GeneratedDocumentInformation.ts
 import { ECQNamesTypeWithEmptyString } from "./ECQCompetencies";
 
 export type GeneratedDocumentInformation = {

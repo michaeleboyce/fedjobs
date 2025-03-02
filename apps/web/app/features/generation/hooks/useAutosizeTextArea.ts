@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/useAutosizeTextArea.ts
 import { useEffect } from 'react';
 
 /**

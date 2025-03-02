@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/PositionCard/SimilarPositionsSections.tsx
+// File path: apps/web/app/features/positions/components/PositionCard/SimilarPositionsSections.tsx
 
 import React, { useState } from 'react';
 import { SimilarPositionCard } from "../SimilarPositionCard";

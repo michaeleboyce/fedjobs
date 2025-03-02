@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/Key.tsx
 import React from 'react';
 
 interface KeyProps {

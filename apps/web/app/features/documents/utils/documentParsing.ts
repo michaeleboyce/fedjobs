@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/documentParsing.ts
+// File path: apps/web/app/features/documents/utils/documentParsing.ts
 'use server';
 import mammoth from 'mammoth';
 import pdf from 'pdf-parse/lib/pdf-parse';

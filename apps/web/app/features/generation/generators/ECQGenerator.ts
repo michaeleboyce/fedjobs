@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/_generationClasses/ECQGenerator.ts
+// File path: apps/web/app/features/generation/generators/ECQGenerator.ts
 // ECQGenerator.ts
 import { EssayGenerator } from "./EssayGenerator";
 import { ECQCompetency } from "@/app/features/generation/types/ECQCompetencies";

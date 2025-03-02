@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/YearSidebar.tsx
 'use client';
 
 import React, { useEffect, useState } from "react";
@@ -32,7 +33,6 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
 
     // Function to determine which year is currently visible
     const updateActiveYear = () => {
-      
       const parent = document.getElementById(parentId);
       if (!parent) return;
     
@@ -41,16 +41,23 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
         .filter((el): el is HTMLElement => el !== null);
     
       if (yearElements.length === 0) return;
-
-      
-      const parentRect = parent.getBoundingClientRect();
-      
-      // Find the first element that is at or above the top of the container
-      let activeEl = yearElements.find(el => el.getBoundingClientRect().top >= parentRect.top);
     
-      if (!activeEl) {
-        // If none are above the top, take the last visible one
-        activeEl = yearElements[yearElements.length - 1];
+      const parentRect = parent.getBoundingClientRect();
+      // Use the headerOffset from props to adjust the threshold.
+      const offset = headerOffset;
+      
+      // Get all headings that are above (or at) the threshold (parent's top plus offset)
+      const visibleElements = yearElements.filter(el => {
+        return el.getBoundingClientRect().top <= parentRect.top + offset;
+      });
+      
+      let activeEl;
+      if (visibleElements.length > 0) {
+        // Choose the last one that has scrolled past the threshold.
+        activeEl = visibleElements[visibleElements.length - 1];
+      } else {
+        // Otherwise, choose the first heading.
+        activeEl = yearElements[0];
       }
     
       if (activeEl) {
@@ -58,11 +65,6 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
         const parsedYear = parseInt(yearStr);
         setActiveYear(isNaN(parsedYear) ? yearStr : parsedYear);
       }
-
-      console.log(yearElements.map(el => ({
-        id: el.id,
-        top: el.getBoundingClientRect().top,
-      })));
     };
     // Add scroll event listener
     parent.addEventListener('scroll', updateActiveYear);
@@ -98,7 +100,7 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
   
     setActiveYear(year);
   };
-  
+
   return (
     <nav className={cn("space-y-1 ml-[-1px]", className)}>
       {years.map((year) => (

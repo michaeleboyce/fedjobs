@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/actions/documentActions.ts
 // app/features/generation/actions/documentActions.ts
 'use server';
 

@@ -1,3 +1,4 @@
+// File path: packages/utils/src/Services/AIService/__tests__/AIService.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AIService } from '../index';
 import OpenAI from 'openai';

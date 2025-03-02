@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/utils/selectionUtils.ts
+// File path: apps/web/app/features/resume/utils/selectionUtils.ts
 import { PositionObject } from '@/app/shared/types/Position';
 
 /**

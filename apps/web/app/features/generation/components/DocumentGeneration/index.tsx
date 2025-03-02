@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentGeneration/index.tsx
 'use client'
 import { Position } from "@fedjobs/types";
 import { DndContext, closestCenter } from '@dnd-kit/core';

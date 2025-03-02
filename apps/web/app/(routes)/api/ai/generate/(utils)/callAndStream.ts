@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 // apps/web/app/(routes)/api/ai/generate/(utils)/callAndStream.ts
 import { DocumentType } from "@fedjobs/types";
 import { GenerationRepository } from "@fedjobs/database";

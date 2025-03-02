@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/Title.ts
+// File path: apps/web/app/shared/types/Title.ts
 import { AsyncCompareMethod, queryChatGPTForComparison } from "../utils/Compare";
 export type TitleObject = {
     title: string

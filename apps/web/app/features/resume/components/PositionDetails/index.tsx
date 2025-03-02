@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/components/PositionDetails/index.tsx
+// File path: apps/web/app/features/resume/components/PositionDetails/index.tsx
 import React from 'react';
 import { PositionObject } from '@/app/shared/types/Position';
 import { PositionDetailsSection } from './PositionDetailsSection';

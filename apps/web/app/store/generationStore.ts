@@ -1,3 +1,4 @@
+// File path: apps/web/app/store/generationStore.ts
 'use client';
 
 import { create } from 'zustand';

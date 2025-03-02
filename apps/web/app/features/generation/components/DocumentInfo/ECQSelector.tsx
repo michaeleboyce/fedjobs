@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentInfo/ECQSelector.tsx
 import { ECQ_NAMES } from '@fedjobs/utils';
 import { ECQNamesType } from '../../types';
 

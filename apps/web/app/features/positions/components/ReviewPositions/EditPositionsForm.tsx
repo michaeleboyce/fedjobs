@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/ReviewPositions/EditPositionsForm.tsx
+// File path: apps/web/app/features/positions/components/ReviewPositions/EditPositionsForm.tsx
 
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

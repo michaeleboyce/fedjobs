@@ -1,4 +1,4 @@
-// File path: apps/web/app/features/positions/components/SimilarPositionCard/Header.tsx
+// File path: apps/web/app/features/positions/components/SimilarPositionCard/SimilarPositionHeader.tsx
 
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

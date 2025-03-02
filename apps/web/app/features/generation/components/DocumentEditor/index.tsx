@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/index.tsx
 import { useState, useCallback } from "react";
 import { FaSave, FaKeyboard } from "react-icons/fa";
 import { Paragraph } from "./Paragraph";

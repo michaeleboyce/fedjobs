@@ -1,4 +1,4 @@
-// File path: apps/web/app/_actions/files/fileActions.ts
+// File path: apps/web/app/features/documents/actions/fileActions.ts
 'use server'; // This module executes on the server side.
 
 import axios from 'axios';

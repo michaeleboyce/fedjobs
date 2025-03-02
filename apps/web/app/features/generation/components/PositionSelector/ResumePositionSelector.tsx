@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/PositionSelector/ResumePositionSelector.tsx
 'use client';
 
 import { useRef } from 'react';

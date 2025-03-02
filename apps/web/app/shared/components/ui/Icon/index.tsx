@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/ui/Icon/index.tsx
 'use client';
 
 import React from 'react';

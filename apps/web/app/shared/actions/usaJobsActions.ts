@@ -1,4 +1,4 @@
-// File path: apps/web/app/_actions/usaJobsActions.ts
+// File path: apps/web/app/shared/actions/usaJobsActions.ts
 'use server'
 import { Job } from "@fedjobs/types";
 

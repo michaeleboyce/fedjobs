@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/usePositionSelection.ts
 // apps/web/app/features/generation/hooks/usePositionSelection.ts
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Position } from '@fedjobs/types';

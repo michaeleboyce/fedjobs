@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/_generationClasses/ResumeGenerator.ts
+// File path: apps/web/app/features/generation/generators/ResumeGenerator.ts
 import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
 import { EssayGenerator } from "./EssayGenerator";
 import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";

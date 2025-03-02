@@ -1,4 +1,4 @@
-// File path: apps/web/app/_actions/vectorize/vectorizeActions.ts
+// File path: apps/web/app/features/documents/actions/vectorizeActions.ts
 'use server'
 import { PINECONE_INDEX_NAME } from '@/app/shared/utils/Constants';
 import { Pinecone } from '@pinecone-database/pinecone';

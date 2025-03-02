@@ -1,3 +1,4 @@
+// File path: apps/web/app/services/aiService.ts
 import { aiService } from '@fedjobs/utils';
 
 export const generateDocument = async (

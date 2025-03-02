@@ -1,4 +1,4 @@
-// File path: apps/web/app/_hooks/usePageVisibility.ts
+// File path: apps/web/app/shared/hooks/usePageVisibility.ts
 import { useState, useEffect } from "react";
 
 const usePageVisibility = () => {

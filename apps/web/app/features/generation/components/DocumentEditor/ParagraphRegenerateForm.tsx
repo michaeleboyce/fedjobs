@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ParagraphRegenerateForm.tsx
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { FaRedo } from 'react-icons/fa';

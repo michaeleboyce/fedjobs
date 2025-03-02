@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ParagraphInsertion.tsx
 import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { Button } from '@/app/shared/components/ui/Button';

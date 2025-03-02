@@ -1,4 +1,4 @@
-// File path: apps/web/app/_types/ECQCompetencies.ts
+// File path: apps/web/app/features/generation/types/ECQCompetencies.ts
 export type ECQCompetency = {
     title: string,
     shortTitle: string,

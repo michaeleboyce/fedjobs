@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/Paragraph.tsx
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';

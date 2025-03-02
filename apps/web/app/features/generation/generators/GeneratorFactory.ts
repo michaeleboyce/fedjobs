@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/_generationClasses/GeneratorFactory.ts
+// File path: apps/web/app/features/generation/generators/GeneratorFactory.ts
 import { ECQGenerator } from './ECQGenerator';
 import { TCQGenerator } from './TCQGenerator';
 import { CoverLetterGenerator } from './CoverLetterGenerator';

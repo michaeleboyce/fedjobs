@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/utils/classNames.ts
 /**
  * Utility for conditionally joining Tailwind CSS classes together
  * Inspired by the clsx and classnames libraries

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ParagraphControls.tsx
 import { FaEdit, FaRedo, FaTrash, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { Button } from '@/app/shared/components/ui/Button';
 

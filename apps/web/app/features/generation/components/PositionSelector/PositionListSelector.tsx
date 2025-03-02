@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/PositionSelector/PositionListSelector.tsx
 import { Position } from '@fedjobs/types';
 import { PositionItem } from './PositionItem';
 import { PositionSelectionState } from '@/app/features/generation/types';

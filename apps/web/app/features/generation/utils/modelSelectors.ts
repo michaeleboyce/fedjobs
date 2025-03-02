@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/utils/modelSelectors.ts
 /**
  * Available AI models for generation
  */

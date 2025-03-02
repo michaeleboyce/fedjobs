@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/documents/hooks/useDocumentsManagement.ts
 'use client';
 
 import { useEffect } from 'react';

@@ -1,4 +1,4 @@
-// File path: apps/web/app/_classes/Position.ts
+// File path: apps/web/app/shared/types/Position.ts
 
 import { Organization, OrganizationObject } from "./Organization";
 import { Title, TitleObject } from "./Title";

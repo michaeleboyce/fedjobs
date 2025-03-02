@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/PositionCard/PositionHeader.tsx
+// File path: apps/web/app/features/positions/components/PositionCard/PositionHeader.tsx
 import React from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 

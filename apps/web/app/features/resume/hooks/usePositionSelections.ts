@@ -1,4 +1,4 @@
-// File path: apps/web/app/_components/Resume/hooks/usePositionSelections.ts
+// File path: apps/web/app/features/resume/hooks/usePositionSelections.ts
 import { useState, useEffect } from 'react';
 import { PositionObject } from '@/app/shared/types/Position';
 

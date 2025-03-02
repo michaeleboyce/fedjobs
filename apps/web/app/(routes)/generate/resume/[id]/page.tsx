@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/resume/[id]/page.tsx
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { DocumentRepository } from "@fedjobs/database";

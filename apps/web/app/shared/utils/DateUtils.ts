@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/DateUtils.ts
+// File path: apps/web/app/shared/utils/DateUtils.ts
 export const formatDateMMDDYYYY = (dateString: string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();

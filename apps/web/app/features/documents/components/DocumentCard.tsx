@@ -1,4 +1,4 @@
-// File path: apps/web/app/(routes)/documents/_Components/DocumentCard.tsx
+// File path: apps/web/app/features/documents/components/DocumentCard.tsx
 'use client'
 import React, { useRef, useState } from 'react';
 import { deleteDocument, getDocumentSignedURL, } from '../actions/fileActions';
@@ -49,9 +49,6 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     progress: 0,
   });
   const [isParsed, setIsParsed] = useState(document.isParsed);
-
-
-  console.log(`Rendered document card for document: ${document.id}`);
 
   const handleViewClick = async (documentId: number) => {
     // Call getDocumentSignedURL and handle the result

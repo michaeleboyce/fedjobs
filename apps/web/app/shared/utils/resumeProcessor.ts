@@ -1,4 +1,4 @@
-// File path: apps/web/app/_utils/resumeProcessor.ts
+// File path: apps/web/app/shared/utils/resumeProcessor.ts
 'use server'
 
 import { OpenAI } from 'openai';

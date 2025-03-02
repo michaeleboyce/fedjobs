@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/ui/ActionBar.tsx
 import { FaSave } from 'react-icons/fa';
 import { GenerateButton } from './GenerateButton';
 import { SaveButton } from './SaveButton';

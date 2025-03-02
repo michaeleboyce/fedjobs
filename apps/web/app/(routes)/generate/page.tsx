@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/generate/page.tsx
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { getAllPositions } from "@/app/features/positions/actions/reviewPositionActions";

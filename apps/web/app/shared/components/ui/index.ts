@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/components/ui/index.ts
 /**
  * UI Component Library
  * 

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/components/DocumentEditor/ParagraphEditForm.tsx
 import { useState, useRef } from 'react';
 import { FaSave } from 'react-icons/fa';
 import { useAutosizeTextArea } from '../../hooks/useAutosizeTextArea';

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/generation/hooks/index.ts
 export * from './useDocumentGeneration';
 export * from './useDocumentEditor';
 export * from './useGenerationSettings';
