@@ -58,4 +58,5 @@ console.log('Registered routes:',
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log(`Document parsing endpoint: http://localhost:${port}/api/parse/document`);
 });

@@ -13,27 +13,13 @@ interface PositionCardProps {
   /** If true => we hide any remove/edit/approve UI for generation context. */
   isGenerationView?: boolean;
   /** If true => show checkboxes to select items. */
-  selectionMode?: boolean;
-  selectedActivities?: number[];
-  selectedAccomplishments?: number[];
-  onCheckboxChange?: (
-    type: "activities" | "accomplishments",
-    idx: number
-  ) => void;
-  onSelectAll?: () => void;
-  onClearAll?: () => void;
 }
 
 export const PositionCard: React.FC<PositionCardProps> = ({
   position,
   isEmploymentHistory,
   isGenerationView = false,
-  selectionMode = false,
-  selectedActivities = [],
-  selectedAccomplishments = [],
-  onCheckboxChange,
-  onSelectAll,
-  onClearAll,
+
 }) => {
   const {
     loadingPositions,
@@ -122,25 +108,6 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         onSaveEdit={saveEdit}
         onCancelEdit={() => setIsEditing(false)}
       />
-
-      {/* If selectionMode => show "Select All" + "Clear All" */}
-      {selectionMode && (
-        <div className="mt-2 flex items-center gap-2">
-          <button
-            className="bg-green-500 text-white px-2 py-1 rounded"
-            onClick={onSelectAll}
-          >
-            Select All
-          </button>
-          <button
-            className="bg-gray-400 text-white px-2 py-1 rounded"
-            onClick={onClearAll}
-          >
-            Clear All
-          </button>
-        </div>
-      )}
-
       {/* If not expanded => minimal details */}
       <PositionDetails
         position={position}
@@ -174,16 +141,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
             <strong>Activities:</strong>
             <ul className="list-disc ml-5 mt-1">
               {position.details.activities.map((act, idx) => {
-                const isChecked = selectedActivities.includes(idx);
                 return (
                   <li key={idx} className="flex items-center gap-2">
-                    {selectionMode && onCheckboxChange && (
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => onCheckboxChange("activities", idx)}
-                      />
-                    )}
                     <span>{act}</span>
                   </li>
                 );
@@ -194,18 +153,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
             <strong>Accomplishments:</strong>
             <ul className="list-disc ml-5 mt-1">
               {position.details.accomplishments.map((acc, idx) => {
-                const isChecked = selectedAccomplishments.includes(idx);
                 return (
                   <li key={idx} className="flex items-center gap-2">
-                    {selectionMode && onCheckboxChange && (
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() =>
-                          onCheckboxChange("accomplishments", idx)
-                        }
-                      />
-                    )}
                     <span>{acc}</span>
                   </li>
                 );

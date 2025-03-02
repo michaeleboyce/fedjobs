@@ -50,6 +50,9 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   });
   const [isParsed, setIsParsed] = useState(document.isParsed);
 
+
+  console.log(`Rendered document card for document: ${document.id}`);
+
   const handleViewClick = async (documentId: number) => {
     // Call getDocumentSignedURL and handle the result
       const response = await getDocumentSignedURL(documentId);

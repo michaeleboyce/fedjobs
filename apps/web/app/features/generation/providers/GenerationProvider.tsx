@@ -58,6 +58,7 @@ export const GenerationProvider: React.FC<GenerationProviderProps> = ({ children
     const job = jobInfo.job;
     if (docInfo.type.toLocaleLowerCase() === 'tcq' && job.MatchedObjectDescriptor.UserArea.Details.HiringPath.some(value => value === 'ses')    ){
       try {
+          console.log(job);
           const prompts = await getTCQEssayPrompts(`${job.MatchedObjectDescriptor.UserArea.Details.Evaluations} \n ${job.MatchedObjectDescriptor.QualificationSummary}`);
           setDocInfo({...docInfo, essayPromptSuggestions: prompts });
       } catch (error) {

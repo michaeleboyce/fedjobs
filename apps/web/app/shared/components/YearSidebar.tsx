@@ -8,6 +8,7 @@ interface YearSidebarProps {
   prefix: string;
   parentId: string;
   className?: string;
+  headerOffset?: number; // New prop
 }
 
 /**
@@ -19,6 +20,7 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
   prefix,
   parentId,
   className,
+  headerOffset = 80, // Default value
 }) => {
   const [activeYear, setActiveYear] = useState<number | string | null>(null);
 
@@ -57,6 +59,10 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
         setActiveYear(isNaN(parsedYear) ? yearStr : parsedYear);
       }
 
+      console.log(yearElements.map(el => ({
+        id: el.id,
+        top: el.getBoundingClientRect().top,
+      })));
     };
     // Add scroll event listener
     parent.addEventListener('scroll', updateActiveYear);
@@ -82,7 +88,8 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
     const targetRect = target.getBoundingClientRect();
     const parentRect = parent.getBoundingClientRect();
   
-    const targetScrollTop = parent.scrollTop + (targetRect.top - parentRect.top) - 20; // Adjust for sticky headers
+    // Use the provided headerOffset for this specific section
+    const targetScrollTop = parent.scrollTop + (targetRect.top - parentRect.top) - headerOffset;
   
     parent.scrollTo({
       top: targetScrollTop,
@@ -91,7 +98,7 @@ export const YearSidebar: React.FC<YearSidebarProps> = ({
   
     setActiveYear(year);
   };
-
+  
   return (
     <nav className={cn("space-y-1 ml-[-1px]", className)}>
       {years.map((year) => (
