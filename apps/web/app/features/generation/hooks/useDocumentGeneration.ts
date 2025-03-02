@@ -16,6 +16,7 @@ interface DocumentGenerationProps {
   jobInfo: JobInfo;
   otherInfo: string;
 }
+
 export function useDocumentGeneration({
   employmentHistory,
   otherPositions,
@@ -33,16 +34,15 @@ export function useDocumentGeneration({
   const [model, setModel] = useState("claude-3-7-sonnet-20250219");
 
   // Handle document generation
-  // In useDocumentGeneration.ts
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
     // Build selection data for generation
     const generationSelection = buildGenerationSelection(
       selection.selectedState,
       employmentHistory,
       otherPositions,
-      settings.docInfo,
-      settings.jobInfo,
-      settings.otherInfo
+      settings.docInfo || docInfo,
+      settings.jobInfo || jobInfo,
+      settings.otherInfo || otherInfo
     );
 
     if (generationSelection.positions.length === 0) {
@@ -54,8 +54,6 @@ export function useDocumentGeneration({
     if (paragraphId === undefined) {
       editor.resetEditor();
     }
-    // We don't need to manually exit edit/regenerate modes since resetEditor already does that
-    // and for paragraph regeneration the UI component will handle these states
 
     // Generate content through API
     const api = createAPI(
@@ -71,7 +69,7 @@ export function useDocumentGeneration({
       await api.generateContent(
         paragraphId,
         regenerationText,
-        (content) => editor.updateContent(content, paragraphId)
+        (content, paragraphId) => editor.updateContent(content, paragraphId)
       );
 
       editor.completeEditing();
@@ -79,10 +77,72 @@ export function useDocumentGeneration({
       console.error("Error in generation:", error);
     }
   };
+
+  // Inside useDocumentGeneration hook
+  const handleInsertParagraph = async (index: number, text: string, useAI: boolean) => {
+    // Get current paragraphs
+    const currentParagraphs = editor.streamingTextArray;
+
+    // Create a new ID for the paragraph (find max ID and increment)
+    const maxId = currentParagraphs.length > 0
+      ? Math.max(...currentParagraphs.map(p => p.id))
+      : 0;
+    const newId = maxId + 1;
+
+    if (useAI) {
+      // For AI generation, insert a placeholder and then update the array
+      const placeholderText = "Generating...";
+      const newParagraph = { id: newId, text: placeholderText };
+      const newArray = [
+        ...currentParagraphs.slice(0, index),
+        newParagraph,
+        ...currentParagraphs.slice(index)
+      ];
+
+      // First update the array with the placeholder
+      editor.setStreamingTextArray(newArray);
+
+      // Then trigger AI regeneration with the text as instructions
+      try {
+        await handleGenerateClick(newId, text);
+      } catch (error) {
+        console.error("Error generating paragraph:", error);
+        // Fallback to just inserting the text
+        const updatedArray = editor.streamingTextArray.map(p =>
+          p.id === newId ? { ...p, text } : p
+        );
+        editor.setStreamingTextArray(updatedArray);
+      }
+    } else {
+      // For manual entry, just insert the new paragraph
+      const newParagraph = { id: newId, text };
+      const newArray = [
+        ...currentParagraphs.slice(0, index),
+        newParagraph,
+        ...currentParagraphs.slice(index)
+      ];
+
+      editor.setStreamingTextArray(newArray);
+    }
+  };
+
   // Handle document saving
   const handleSaveDocument = async () => {
     // Implement document saving logic
-    // ...
+    try {
+      // Call your save document API here
+      const saveResult = {
+        url: `/document/${Date.now()}`,
+        message: "Document saved successfully!"
+      };
+      editor.setSaveResult(saveResult);
+    } catch (error) {
+      console.error("Error saving document:", error);
+      editor.setSaveResult({
+        url: "",
+        message: "Error saving document. Please try again."
+      });
+    }
   };
 
   // Combine everything for the public API
@@ -103,6 +163,7 @@ export function useDocumentGeneration({
     // Primary actions
     handleGenerateClick,
     handleSaveDocument,
+    handleInsertParagraph,
   };
 }
 

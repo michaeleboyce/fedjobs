@@ -1,34 +1,38 @@
-import { useState, useCallback } from 'react';
-import { FaSave } from 'react-icons/fa';
-import { Paragraph } from './Paragraph';
-import { ParagraphInsertion } from './ParagraphInsertion';
-import { StreamingTextArray } from '../../types';
-import { useParagraphKeyboardShortcuts } from '../../hooks/useParagraphKeyboardShortcuts';
-import { Button } from '@/app/shared/components/ui/Button';
-import { 
-  DndContext, 
-  closestCenter, 
+import { useState, useCallback } from "react";
+import { FaSave, FaKeyboard } from "react-icons/fa";
+import { Paragraph } from "./Paragraph";
+import { ShortcutGuide } from "./ShortcutGuide";
+import { ParagraphInsertion } from "./ParagraphInsertion";
+import { StreamingTextArray } from "@/app/features/generation/types";
+import { useParagraphKeyboardShortcuts } from "@/app/features/generation/hooks/useParagraphKeyboardShortcuts";
+import { Button } from "@/app/shared/components/ui/Button";
+import {
+  DndContext,
+  closestCenter,
   DragEndEvent,
   useSensor,
   useSensors,
-  PointerSensor
-} from '@dnd-kit/core';
-import { 
-  SortableContext, 
-  verticalListSortingStrategy, 
-  arrayMove 
-} from '@dnd-kit/sortable';
+  PointerSensor,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 
 interface DocumentEditorProps {
   streamingTextArray: StreamingTextArray;
   isStreamingComplete: boolean;
   onSave: (paragraphs: StreamingTextArray) => void;
   saveResult?: { url: string; message: string };
-  onRegenerateParagraph: (paragraphId?: number, regenerationText?: string) => Promise<void>;
+  onRegenerateParagraph: (
+    paragraphId?: number,
+    regenerationText?: string
+  ) => Promise<void>;
   onSelectParagraph: (paragraphId: number) => void;
   onParagraphTextUpdate: (paragraphId: number, newText: string) => void;
   onParagraphDelete: (id: number) => void;
-  onMoveParagraph: (id: number, direction: 'up' | 'down') => void;
+  onMoveParagraph: (id: number, direction: "up" | "down") => void;
   selectedParagraph?: number | null;
 }
 
@@ -45,10 +49,17 @@ export function DocumentEditor({
   selectedParagraph,
 }: DocumentEditorProps) {
   // State
-  const [editingParagraphId, setEditingParagraphId] = useState<number | null>(null);
-  const [regeneratingParagraphId, setRegeneratingParagraphId] = useState<number | null>(null);
-  const [insertionDialogOpen, setInsertionDialogOpen] = useState<number | null>(null);
-  
+  const [editingParagraphId, setEditingParagraphId] = useState<number | null>(
+    null
+  );
+  const [regeneratingParagraphId, setRegeneratingParagraphId] = useState<
+    number | null
+  >(null);
+  const [insertionDialogOpen, setInsertionDialogOpen] = useState<number | null>(
+    null
+  );
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
   // Configure DnD sensors - using PointerSensor to improve drag behavior
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -57,54 +68,61 @@ export function DocumentEditor({
       },
     })
   );
-  
+
   // Handle drag end event
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.id !== over.id) {
-      const oldIndex = streamingTextArray.findIndex(p => p.id === active.id);
-      const newIndex = streamingTextArray.findIndex(p => p.id === over.id);
-      
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(streamingTextArray, oldIndex, newIndex);
-        onSave(newOrder);
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (over && active.id !== over.id) {
+        const oldIndex = streamingTextArray.findIndex(
+          (p) => p.id === active.id
+        );
+        const newIndex = streamingTextArray.findIndex((p) => p.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(streamingTextArray, oldIndex, newIndex);
+          onSave(newOrder);
+        }
       }
-    }
-  }, [streamingTextArray, onSave]);
-  
+    },
+    [streamingTextArray, onSave]
+  );
+
   // Navigation
-  const navigateParagraph = (direction: 'up' | 'down') => {
+  const navigateParagraph = (direction: "up" | "down") => {
     if (!streamingTextArray.length || selectedParagraph === null) return;
-    
-    const currentIndex = streamingTextArray.findIndex(p => p.id === selectedParagraph);
+
+    const currentIndex = streamingTextArray.findIndex(
+      (p) => p.id === selectedParagraph
+    );
     if (currentIndex === -1) return;
-    
+
     let newIndex;
-    if (direction === 'up') {
+    if (direction === "up") {
       newIndex = Math.max(0, currentIndex - 1);
     } else {
       newIndex = Math.min(streamingTextArray.length - 1, currentIndex + 1);
     }
-    
+
     const newParagraphId = streamingTextArray[newIndex].id;
     onSelectParagraph(newParagraphId);
   };
-  
+
   // Edit mode
   const handleEditClick = (paragraphId: number) => {
     setEditingParagraphId(paragraphId);
     setRegeneratingParagraphId(null);
     onSelectParagraph(paragraphId);
   };
-  
+
   // Regenerate mode
   const handleRegenerateClick = (paragraphId: number) => {
     setRegeneratingParagraphId(paragraphId);
     setEditingParagraphId(null);
     onSelectParagraph(paragraphId);
   };
-  
+
   // Save edit
   const handleSaveEdit = (newText: string) => {
     if (editingParagraphId !== null) {
@@ -112,7 +130,7 @@ export function DocumentEditor({
       setEditingParagraphId(null);
     }
   };
-  
+
   // Submit regeneration
   const handleSubmitRegenerate = (regenerationText: string) => {
     // Only proceed if we have a valid paragraph ID and non-empty text
@@ -122,12 +140,12 @@ export function DocumentEditor({
       setRegeneratingParagraphId(null);
     }
   };
-  
+
   // Cancel operations
   const handleCancelEdit = () => {
     setEditingParagraphId(null);
   };
-  
+
   const handleCancelRegenerate = () => {
     setRegeneratingParagraphId(null);
   };
@@ -137,22 +155,26 @@ export function DocumentEditor({
     setInsertionDialogOpen(index);
   };
 
-  const handleInsertParagraph = (index: number, text: string, useAI: boolean) => {
+  const handleInsertParagraph = (
+    index: number,
+    text: string,
+    useAI: boolean
+  ) => {
     // Create a new ID for the paragraph
-    const newId = Math.max(0, ...streamingTextArray.map(p => p.id)) + 1;
-    
+    const newId = Math.max(0, ...streamingTextArray.map((p) => p.id)) + 1;
+
     if (useAI) {
       // For AI generation, insert a placeholder and then regenerate it
       const newParagraph = { id: newId, text: "Generating..." };
       const newArray = [
         ...streamingTextArray.slice(0, index),
         newParagraph,
-        ...streamingTextArray.slice(index)
+        ...streamingTextArray.slice(index),
       ];
-      
+
       // First update the array
       onSave(newArray);
-      
+
       // Then trigger AI regeneration with the provided text as prompt
       setTimeout(() => {
         onRegenerateParagraph(newId, text);
@@ -163,16 +185,16 @@ export function DocumentEditor({
       const newArray = [
         ...streamingTextArray.slice(0, index),
         newParagraph,
-        ...streamingTextArray.slice(index)
+        ...streamingTextArray.slice(index),
       ];
-      
+
       onSave(newArray);
     }
-    
+
     // Close the dialog
     setInsertionDialogOpen(null);
   };
-  
+
   // Register keyboard shortcuts
   useParagraphKeyboardShortcuts({
     editMode: editingParagraphId !== null,
@@ -184,28 +206,38 @@ export function DocumentEditor({
     onRegenerateClick: handleRegenerateClick,
     onDeleteParagraph: onParagraphDelete,
     onSaveDocument: () => onSave(streamingTextArray),
-    onMoveParagraph: onMoveParagraph
+    onMoveParagraph: onMoveParagraph,
   });
 
   return (
     <div className="flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Generated Document</h2>
-        
-        {isStreamingComplete && (
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => onSave(streamingTextArray)}
-              variant="primary"
-              leftIcon={<FaSave />}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Save
-            </Button>
-          </div>
-        )}
+
+        <div className="flex space-x-2">
+          {isStreamingComplete && (
+            <>
+              <Button
+                onClick={() => setShowShortcuts(true)}
+                variant="secondary"
+                leftIcon={<FaKeyboard />}
+                className="mr-2"
+              >
+                Keyboard Shortcuts
+              </Button>
+              <Button
+                onClick={() => onSave(streamingTextArray)}
+                variant="primary"
+                leftIcon={<FaSave />}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Save
+              </Button>
+            </>
+          )}
+        </div>
       </div>
-      
+
       {saveResult?.message && (
         <div className="save-success-message mb-4">
           {saveResult.url ? (
@@ -228,49 +260,49 @@ export function DocumentEditor({
 
       <div className="relative min-h-[400px] mb-4">
         {streamingTextArray.length > 0 ? (
-          <DndContext 
-            collisionDetection={closestCenter} 
+          <DndContext
+            collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
             sensors={sensors}
           >
-            <SortableContext 
-              items={streamingTextArray.map(p => p.id)} 
+            <SortableContext
+              items={streamingTextArray.map((p) => p.id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-1">
                 {/* First insertion point */}
-                <ParagraphInsertion 
-                  index={0} 
+                <ParagraphInsertion
+                  index={0}
                   onClick={() => handleInsertClick(0)}
                   isDialogOpen={insertionDialogOpen === 0}
                   onInsert={handleInsertParagraph}
                   onCancel={() => setInsertionDialogOpen(null)}
                 />
-                
+
                 {streamingTextArray.map((paragraph, index) => (
                   <div key={paragraph.id} className="relative">
                     <Paragraph
                       paragraph={paragraph}
                       isSelected={selectedParagraph === paragraph.id}
                       isEditMode={editingParagraphId === paragraph.id}
-                      isRegenerateMode={regeneratingParagraphId === paragraph.id}
+                      isRegenerateMode={
+                        regeneratingParagraphId === paragraph.id
+                      }
                       isStreamingComplete={isStreamingComplete}
-                      
                       onParagraphClick={onSelectParagraph}
                       onEditClick={handleEditClick}
                       onRegenerateClick={handleRegenerateClick}
                       onDeleteParagraph={onParagraphDelete}
                       onMoveParagraph={onMoveParagraph}
-                      
                       onSaveEdit={handleSaveEdit}
                       onCancelEdit={handleCancelEdit}
                       onSubmitRegenerate={handleSubmitRegenerate}
                       onCancelRegenerate={handleCancelRegenerate}
                     />
-                    
+
                     {/* Insertion point after each paragraph */}
-                    <ParagraphInsertion 
-                      index={index + 1} 
+                    <ParagraphInsertion
+                      index={index + 1}
                       onClick={() => handleInsertClick(index + 1)}
                       isDialogOpen={insertionDialogOpen === index + 1}
                       onInsert={handleInsertParagraph}
@@ -286,7 +318,7 @@ export function DocumentEditor({
             The generated content will appear here...
           </div>
         )}
-        
+
         {/* Loading indicator */}
         {!isStreamingComplete && streamingTextArray.length > 0 && (
           <div className="absolute bottom-0 left-0 right-0 p-2 bg-blue-100 text-blue-800 text-center">
@@ -294,32 +326,48 @@ export function DocumentEditor({
           </div>
         )}
       </div>
-      
+
       {/* Navigation controls */}
-      {selectedParagraph !== null && isStreamingComplete && !editingParagraphId && !regeneratingParagraphId && (
-        <div className="border-t border-gray-200 pt-4 flex justify-center">
-          <div className="flex space-x-4">
-            <Button
-              onClick={() => navigateParagraph('up')}
-              variant="secondary"
-              size="sm"
-              disabled={streamingTextArray.findIndex(p => p.id === selectedParagraph) === 0}
-              leftIcon={<span>↑</span>}
-            >
-              Previous Paragraph
-            </Button>
-            <Button
-              onClick={() => navigateParagraph('down')}
-              variant="secondary"
-              size="sm"
-              disabled={streamingTextArray.findIndex(p => p.id === selectedParagraph) === streamingTextArray.length - 1}
-              rightIcon={<span>↓</span>}
-            >
-              Next Paragraph
-            </Button>
+      {selectedParagraph !== null &&
+        isStreamingComplete &&
+        !editingParagraphId &&
+        !regeneratingParagraphId && (
+          <div className="border-t border-gray-200 pt-4 flex justify-center">
+            <div className="flex space-x-4">
+              <Button
+                onClick={() => navigateParagraph("up")}
+                variant="secondary"
+                size="sm"
+                disabled={
+                  streamingTextArray.findIndex(
+                    (p) => p.id === selectedParagraph
+                  ) === 0
+                }
+                leftIcon={<span>↑</span>}
+              >
+                Previous Paragraph
+              </Button>
+              <Button
+                onClick={() => navigateParagraph("down")}
+                variant="secondary"
+                size="sm"
+                disabled={
+                  streamingTextArray.findIndex(
+                    (p) => p.id === selectedParagraph
+                  ) ===
+                  streamingTextArray.length - 1
+                }
+                rightIcon={<span>↓</span>}
+              >
+                Next Paragraph
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      <ShortcutGuide
+        isVisible={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
     </div>
   );
 }

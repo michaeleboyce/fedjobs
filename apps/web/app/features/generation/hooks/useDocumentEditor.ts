@@ -1,3 +1,4 @@
+// apps/web/app/features/generation/hooks/useDocumentEditor.ts
 import { useState, useCallback } from 'react';
 import { StreamingTextArray } from '../types';
 
@@ -7,7 +8,7 @@ export function useDocumentEditor() {
   const [isStreamingComplete, setIsStreamingComplete] = useState(false);
   const [selectedParagraphId, setSelectedParagraphId] = useState<number | null>(null);
   const [saveResult, setSaveResult] = useState({ url: "", message: "" });
-  const [generatedDocuments, setGeneratedDocuments] = useState([]);
+  const [generatedDocuments, setGeneratedDocuments] = useState<any[]>([]);
   
   // Edit mode state
   const [editMode, setEditMode] = useState(false);
@@ -30,10 +31,12 @@ export function useDocumentEditor() {
   // Update content
   const updateContent = useCallback((content: string, paragraphId?: number) => {
     if (paragraphId !== undefined) {
+      // Update specific paragraph
       setStreamingTextArray((prev) =>
         prev.map((p) => (p.id === paragraphId ? { ...p, text: content } : p))
       );
     } else {
+      // Update entire document
       const paragraphs = content
         .split(/\n\s*\n+/)
         .map((txt, idx) => ({ id: idx, text: txt.trim() }));
@@ -107,6 +110,9 @@ export function useDocumentEditor() {
     generatedDocuments,
     editMode,
     regenerateMode,
+    
+    // Add direct access to setState
+    setStreamingTextArray, // <-- Add this
     
     resetEditor,
     completeEditing,
