@@ -25,6 +25,10 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     updatePosition,
     addToEmploymentHistory,
     removeFromEmploymentHistory,
+    approveSimilar,
+    rejectSimilar,
+    removeApprovedSimilar,
+    removeRejectedSimilar,
   } = usePositions();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,11 +40,42 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   const [tempStartDate, setTempStartDate] = useState(position.date.startDate);
   const [tempEndDate, setTempEndDate] = useState(position.date.endDate);
   const [tempPresent, setTempPresent] = useState(position.date.present);
-  const [tempActivities, setTempActivities] = useState([...position.details.activities]);
-  const [tempAccomplishments, setTempAccomplishments] = useState([...position.details.accomplishments]);
+  const [tempActivities, setTempActivities] = useState([
+    ...position.details.activities,
+  ]);
+  const [tempAccomplishments, setTempAccomplishments] = useState([
+    ...position.details.accomplishments,
+  ]);
 
   const isLoading = loadingPositions.has(position.positionUuid);
 
+  const handleApproveSimilar = async (
+    currentUuid: string,
+    similarUuid: string
+  ) => {
+    await approveSimilar(currentUuid, similarUuid);
+  };
+
+  const handleRejectSimilar = async (
+    currentUuid: string,
+    similarUuid: string
+  ) => {
+    await rejectSimilar(currentUuid, similarUuid);
+  };
+
+  const handleRemoveApprovedSimilar = async (
+    currentUuid: string,
+    similarUuid: string
+  ) => {
+    await removeApprovedSimilar(currentUuid, similarUuid);
+  };
+
+  const handleRemoveRejectedSimilar = async (
+    currentUuid: string,
+    similarUuid: string
+  ) => {
+    await removeRejectedSimilar(currentUuid, similarUuid);
+  };
   const toggleExpansion = () => {
     const newExpandedState = !isExpanded;
     setIsExpanded(newExpandedState);
@@ -53,8 +88,15 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     await updatePosition(position.positionUuid, {
       title: { title: tempTitle },
       organization: { name: tempOrg },
-      date: { startDate: tempStartDate, endDate: tempEndDate, present: tempPresent },
-      details: { activities: tempActivities, accomplishments: tempAccomplishments },
+      date: {
+        startDate: tempStartDate,
+        endDate: tempEndDate,
+        present: tempPresent,
+      },
+      details: {
+        activities: tempActivities,
+        accomplishments: tempAccomplishments,
+      },
     });
     setIsEditing(false);
   }
@@ -74,8 +116,12 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         isGenerationView={isGenerationView}
         isLoading={isLoading}
         isExpanded={isExpanded}
-        onAddToEmploymentHistory={() => addToEmploymentHistory(position.positionUuid)}
-        onRemoveFromEmploymentHistory={() => removeFromEmploymentHistory(position.positionUuid)}
+        onAddToEmploymentHistory={() =>
+          addToEmploymentHistory(position.positionUuid)
+        }
+        onRemoveFromEmploymentHistory={() =>
+          removeFromEmploymentHistory(position.positionUuid)
+        }
         onEditToggle={() => setIsEditing(!isEditing)}
         onExpandToggle={toggleExpansion}
         onSaveEdit={saveEdit}
@@ -135,6 +181,11 @@ export const PositionCard: React.FC<PositionCardProps> = ({
           position={position}
           isEmploymentHistory={isEmploymentHistory}
           isGenerationView={isGenerationView}
+          loadingPositions={loadingPositions}
+          handleApproveSimilar={handleApproveSimilar}
+          handleRejectSimilar={handleRejectSimilar}
+          handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
+          handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
           forceShowAll={forceShowAll}
         />
       )}

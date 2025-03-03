@@ -1,4 +1,3 @@
-// app/store/positionsStore.ts
 'use client';
 
 import { create } from 'zustand';
@@ -15,6 +14,7 @@ import {
   rejectPosition,
 } from '@/app/features/positions/actions/reviewPositionActions';
 import { getPosition, updatePositionFieldsByUuid } from '@/app/features/positions/actions/positionActions';
+import { enableMapSet } from 'immer';
 
 interface PositionsState {
   employmentHistory: Position[];
@@ -45,6 +45,7 @@ interface PositionsActions {
   stopLoading: (uuid: string) => void;
 }
 
+enableMapSet();
 export const usePositionsStore = create<PositionsState & PositionsActions>()(
   immer((set, get) => ({
     // Initial state
