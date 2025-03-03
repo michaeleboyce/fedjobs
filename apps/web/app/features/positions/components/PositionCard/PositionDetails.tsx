@@ -1,4 +1,3 @@
-// File path: apps/web/app/features/positions/components/PositionCard/PositionDetails.tsx
 import React from "react";
 
 interface PositionDetailsProps {
@@ -14,18 +13,14 @@ export const PositionDetails: React.FC<PositionDetailsProps> = ({
   isEmploymentHistory,
   onExpandToggle,
 }) => {
-  const countColor =
-    similarCount === 0
-      ? "bg-gray-200 text-gray-600"
-      : "bg-blue-50 text-blue-800";
+  const countColor = similarCount === 0 ? "bg-gray-200 text-gray-600" : "bg-blue-50 text-blue-800";
 
   return (
     <>
       <div className="text-gray-600">
         <div>{position.organization.name}</div>
         <div>
-          {position.date.startDate} -{" "}
-          {position.date.present ? "Present" : position.date.endDate}
+          {position.date.startDate} - {position.date.present ? "Present" : position.date.endDate}
         </div>
       </div>
       <div
@@ -34,13 +29,11 @@ export const PositionDetails: React.FC<PositionDetailsProps> = ({
       >
         {isEmploymentHistory ? (
           <>
-            {similarCount} similar positions under review,{" "}
-            {position.approvedSimilarPositionUuids.length} approved
+            {similarCount} similar positions under review, {position.approvedSimilarPositionUuids.length} approved
           </>
         ) : (
           <>
-            {similarCount} similar{" "}
-            {similarCount === 1 ? "position" : "positions"}
+            {similarCount} similar {similarCount === 1 ? "position" : "positions"}
           </>
         )}
       </div>

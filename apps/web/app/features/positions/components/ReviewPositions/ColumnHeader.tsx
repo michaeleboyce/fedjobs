@@ -1,5 +1,3 @@
-// File path: apps/web/app/features/positions/components/ReviewPositions/ColumnHeader.tsx
-// New file: apps/web/app/features/positions/components/ReviewPositions/ColumnHeader.tsx
 import React from 'react';
 import { ColumnToggle } from './ColumnToggle';
 import { SearchBar } from '@/app/shared/components/SearchBar';
@@ -32,7 +30,6 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = ({
       <h2 className="text-xl font-bold text-blue-700 pb-2 border-b border-gray-200">
         {title}
       </h2>
-      
       <div className="flex justify-between items-center mt-2">
         {showFilter && (
           <div className="flex items-center">
@@ -54,7 +51,6 @@ export const ColumnHeader: React.FC<ColumnHeaderProps> = ({
           label={title}
         />
       </div>
-      
       {showSearch && onSearchChange && (
         <div className="mt-2">
           <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />

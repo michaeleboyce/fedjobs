@@ -1,9 +1,6 @@
-// File path: apps/web/app/features/positions/components/SimilarPositionCard/ActionButtons.tsx
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-
-// Import your custom Button component
 import Button from "@/app/shared/components/ui/Button";
 
 interface ActionButtonsProps {
@@ -29,67 +26,31 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 }) => {
   return (
     <div className="flex flex-col space-y-2">
-      {/* Show Approve/Reject/Remove buttons if we're not in generation view */}
       {!isGenerationView && onApprove && (
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={onApprove}
-          isLoading={isLoading}
-        >
+        <Button variant="primary" size="sm" onClick={onApprove} isLoading={isLoading}>
           Approve
         </Button>
       )}
-
       {!isGenerationView && onReject && (
-        <Button
-          variant="danger"
-          size="sm"
-          onClick={onReject}
-          isLoading={isLoading}
-        >
+        <Button variant="danger" size="sm" onClick={onReject} isLoading={isLoading}>
           Reject
         </Button>
       )}
-
       {!isGenerationView && onRemove && (
-        <Button
-          variant="warning"
-          size="sm"
-          onClick={onRemove}
-          isLoading={isLoading}
-        >
+        <Button variant="warning" size="sm" onClick={onRemove} isLoading={isLoading}>
           Remove
         </Button>
       )}
-
-      {/* If isGenerationView => single toggle button. Otherwise => toggle + "Jump To" */}
       {isGenerationView ? (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onExpandToggle}
-          rightIcon={<FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} className="h-4 w-4" />}
-        >
+        <Button variant="secondary" size="sm" onClick={onExpandToggle} rightIcon={<FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} className="h-4 w-4" />}>
           {expanded ? "Hide" : "Expand"}
         </Button>
       ) : (
         <>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onExpandToggle}
-            rightIcon={<FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} className="h-4 w-4" />}
-          >
+          <Button variant="secondary" size="sm" onClick={onExpandToggle} rightIcon={<FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} className="h-4 w-4" />}>
             {expanded ? "Hide" : "Expand"}
           </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onViewOriginal}
-            leftIcon={<FontAwesomeIcon icon={faEye} className="h-4 w-4" />}
-          >
+          <Button variant="secondary" size="sm" onClick={onViewOriginal} leftIcon={<FontAwesomeIcon icon={faEye} className="h-4 w-4" />}>
             Jump To
           </Button>
         </>

@@ -1,4 +1,3 @@
-// File path: apps/web/app/features/positions/components/ReviewPositions/PositionsSection.tsx
 import React from "react";
 import { Position } from "@fedjobs/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,10 +11,7 @@ interface PositionsSectionProps {
   loadingPositions: Set<string>;
   editingPositionUuid: string | null;
   editedDetails: Partial<Position>;
-  selectedSelections: Record<
-    string,
-    { selectedActivities: number[]; selectedAccomplishments: number[] }
-  >;
+  selectedSelections: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>;
   onToggleExpand: (positionUuid: string) => void;
   onCheckboxChange: (positionUuid: string, type: "activities" | "accomplishments", idx: number) => void;
   onSelectAll: (positionUuid: string, type: "activities" | "accomplishments") => void;
@@ -24,9 +20,7 @@ interface PositionsSectionProps {
   onCancelEdit: () => void;
   onSaveEdit: (positionUuid: string) => void;
   onInputChange: (field: keyof Position, value: any) => void;
-  // Custom action render callback for each position
   renderActions: (position: Position) => React.ReactNode;
-  // Callback to render similar positions for a given position
   renderSimilarPositions: (position: Position) => React.ReactNode;
 }
 

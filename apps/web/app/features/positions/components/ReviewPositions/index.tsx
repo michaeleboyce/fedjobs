@@ -17,11 +17,10 @@ const ReviewPositions: React.FC = () => {
     setHiddenColumn((current) => (current === col ? "none" : col));
   };
 
-  // Optional search/filter
+  // Filter state (Show only unreviewed)
   const [searchTerm, setSearchTerm] = useState("");
   const [showOnlyUnreviewed, setShowOnlyUnreviewed] = useState(true);
 
-  // Example filtering
   const filteredOthers = otherPositions.filter((pos) => {
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
@@ -41,19 +40,6 @@ const ReviewPositions: React.FC = () => {
     return true;
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-pulse text-center">
-          <div className="h-8 w-64 bg-gray-200 rounded mb-4 mx-auto"></div>
-          <div className="h-4 w-48 bg-gray-200 rounded mb-2 mx-auto"></div>
-          <div className="h-4 w-56 bg-gray-200 rounded mb-4 mx-auto"></div>
-          <div className="text-gray-500">Loading positions...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex gap-4 p-6 min-h-screen">
       {/* Employment Column */}
@@ -63,7 +49,6 @@ const ReviewPositions: React.FC = () => {
         columnType="employment"
         hiddenColumn={hiddenColumn}
         toggleColumn={toggleColumn}
-        // no search/filter needed here, but you could add them
       />
 
       {/* Other Positions Column */}
@@ -79,6 +64,7 @@ const ReviewPositions: React.FC = () => {
         showFilter={true}
         filterChecked={showOnlyUnreviewed}
         onFilterChange={() => setShowOnlyUnreviewed(!showOnlyUnreviewed)}
+        forceShowAll={() => setShowOnlyUnreviewed(false)}
       />
     </div>
   );

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { searchUSAJobsAPI } from '@/app/shared/actions/usaJobsActions';
 import { Job } from '@fedjobs/types';
-import { formatDateMMDDYYYY } from '@/app/shared/utils/DateUtils';
+import { formatDateMMDDYYYY } from '@/app/shared/utils/dateUtils';
 import { useGenerationContext } from '../../providers/GenerationProvider';
 
 export function JobSearch() {

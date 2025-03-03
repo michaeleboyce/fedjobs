@@ -1,5 +1,3 @@
-// File path: apps/web/app/features/positions/components/PositionCard/SimilarPositionsSections.tsx
-
 import React, { useState } from 'react';
 import { SimilarPositionCard } from "../SimilarPositionCard";
 
@@ -12,6 +10,8 @@ interface SimilarPositionsSectionsProps {
   handleRejectSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleRemoveApprovedSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleRemoveRejectedSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
+  // New prop to force the filter off
+  forceShowAll?: () => void;
 }
 
 export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> = ({
@@ -23,10 +23,30 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
   handleRejectSimilar,
   handleRemoveApprovedSimilar,
   handleRemoveRejectedSimilar,
+  forceShowAll,
 }) => {
   const [showUnderReview, setShowUnderReview] = useState(true);
   const [showApproved, setShowApproved] = useState(true);
   const [showRejected, setShowRejected] = useState(false);
+
+  // Helper function for positions that require forcing the filter off (approved/rejected)
+  const viewOriginalWithForce = (simId: string) => {
+    if (!isEmploymentHistory && forceShowAll) {
+      forceShowAll();
+    }
+    const element = document.getElementById(`position-${simId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  // Helper function for under review positions (no force required)
+  const viewOriginal = (simId: string) => {
+    const element = document.getElementById(`position-${simId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   const renderSection = (
     title: string, 
@@ -54,15 +74,9 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               similarId={simId}
               currentPosition={position}
               isEmploymentHistory={isEmploymentHistory}
-              /** pass isGenerationView so the card can hide remove/approve/reject */
               isGenerationView={isGenerationView}
               isLoading={loadingPositions.has(simId)}
-              onViewOriginal={() => {
-                const element = document.getElementById(`position-${simId}`);
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-              }}
+              onViewOriginal={() => viewOriginal(simId)}
               onApprove={
                 !isGenerationView && isEmploymentHistory
                   ? () => handleApproveSimilar(position.positionUuid, simId)
@@ -92,12 +106,7 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               isEmploymentHistory={isEmploymentHistory}
               isGenerationView={isGenerationView}
               isLoading={loadingPositions.has(simId)}
-              onViewOriginal={() => {
-                const element = document.getElementById(`position-${simId}`);
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-              }}
+              onViewOriginal={() => viewOriginalWithForce(simId)}
               onRemove={
                 !isGenerationView && isEmploymentHistory
                   ? () => handleRemoveApprovedSimilar(position.positionUuid, simId)
@@ -122,12 +131,7 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               isEmploymentHistory={isEmploymentHistory}
               isGenerationView={isGenerationView}
               isLoading={loadingPositions.has(simId)}
-              onViewOriginal={() => {
-                const element = document.getElementById(`position-${simId}`);
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-              }}
+              onViewOriginal={() => viewOriginalWithForce(simId)}
               onRemove={
                 !isGenerationView && isEmploymentHistory
                   ? () => handleRemoveRejectedSimilar(position.positionUuid, simId)

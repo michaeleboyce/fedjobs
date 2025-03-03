@@ -1,14 +1,6 @@
-// File path: apps/web/app/features/positions/components/PositionCard/PositionHeader.tsx
 import React from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-  faPencil, 
-  faPlus, 
-  faTrash, 
-  faChevronDown, 
-  faChevronUp, 
-  faCheck 
-} from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faPlus, faTrash, faChevronDown, faChevronUp, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Button } from '@/app/shared/components/ui/Button';
 
 interface PositionHeaderProps {
@@ -44,12 +36,7 @@ export const PositionHeader: React.FC<PositionHeaderProps> = ({
     <div className="flex justify-between items-start gap-4">
       <div className="flex-1">
         <h3 className="font-bold text-xl">
-          {isEditing ? (
-            // Title editing can be handled in PositionEditForm or here if needed
-            <>{position.title.title}</>
-          ) : (
-            position.title.title
-          )}
+          {isEditing ? position.title.title : position.title.title}
         </h3>
         <div className="flex items-center gap-2 mb-1">
           <div className="flex gap-1">

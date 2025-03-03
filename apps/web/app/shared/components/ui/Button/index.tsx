@@ -1,10 +1,9 @@
-// File path: apps/web/app/shared/components/ui/Button/index.tsx
 'use client';
 
 import React from 'react';
 import { cn } from '@/app/shared/utils/classNames';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link' ;
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'link' | 'warning';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,26 +31,27 @@ export const Button: React.FC<ButtonProps> = ({
   type = 'button',
   ...props
 }) => {
-  // Define base styles for all buttons
+  // Base styles for all buttons
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded focus:outline-none focus:ring-2 transition-colors';
   
-  // Define variant-specific styles
+  // Variant-specific styles (new warning variant added)
   const variantStyles = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-200',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-300',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200',
-    link: 'bg-transparent text-blue-600 hover:text-blue-800 hover:underline p-0'
+    link: 'bg-transparent text-blue-600 hover:text-blue-800 hover:underline p-0',
+    warning: 'bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-300'
   };
   
-  // Define size-specific styles
+  // Size-specific styles
   const sizeStyles = {
     sm: 'py-1 px-2 text-sm',
     md: 'py-2 px-4 text-base',
     lg: 'py-3 px-6 text-lg',
   };
   
-  // Skip padding for link variant
+  // For link variant, skip additional padding
   const sizeStyle = variant === 'link' ? '' : sizeStyles[size];
   
   const isDisabled = disabled || isLoading;

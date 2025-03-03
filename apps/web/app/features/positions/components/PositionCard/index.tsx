@@ -1,5 +1,5 @@
-// File path: apps/web/app/features/positions/components/PositionCard/index.tsx
-import React, { useState, useEffect } from "react";
+// File: apps/web/app/features/positions/components/PositionCard/index.tsx
+import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
 import { usePositions } from "../../context/PositionsContext";
 import { PositionHeader } from "./PositionHeader";
@@ -10,16 +10,16 @@ import { SimilarPositionsSections } from "./SimilarPositionsSections";
 interface PositionCardProps {
   position: Position;
   isEmploymentHistory: boolean;
-  /** If true => we hide any remove/edit/approve UI for generation context. */
   isGenerationView?: boolean;
-  /** If true => show checkboxes to select items. */
+  // New prop for forcing filter off
+  forceShowAll?: () => void;
 }
 
 export const PositionCard: React.FC<PositionCardProps> = ({
   position,
   isEmploymentHistory,
   isGenerationView = false,
-
+  forceShowAll,
 }) => {
   const {
     loadingPositions,
@@ -32,33 +32,23 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     handleRemoveRejectedSimilar,
   } = usePositions();
 
-  // Default to closed state
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  // Track whether similar positions have been loaded
   const [similarPositionsLoaded, setSimilarPositionsLoaded] = useState(false);
 
-  // Local "edit" state
   const [tempTitle, setTempTitle] = useState(position.title.title);
   const [tempOrg, setTempOrg] = useState(position.organization.name);
   const [tempStartDate, setTempStartDate] = useState(position.date.startDate);
   const [tempEndDate, setTempEndDate] = useState(position.date.endDate);
   const [tempPresent, setTempPresent] = useState(position.date.present);
-  const [tempActivities, setTempActivities] = useState([
-    ...position.details.activities,
-  ]);
-  const [tempAccomplishments, setTempAccomplishments] = useState([
-    ...position.details.accomplishments,
-  ]);
+  const [tempActivities, setTempActivities] = useState([...position.details.activities]);
+  const [tempAccomplishments, setTempAccomplishments] = useState([...position.details.accomplishments]);
 
   const isLoading = loadingPositions.has(position.positionUuid);
 
-  // Toggle expansion and handle similiar positions loading
   const toggleExpansion = () => {
     const newExpandedState = !isExpanded;
     setIsExpanded(newExpandedState);
-    
-    // Mark similar positions as loaded when first expanded
     if (newExpandedState && !similarPositionsLoaded) {
       setSimilarPositionsLoaded(true);
     }
@@ -68,15 +58,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     await handleUpdatePosition(position.positionUuid, {
       title: { title: tempTitle },
       organization: { name: tempOrg },
-      date: {
-        startDate: tempStartDate,
-        endDate: tempEndDate,
-        present: tempPresent,
-      },
-      details: {
-        activities: tempActivities,
-        accomplishments: tempAccomplishments,
-      },
+      date: { startDate: tempStartDate, endDate: tempEndDate, present: tempPresent },
+      details: { activities: tempActivities, accomplishments: tempAccomplishments },
     });
     setIsEditing(false);
   }
@@ -96,19 +79,13 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         isGenerationView={isGenerationView}
         isLoading={isLoading}
         isExpanded={isExpanded}
-        /** Hide remove-from-history if isGenerationView is true */
-        onAddToEmploymentHistory={() =>
-          handleAddToEmploymentHistory(position.positionUuid)
-        }
-        onRemoveFromEmploymentHistory={() =>
-          handleRemoveFromEmploymentHistory(position.positionUuid)
-        }
+        onAddToEmploymentHistory={() => handleAddToEmploymentHistory(position.positionUuid)}
+        onRemoveFromEmploymentHistory={() => handleRemoveFromEmploymentHistory(position.positionUuid)}
         onEditToggle={() => setIsEditing(!isEditing)}
         onExpandToggle={toggleExpansion}
         onSaveEdit={saveEdit}
         onCancelEdit={() => setIsEditing(false)}
       />
-      {/* If not expanded => minimal details */}
       <PositionDetails
         position={position}
         similarCount={similarCount}
@@ -134,48 +111,41 @@ export const PositionCard: React.FC<PositionCardProps> = ({
           setTempAccomplishments={setTempAccomplishments}
         />
       )}
-      {/* If expanded => either editing form or read-only details + similar positions */}
       {isExpanded && !isEditing && (
         <>
           <div className="mt-4">
             <strong>Activities:</strong>
             <ul className="list-disc ml-5 mt-1">
-              {position.details.activities.map((act, idx) => {
-                return (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span>{act}</span>
-                  </li>
-                );
-              })}
+              {position.details.activities.map((act, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span>{act}</span>
+                </li>
+              ))}
             </ul>
           </div>
           <div className="mt-3">
             <strong>Accomplishments:</strong>
             <ul className="list-disc ml-5 mt-1">
-              {position.details.accomplishments.map((acc, idx) => {
-                return (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span>{acc}</span>
-                  </li>
-                );
-              })}
+              {position.details.accomplishments.map((acc, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span>{acc}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </>
       )}
-
-      {/* Only render similar positions when expanded AND loaded */}
-      {isExpanded && similarPositionsLoaded && (
+      {isExpanded && (
         <SimilarPositionsSections
           position={position}
           isEmploymentHistory={isEmploymentHistory}
-          /** Pass the new prop so it hides "remove" or "approve/reject" for generation */
           isGenerationView={isGenerationView}
           loadingPositions={loadingPositions}
           handleApproveSimilar={handleApproveSimilar}
           handleRejectSimilar={handleRejectSimilar}
           handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
           handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
+          forceShowAll={forceShowAll}  // forward the callback here
         />
       )}
     </div>

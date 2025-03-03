@@ -1,4 +1,3 @@
-// File path: apps/web/app/features/positions/hooks/usePositionsManagement.ts
 'use client';
 
 import { useEffect } from 'react';
@@ -23,17 +22,12 @@ export function usePositionsManagement() {
     removeRejectedSimilar,
   } = usePositionsStore();
 
-  // Fetch positions on component mount
   useEffect(() => {
     fetchPositions();
   }, [fetchPositions]);
 
-  // Check if a position is in the loading state
-  const isPositionLoading = (uuid: string): boolean => {
-    return loadingPositions.has(uuid);
-  };
+  const isPositionLoading = (uuid: string): boolean => loadingPositions.has(uuid);
 
-  // Find a position by UUID in all collections
   const findPositionByUuid = (uuid: string): Position | undefined => {
     return [...employmentHistory, ...otherPositions].find(
       (pos) => pos.positionUuid === uuid
@@ -41,13 +35,10 @@ export function usePositionsManagement() {
   };
 
   return {
-    // State
     employmentHistory,
     otherPositions,
     isLoading,
     error,
-    
-    // Actions
     addToEmploymentHistory,
     removeFromEmploymentHistory,
     rejectPosition,
@@ -56,12 +47,8 @@ export function usePositionsManagement() {
     rejectSimilar,
     removeApprovedSimilar,
     removeRejectedSimilar,
-    
-    // Helper functions
     isPositionLoading,
     findPositionByUuid,
-    
-    // Fetch/refresh data
     refetchPositions: fetchPositions,
   };
 }

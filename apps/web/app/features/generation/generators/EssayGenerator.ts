@@ -5,7 +5,7 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { DocumentType } from "@fedjobs/types";
 import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
 import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
-import { formatDateMMDDYYYY } from "@/app/shared/utils/DateUtils";
+import { formatDateMMDDYYYY } from "@/app/shared/utils/dateUtils";
 import { uploadFile, generateKeyFromFileName } from "@fedjobs/utils";
 // Import DocumentRepository from our repository layer.
 import { DocumentRepository } from "@fedjobs/database";

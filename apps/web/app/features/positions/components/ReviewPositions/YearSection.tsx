@@ -1,5 +1,3 @@
-// File path: apps/web/app/features/positions/components/ReviewPositions/YearSection.tsx
-// New file: apps/web/app/features/positions/components/ReviewPositions/YearSection.tsx
 import React from 'react';
 import { Position } from '@fedjobs/types';
 import { PositionCard } from '../PositionCard';
@@ -24,11 +22,7 @@ export const YearSection: React.FC<YearSectionProps> = ({
       </h3>
       <div className="mt-4">
         {positions.map((position) => (
-          <PositionCard
-            key={position.positionUuid}
-            position={position}
-            isEmploymentHistory={isEmploymentHistory}
-          />
+          <PositionCard key={position.positionUuid} position={position} isEmploymentHistory={isEmploymentHistory} />
         ))}
       </div>
     </div>
