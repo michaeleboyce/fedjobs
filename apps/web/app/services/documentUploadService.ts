@@ -66,9 +66,9 @@ export class DocumentUploadService {
         filename,
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         userId,
-        buffer.length // Keep fileSize but remove buffer
+        buffer.length,
+        buffer  // pass the file buffer here
       );
-      
       if (uploadResponse.status === 'failure') {
         return {
           status: 'error',

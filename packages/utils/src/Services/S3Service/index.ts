@@ -21,11 +21,13 @@ export const uploadFile = async (
   fileName: string,
   fileType: string,
   userId: string,
-  fileSize: number
+  fileSize: number,
+  fileBuffer: Buffer
 ): Promise<SignedURLResponse> => {
   const putObjectCommand = new PutObjectCommand({
     Bucket: AWS_CONFIG.bucketName,
     Key: s3Key,
+    Body: fileBuffer, // Include the actual file contents here
     ContentType: fileType,
     ContentLength: fileSize,
     Metadata: {
@@ -35,13 +37,22 @@ export const uploadFile = async (
   });
 
   try {
-    const url = await getSignedUrl(s3Client, putObjectCommand, { expiresIn: SIGNED_URL_EXPIRATION });
-    return { status: 'success', url };
+    // Directly upload the file buffer to S3
+    await s3Client.send(putObjectCommand);
+    
+    // Optionally, generate a GET URL to return to the client
+    const getUrl = await getSignedUrl(
+      s3Client, 
+      new GetObjectCommand({ Bucket: AWS_CONFIG.bucketName, Key: s3Key }),
+      { expiresIn: GET_URL_EXPIRATION }
+    );
+    return { status: 'success', url: getUrl };
   } catch (error: any) {
     console.error('Error uploading file:', error);
     return { status: 'failure', message: error.message || 'Failed to upload file.' };
   }
 };
+
 export const getPreSignedUrlforClient= async (
   s3Key: string,
   fileName: string,

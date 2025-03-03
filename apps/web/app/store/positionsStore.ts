@@ -46,6 +46,7 @@ interface PositionsActions {
 }
 
 enableMapSet();
+
 export const usePositionsStore = create<PositionsState & PositionsActions>()(
   immer((set, get) => ({
     // Initial state
