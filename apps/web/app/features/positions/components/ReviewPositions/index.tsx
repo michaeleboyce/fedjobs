@@ -1,15 +1,25 @@
-// File: apps/web/app/features/positions/components/ReviewPositions/index.tsx
+// app/features/positions/components/ReviewPositions/index.tsx
 "use client";
 
-import React, { useState } from "react";
-import { usePositionsManagement } from "@/app/features/positions/hooks/usePositionsManagement";
+import React, { useState, useEffect } from "react";
+import { usePositions } from "../../context/PositionsContext";
 import { PositionsColumn } from "./PositionsColumn";
 
 type ColumnType = "employment" | "other";
 type HiddenColumn = "none" | ColumnType;
 
 const ReviewPositions: React.FC = () => {
-  const { employmentHistory, otherPositions, isLoading } = usePositionsManagement();
+  const { 
+    employmentHistory, 
+    otherPositions, 
+    isLoading,
+    fetchPositions
+  } = usePositions();
+  
+  // Ensure positions are fetched when component mounts
+  useEffect(() => {
+    fetchPositions();
+  }, [fetchPositions]);
 
   // Expand/collapse logic
   const [hiddenColumn, setHiddenColumn] = useState<HiddenColumn>("none");

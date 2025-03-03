@@ -1,4 +1,4 @@
-// File path: apps/web/app/store/positionsStore.ts
+// app/store/positionsStore.ts
 'use client';
 
 import { create } from 'zustand';
@@ -47,14 +47,14 @@ interface PositionsActions {
 
 export const usePositionsStore = create<PositionsState & PositionsActions>()(
   immer((set, get) => ({
-    // State
+    // Initial state
     employmentHistory: [],
     otherPositions: [],
     loadingPositions: new Set<string>(),
     isLoading: false,
     error: null,
 
-    // Actions
+    // Helper functions for loading state
     startLoading: (uuid: string) => {
       set(state => {
         state.loadingPositions.add(uuid);
@@ -67,6 +67,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       });
     },
 
+    // Fetch all positions from API
     fetchPositions: async () => {
       set(state => {
         state.isLoading = true;
@@ -99,6 +100,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Add position to employment history
     addToEmploymentHistory: async (uuid: string) => {
       get().startLoading(uuid);
       
@@ -107,6 +109,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success && response.position) {
           set(state => {
+            // Add to employment history
             state.employmentHistory.push(response.position);
           });
           toast.success('Position added to Employment History.');
@@ -120,6 +123,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Remove from employment history
     removeFromEmploymentHistory: async (uuid: string) => {
       get().startLoading(uuid);
       
@@ -128,6 +132,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success) {
           set(state => {
+            // Remove from employment history
             state.employmentHistory = state.employmentHistory.filter(
               (pos) => pos.positionUuid !== uuid
             );
@@ -143,6 +148,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Reject position
     rejectPosition: async (uuid: string) => {
       get().startLoading(uuid);
       
@@ -151,6 +157,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success) {
           set(state => {
+            // Remove from both arrays
             state.employmentHistory = state.employmentHistory.filter(
               (pos) => pos.positionUuid !== uuid
             );
@@ -169,6 +176,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Update position
     updatePosition: async (uuid: string, updatedFields: Partial<Position>) => {
       get().startLoading(uuid);
       
@@ -177,7 +185,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success) {
           set(state => {
-            // Update both employment history and other positions
+            // Update position in both arrays
             const updatePos = (pos: Position) => {
               if (pos.positionUuid !== uuid) return pos;
               return { ...pos, ...updatedFields };
@@ -197,6 +205,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Approve similar position
     approveSimilar: async (currentUuid: string, similarUuid: string) => {
       get().startLoading(similarUuid);
       
@@ -205,9 +214,9 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success) {
           set(state => {
-            // Update both collections to reflect the approval relationship
-            const updatePositions = (positions: Position[]) => {
-              return positions.map(pos => {
+            // Update in both arrays with a helper function
+            const updatePositionsArray = (positions: Position[]) => 
+              positions.map(pos => {
                 if (pos.positionUuid === currentUuid) {
                   return {
                     ...pos,
@@ -234,10 +243,10 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
                 }
                 return pos;
               });
-            };
             
-            state.employmentHistory = updatePositions(state.employmentHistory);
-            state.otherPositions = updatePositions(state.otherPositions);
+            // Update both arrays
+            state.employmentHistory = updatePositionsArray(state.employmentHistory);
+            state.otherPositions = updatePositionsArray(state.otherPositions);
           });
           toast.success('Similar position approved.');
         } else {
@@ -250,6 +259,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Reject similar position
     rejectSimilar: async (currentUuid: string, similarUuid: string) => {
       get().startLoading(similarUuid);
       
@@ -258,9 +268,9 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         if (response.success) {
           set(state => {
-            // Update both collections to reflect the rejection relationship
-            const updatePositions = (positions: Position[]) => {
-              return positions.map(pos => {
+            // Update in both arrays with a helper function
+            const updatePositionsArray = (positions: Position[]) => 
+              positions.map(pos => {
                 if (pos.positionUuid === currentUuid) {
                   return {
                     ...pos,
@@ -287,10 +297,10 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
                 }
                 return pos;
               });
-            };
             
-            state.employmentHistory = updatePositions(state.employmentHistory);
-            state.otherPositions = updatePositions(state.otherPositions);
+            // Update both arrays
+            state.employmentHistory = updatePositionsArray(state.employmentHistory);
+            state.otherPositions = updatePositionsArray(state.otherPositions);
           });
           toast.success('Similar position rejected.');
         } else {
@@ -303,6 +313,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Remove approved similar position
     removeApprovedSimilar: async (currentUuid: string, similarUuid: string) => {
       get().startLoading(similarUuid);
       
@@ -317,7 +328,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         const currentPos = currentPosResponse.position;
         const similarPos = similarPosResponse.position;
         
-        // Remove the positions from each other's approved lists
+        // Remove from approved lists and add back to similar lists
         const updatedCurrentApproved = currentPos.approvedSimilarPositionUuids.filter(
           uuid => uuid !== similarUuid
         );
@@ -325,7 +336,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
           uuid => uuid !== currentUuid
         );
         
-        // Add them back to the similar lists if not already present
+        // Add back to similar lists if not already present
         const currentSimilarSet = new Set(currentPos.similarPositionUuids);
         currentSimilarSet.add(similarUuid);
         const updatedCurrentSimilar = Array.from(currentSimilarSet);
@@ -347,8 +358,9 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         // Update the local state
         set(state => {
-          const updatePositions = (positions: Position[]) => {
-            return positions.map(pos => {
+          // Helper function to update a position in an array
+          const updatePositionsArray = (positions: Position[]) => 
+            positions.map(pos => {
               if (pos.positionUuid === currentUuid) {
                 return {
                   ...pos,
@@ -373,10 +385,10 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
               }
               return pos;
             });
-          };
           
-          state.employmentHistory = updatePositions(state.employmentHistory);
-          state.otherPositions = updatePositions(state.otherPositions);
+          // Update both arrays
+          state.employmentHistory = updatePositionsArray(state.employmentHistory);
+          state.otherPositions = updatePositionsArray(state.otherPositions);
         });
         
         toast.success('Approved similar position removed.');
@@ -387,6 +399,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
       }
     },
 
+    // Remove rejected similar position
     removeRejectedSimilar: async (currentUuid: string, similarUuid: string) => {
       get().startLoading(similarUuid);
       
@@ -401,7 +414,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         const currentPos = currentPosResponse.position;
         const similarPos = similarPosResponse.position;
         
-        // Remove the positions from each other's rejected lists
+        // Remove from rejected lists and add back to similar lists
         const updatedCurrentRejected = currentPos.rejectedSimilarPositionUuids.filter(
           uuid => uuid !== similarUuid
         );
@@ -409,7 +422,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
           uuid => uuid !== currentUuid
         );
         
-        // Add them back to the similar lists if not already present
+        // Add back to similar lists if not already present
         const currentSimilarSet = new Set(currentPos.similarPositionUuids);
         currentSimilarSet.add(similarUuid);
         const updatedCurrentSimilar = Array.from(currentSimilarSet);
@@ -431,8 +444,9 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         
         // Update the local state
         set(state => {
-          const updatePositions = (positions: Position[]) => {
-            return positions.map(pos => {
+          // Helper function to update a position in an array
+          const updatePositionsArray = (positions: Position[]) => 
+            positions.map(pos => {
               if (pos.positionUuid === currentUuid) {
                 return {
                   ...pos,
@@ -457,10 +471,10 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
               }
               return pos;
             });
-          };
           
-          state.employmentHistory = updatePositions(state.employmentHistory);
-          state.otherPositions = updatePositions(state.otherPositions);
+          // Update both arrays
+          state.employmentHistory = updatePositionsArray(state.employmentHistory);
+          state.otherPositions = updatePositionsArray(state.otherPositions);
         });
         
         toast.success('Rejected similar position removed.');

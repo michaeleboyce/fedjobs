@@ -1,4 +1,4 @@
-// File: apps/web/app/features/positions/components/PositionCard/index.tsx
+// app/features/positions/components/PositionCard/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
 import { usePositions } from "../../context/PositionsContext";
@@ -11,7 +11,6 @@ interface PositionCardProps {
   position: Position;
   isEmploymentHistory: boolean;
   isGenerationView?: boolean;
-  // New prop for forcing filter off
   forceShowAll?: () => void;
 }
 
@@ -23,13 +22,9 @@ export const PositionCard: React.FC<PositionCardProps> = ({
 }) => {
   const {
     loadingPositions,
-    handleUpdatePosition,
-    handleAddToEmploymentHistory,
-    handleRemoveFromEmploymentHistory,
-    handleApproveSimilar,
-    handleRejectSimilar,
-    handleRemoveApprovedSimilar,
-    handleRemoveRejectedSimilar,
+    updatePosition,
+    addToEmploymentHistory,
+    removeFromEmploymentHistory,
   } = usePositions();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -55,7 +50,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   };
 
   async function saveEdit() {
-    await handleUpdatePosition(position.positionUuid, {
+    await updatePosition(position.positionUuid, {
       title: { title: tempTitle },
       organization: { name: tempOrg },
       date: { startDate: tempStartDate, endDate: tempEndDate, present: tempPresent },
@@ -79,8 +74,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         isGenerationView={isGenerationView}
         isLoading={isLoading}
         isExpanded={isExpanded}
-        onAddToEmploymentHistory={() => handleAddToEmploymentHistory(position.positionUuid)}
-        onRemoveFromEmploymentHistory={() => handleRemoveFromEmploymentHistory(position.positionUuid)}
+        onAddToEmploymentHistory={() => addToEmploymentHistory(position.positionUuid)}
+        onRemoveFromEmploymentHistory={() => removeFromEmploymentHistory(position.positionUuid)}
         onEditToggle={() => setIsEditing(!isEditing)}
         onExpandToggle={toggleExpansion}
         onSaveEdit={saveEdit}
@@ -140,12 +135,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
           position={position}
           isEmploymentHistory={isEmploymentHistory}
           isGenerationView={isGenerationView}
-          loadingPositions={loadingPositions}
-          handleApproveSimilar={handleApproveSimilar}
-          handleRejectSimilar={handleRejectSimilar}
-          handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}
-          handleRemoveRejectedSimilar={handleRemoveRejectedSimilar}
-          forceShowAll={forceShowAll}  // forward the callback here
+          forceShowAll={forceShowAll}
         />
       )}
     </div>
