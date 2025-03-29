@@ -1,7 +1,7 @@
 // app/features/positions/components/PositionCard/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";
-import { usePositions } from "../../context/PositionsContext";
+import { usePositionsManagement } from "../../hooks/usePositionsManagement";
 import { PositionHeader } from "./PositionHeader";
 import { PositionEditForm } from "./PositionEditForm";
 import { PositionDetails } from "./PositionDetails";
@@ -21,7 +21,6 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   forceShowAll,
 }) => {
   const {
-    loadingPositions,
     updatePosition,
     addToEmploymentHistory,
     removeFromEmploymentHistory,
@@ -29,7 +28,8 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     rejectSimilar,
     removeApprovedSimilar,
     removeRejectedSimilar,
-  } = usePositions();
+    isPositionLoading
+  } = usePositionsManagement();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,7 +47,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
     ...position.details.accomplishments,
   ]);
 
-  const isLoading = loadingPositions.has(position.positionUuid);
+  const isLoading = isPositionLoading(position.positionUuid);
 
   const handleApproveSimilar = async (
     currentUuid: string,
@@ -181,7 +181,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
           position={position}
           isEmploymentHistory={isEmploymentHistory}
           isGenerationView={isGenerationView}
-          loadingPositions={loadingPositions}
+          loadingPositions={isPositionLoading}
           handleApproveSimilar={handleApproveSimilar}
           handleRejectSimilar={handleRejectSimilar}
           handleRemoveApprovedSimilar={handleRemoveApprovedSimilar}

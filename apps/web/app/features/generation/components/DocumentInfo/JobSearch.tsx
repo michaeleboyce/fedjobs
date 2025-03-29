@@ -5,10 +5,10 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { searchUSAJobsAPI } from '@/app/shared/actions/usaJobsActions';
 import { Job } from '@fedjobs/types';
 import { formatDateMMDDYYYY } from '@/app/shared/utils/dateUtils';
-import { useGenerationContext } from '../../providers/GenerationProvider';
+import { useGenerationManagement } from '@/app/features/generation/hooks/useGenerationManagement';
 
 export function JobSearch() {
-  const { setJob } = useGenerationContext();
+  const { updateJob, updateJobPostingUrl, updateJobDescription } = useGenerationManagement();
   const [inputValue, setInputValue] = useState('');
   const [fetchQuery, setFetchQuery] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -38,10 +38,28 @@ export function JobSearch() {
   }, [fetchQuery]);
 
   // Handle job selection
-  const handleJobSelect = (job: Job) => {
+  const handleJobSelect = async (job: Job) => {
     setSelectedJob(job);
-    setJob(job);
+    
+    // Update all job-related fields in the store - do this directly to ensure updates happen
+    if (job.MatchedObjectDescriptor?.PositionURI) {
+      updateJobPostingUrl(job.MatchedObjectDescriptor.PositionURI);
+    }
+    
+    // Set description from the qualification summary if available
+    if (job.MatchedObjectDescriptor?.QualificationSummary) {
+      const description = `${job.MatchedObjectDescriptor.PositionTitle}\n\n${job.MatchedObjectDescriptor.QualificationSummary}`;
+      updateJobDescription(description);
+    }
+    
+    // Update the job object in the store
+    await updateJob(job);
+    
+    // Make sure dropdown is closed
     setShowDropdown(false);
+    
+    // Log successful job selection
+    console.log('Job selected and all fields updated:', job.MatchedObjectDescriptor.PositionTitle);
   };
 
   // Handle deletion of selected job

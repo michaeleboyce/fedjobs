@@ -4,8 +4,7 @@ import { TCQGenerator } from './TCQGenerator';
 import { CoverLetterGenerator } from './CoverLetterGenerator';
 import { OtherGenerator } from './OtherGenerator';
 import { EssayGenerator } from './EssayGenerator';
-import { DocumentType } from '@fedjobs/types';
-import { GenerationSelection } from '@/app/features/generation/types/GenerationSelection';
+import { DocumentType, GenerationSelection } from '@fedjobs/types';
 import { ResumeGenerator } from './ResumeGenerator';
 
 export class GeneratorFactory {

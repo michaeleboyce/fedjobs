@@ -1,7 +1,6 @@
 // File path: apps/web/app/features/generation/generators/ResumeGenerator.ts
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { GenerationSelection, StreamingTextArray } from "@fedjobs/types";
 import { EssayGenerator } from "./EssayGenerator";
-import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
 import { Position } from "@fedjobs/types";
 
 export class ResumeGenerator extends EssayGenerator {

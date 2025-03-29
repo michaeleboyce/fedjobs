@@ -25,6 +25,14 @@ export function useDocumentsManagement() {
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+  
+  // Ensure consistent document types
+  const ensureCompleteDocuments = documents.map(doc => ({
+    ...doc,
+    data: doc.data || {},
+    content: doc.content || '',
+    source: doc.source || 'USER_UPLOADED' as const
+  }));
 
   // Handle document upload
   const handleUploadDocument = async (
@@ -62,12 +70,12 @@ export function useDocumentsManagement() {
 
   // Filter documents by type
   const getDocumentsByType = (type: DocumentType) => {
-    return documents.filter(doc => doc.type === type);
+    return ensureCompleteDocuments.filter(doc => doc.type === type);
   };
 
   return {
     // State
-    documents,
+    documents: ensureCompleteDocuments,
     isLoading,
     isUploading,
     uploadProgress,

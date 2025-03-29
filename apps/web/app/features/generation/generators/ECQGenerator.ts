@@ -1,10 +1,9 @@
 // File path: apps/web/app/features/generation/generators/ECQGenerator.ts
 // ECQGenerator.ts
 import { EssayGenerator } from "./EssayGenerator";
-import { ECQCompetency } from "@/app/features/generation/types/ECQCompetencies";
+import { ECQCompetency } from "@fedjobs/types";
 import { ECQ_COMPENTENCIES } from "@/app/shared/utils/Constants";
-import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { StreamingTextArray, GenerationSelection } from "@fedjobs/types";
 
 export class ECQGenerator extends EssayGenerator {
   ecq: ECQCompetency;

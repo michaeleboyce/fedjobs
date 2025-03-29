@@ -1,8 +1,7 @@
 // File path: apps/web/app/features/generation/generators/OtherGenerator.ts
 // OtherGenerator.ts
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { GenerationSelection, StreamingTextArray } from "@fedjobs/types";
 import { EssayGenerator } from "./EssayGenerator";
-import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
 
 export class OtherGenerator extends EssayGenerator {
   constructor(generationSelection: GenerationSelection) {

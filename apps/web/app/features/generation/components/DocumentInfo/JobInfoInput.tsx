@@ -1,10 +1,10 @@
 // File path: apps/web/app/features/generation/components/DocumentInfo/JobInfoInput.tsx
 import React from 'react';
-import { useGenerationContext } from '../../providers/GenerationProvider';
+import { useGenerationManagement } from '../../hooks/useGenerationManagement';
 import { JobSearch } from './JobSearch';
 
 export function JobInfoInput() {
-  const { jobInfo, setJobDescription } = useGenerationContext();
+  const { jobInfo, updateJobDescription } = useGenerationManagement();
 
   return (
     <div className="w-full text-left mb-6"> 
@@ -25,7 +25,7 @@ export function JobInfoInput() {
       {/* Job description */}
       <textarea
         value={jobInfo.jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
+        onChange={(e) => updateJobDescription(e.target.value)}
         placeholder="Paste in the job description/information"
         className="mb-4 w-full text-base p-2 border border-gray-300 rounded-md bg-white"
       />

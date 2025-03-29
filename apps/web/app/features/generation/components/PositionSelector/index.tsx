@@ -3,7 +3,7 @@ import { Position } from '@fedjobs/types';
 import { ResumeObject } from '@/app/shared/types/Resume';
 import { ResumePositionSelector } from './ResumePositionSelector';
 import { PositionListSelector } from './PositionListSelector';
-import { PositionSelectionState } from "@/app/features/generation/types"
+import { PositionSelectionState } from "@fedjobs/types"
 
 interface PositionSelectorProps {
   resume?: ResumeObject;

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faCheckCircle, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { Position } from "@fedjobs/types";
 import { getPosition } from "@/app/features/positions/actions/positionActions";
-import { usePositions } from "../../context/PositionsContext";
+import { usePositionsManagement } from "../../hooks/usePositionsManagement";
 
 interface SimilarPositionCardProps {
   similarId: string;
@@ -30,7 +30,7 @@ export const SimilarPositionCard: React.FC<SimilarPositionCardProps> = ({
 }) => {
   const [position, setPosition] = useState<Position | null>(null);
   const [isLoadingPosition, setIsLoadingPosition] = useState(true);
-  const { employmentHistory } = usePositions();
+  const { employmentHistory } = usePositionsManagement();
   const [expanded, setExpanded] = useState(false);
 
   const isInEmploymentHistory = employmentHistory.some(p => p.positionUuid === similarId);

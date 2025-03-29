@@ -2,9 +2,7 @@
 // apps/web/app/_classes/_generationClasses/EssayGenerator.ts
 // Refactored to use DocumentRepository for saving generated documents.
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { DocumentType } from "@fedjobs/types";
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
-import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
+import { DocumentType, GenerationSelection, StreamingTextArray } from "@fedjobs/types";
 import { formatDateMMDDYYYY } from "@/app/shared/utils/dateUtils";
 import { uploadFile, generateKeyFromFileName } from "@fedjobs/utils";
 // Import DocumentRepository from our repository layer.
@@ -49,32 +47,66 @@ export abstract class EssayGenerator {
   }
 
   protected get jobDescription(): string {
-    let description = this._generationSelection.jobInfo.jobDescription;
+    // Always include the user-entered description if available
+    let description = this._generationSelection.jobInfo.jobDescription || '';
+    console.log("EssayGenerator.jobDescription - description length:", description.length);
+    
     const job = this._generationSelection.jobInfo.job;
-    if (!job) return description;
+    if (!job) {
+      console.log("EssayGenerator.jobDescription - No job object available, using only description");
+      return description || "No job description provided.";
+    }
 
-    const details = job.MatchedObjectDescriptor;
-    const USAJobsDescription = [
-      `${details.PositionTitle}, ${details.DepartmentName}`,
-      `Location: ${details.PositionLocationDisplay}`,
-      `Organization: ${details.OrganizationName}`,
-      `SubAgency: ${details.SubAgency}`,
-      `Grade: ${details.JobGrade?.[0]?.Code ?? ""}`,
-      `Schedule: ${details.PositionSchedule?.[0]?.Name ?? ""}`,
-      `Open Period: ${formatDateMMDDYYYY(details.PositionStartDate)} - ${formatDateMMDDYYYY(details.PositionEndDate)}`,
-      `Qualifications: ${details.QualificationSummary}`,
-      `Agency Marketing Statement: ${details.UserArea.Details.AgencyMarketingStatement}`,
-      `Major Duties: ${details.UserArea.Details.MajorDuties.join(" ")}`,
-      `Evaluations: ${details.UserArea.Details.Evaluations}`
-    ].join("\n");
-
-    return `
+    try {
+      const details = job.MatchedObjectDescriptor;
+      console.log("EssayGenerator.jobDescription - Job details available:", details.PositionTitle);
+      
+      // Build a comprehensive description from USAJobs data
+      const jobFields = [
+        `Position: ${details.PositionTitle || 'N/A'}`,
+        `Department: ${details.DepartmentName || 'N/A'}`,
+        `Location: ${details.PositionLocationDisplay || 'N/A'}`,
+        `Organization: ${details.OrganizationName || 'N/A'}`,
+        details.SubAgency ? `SubAgency: ${details.SubAgency}` : null,
+        details.JobGrade?.[0]?.Code ? `Grade: ${details.JobGrade[0].Code}` : null,
+        details.PositionSchedule?.[0]?.Name ? `Schedule: ${details.PositionSchedule[0].Name}` : null,
+        `Open Period: ${formatDateMMDDYYYY(details.PositionStartDate)} - ${formatDateMMDDYYYY(details.PositionEndDate)}`,
+      ].filter(Boolean); // Remove null entries
+      
+      // Add qualification summary if available
+      if (details.QualificationSummary) {
+        jobFields.push(`Qualifications: ${details.QualificationSummary}`);
+      }
+      
+      // Add UserArea details if available
+      if (details.UserArea?.Details) {
+        if (details.UserArea.Details.AgencyMarketingStatement) {
+          jobFields.push(`Agency Marketing Statement: ${details.UserArea.Details.AgencyMarketingStatement}`);
+        }
+        
+        if (details.UserArea.Details.MajorDuties?.length) {
+          jobFields.push(`Major Duties: ${details.UserArea.Details.MajorDuties.join(" ")}`);
+        }
+        
+        if (details.UserArea.Details.Evaluations) {
+          jobFields.push(`Evaluations: ${details.UserArea.Details.Evaluations}`);
+        }
+      }
+      
+      const USAJobsDescription = jobFields.join("\n");
+      
+      // Return a combined description with both user-entered and USAJobs data
+      return `
 <userEnteredDescription>
   ${description}
 </userEnteredDescription>
 <descriptionFromUSAJobs>
   ${USAJobsDescription}
 </descriptionFromUSAJobs>`;
+    } catch (error) {
+      console.error("Error formatting job description:", error);
+      return description || "Error retrieving job details.";
+    }
   }
 
   async GenerateDocument(userId: string) {

@@ -2,7 +2,6 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { getAllPositions } from "@/app/features/positions/actions/reviewPositionActions";
-import { GenerationProvider } from "@/app/features/generation/providers/GenerationProvider";
 import { DocumentGeneration } from "@/app/features/generation/components/DocumentGeneration";
 
 export default async function GeneratePage() {
@@ -26,12 +25,10 @@ export default async function GeneratePage() {
   const { employmentHistory, otherPositions } = positionsResponse;
 
   return (
-    <GenerationProvider>
-      <DocumentGeneration
-        employmentHistory={employmentHistory}
-        otherPositions={otherPositions}
-        userEmail={user.email ?? ""}
-      />
-    </GenerationProvider>
+    <DocumentGeneration
+      employmentHistory={employmentHistory}
+      otherPositions={otherPositions}
+      userEmail={user.email ?? ""}
+    />
   );
 }

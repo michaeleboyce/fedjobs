@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { DocumentRepository } from "@fedjobs/database";
 import { Resume as ResumeModel } from "@/app/shared/types/Resume";
 import { DocumentGeneration } from "@/app/features/generation/components/DocumentGeneration";
-import { GenerationProvider } from "@/app/features/generation/providers/GenerationProvider";
 import { getAllPositions } from "@/app/features/positions/actions/reviewPositionActions";
 
 export default async function ResumeGenerationPage({
@@ -41,13 +40,11 @@ export default async function ResumeGenerationPage({
   const resume = ResumeModel.fromJSON(docRecord.data);
 
   return (
-    <GenerationProvider>
-      <DocumentGeneration
-        employmentHistory={employmentHistory}
-        otherPositions={otherPositions}
-        resume={resume.toJSON()}
-        userEmail={user.email}
-      />
-    </GenerationProvider>
+    <DocumentGeneration
+      employmentHistory={employmentHistory}
+      otherPositions={otherPositions}
+      resume={resume.toJSON()}
+      userEmail={user.email}
+    />
   );
 }

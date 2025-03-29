@@ -6,7 +6,7 @@ import { ResumeObject } from "@/app/shared/types/Resume";
 
 // Hooks
 import { useDocumentGeneration } from "../../hooks/useDocumentGeneration";
-import { useGenerationContext } from '@/app/features/generation/providers/GenerationProvider';
+import { useGenerationManagement } from "../../hooks/useGenerationManagement";
 
 // Components
 import { DocumentInfo } from "../DocumentInfo";
@@ -27,8 +27,8 @@ export function DocumentGeneration({
   resume,
   userEmail,
 }: DocumentGenerationProps) {
-  // Get context data
-  const { docInfo, jobInfo, otherInfo } = useGenerationContext();
+  // Get state from Zustand store via custom hook
+  const { docInfo, jobInfo, otherInfo } = useGenerationManagement();
   
   // Determine if should show model selector (add admin emails as needed)
   const showModelSelector = userEmail === "wizrb47@gmail.com";

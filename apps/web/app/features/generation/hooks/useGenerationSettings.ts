@@ -16,8 +16,8 @@ export function useGenerationSettings() {
   // Document information
   const [docInfo, setDocInfo] = useState<DocumentInfo>({
     isDummy: false,
-    type: DOCUMENT_TYPES[1], // Default to ECQ
-    ecqShortTitle: 'Leading Change',
+    type: DOCUMENT_TYPES[0], // Default to Cover Letter
+    ecqShortTitle: undefined,
     essayPrompt: '',
     essayPromptSuggestions: [],
     additionalDocInfo: '',
@@ -39,7 +39,18 @@ export function useGenerationSettings() {
   
   // Update job and potentially fetch TCQ prompts
   const setJob = async (job: Job) => {
-    setJobInfo(prev => ({ ...prev, job }));
+    console.log('setJob called in useGenerationSettings with job:', 
+                job.MatchedObjectDescriptor.PositionTitle);
+    
+    setJobInfo(prev => {
+      const updated = { ...prev, job };
+      console.log('Updated jobInfo in useGenerationSettings:', 
+                 JSON.stringify({ 
+                   title: job.MatchedObjectDescriptor.PositionTitle,
+                   url: updated.jobPostingURL 
+                 }));
+      return updated;
+    });
     
     // Check if TCQ prompts should be fetched
     if (docInfo.type.toLowerCase() === 'tcq' && 

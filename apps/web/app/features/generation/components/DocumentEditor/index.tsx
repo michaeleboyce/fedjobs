@@ -4,7 +4,7 @@ import { FaSave, FaKeyboard } from "react-icons/fa";
 import { Paragraph } from "./Paragraph";
 import { ShortcutGuide } from "./ShortcutGuide";
 import { ParagraphInsertion } from "./ParagraphInsertion";
-import { StreamingTextArray } from "@/app/features/generation/types";
+import { StreamingTextArray } from "@fedjobs/types";
 import { useParagraphKeyboardShortcuts } from "@/app/features/generation/hooks/useParagraphKeyboardShortcuts";
 import { Button } from "@/app/shared/components/ui/Button";
 import {

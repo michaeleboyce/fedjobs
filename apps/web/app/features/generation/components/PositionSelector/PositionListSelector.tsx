@@ -1,7 +1,7 @@
 // File path: apps/web/app/features/generation/components/PositionSelector/PositionListSelector.tsx
 import { Position } from '@fedjobs/types';
 import { PositionItem } from './PositionItem';
-import { PositionSelectionState } from '@/app/features/generation/types';
+import { PositionSelectionState } from '@fedjobs/types';
 import { sortPositions, groupPositionsByYear } from '@/app/shared/utils/positionSorting';
 import { YearSidebar } from '@/app/shared/components/YearSidebar';
 import { useEffect, useRef } from 'react';

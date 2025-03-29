@@ -3,7 +3,7 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { callAndStreamAIResponse } from "./callAndStream";
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { GenerationSelection } from "@fedjobs/types";
 import { EssayGenerator } from "@/app/features/generation/generators/EssayGenerator";
 
 export const runtime = "edge";

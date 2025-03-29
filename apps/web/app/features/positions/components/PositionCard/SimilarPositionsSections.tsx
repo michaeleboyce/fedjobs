@@ -5,7 +5,7 @@ interface SimilarPositionsSectionsProps {
   position: any;
   isEmploymentHistory: boolean;
   isGenerationView: boolean;
-  loadingPositions: Set<string>;
+  loadingPositions: (id: string) => boolean;
   handleApproveSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleRejectSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
   handleRemoveApprovedSimilar: (currentUuid: string, similarUuid: string) => Promise<void>;
@@ -75,7 +75,7 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               currentPosition={position}
               isEmploymentHistory={isEmploymentHistory}
               isGenerationView={isGenerationView}
-              isLoading={loadingPositions.has(simId)}
+              isLoading={loadingPositions(simId)}
               onViewOriginal={() => viewOriginal(simId)}
               onApprove={
                 !isGenerationView && isEmploymentHistory
@@ -105,7 +105,7 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               currentPosition={position}
               isEmploymentHistory={isEmploymentHistory}
               isGenerationView={isGenerationView}
-              isLoading={loadingPositions.has(simId)}
+              isLoading={loadingPositions(simId)}
               onViewOriginal={() => viewOriginalWithForce(simId)}
               onRemove={
                 !isGenerationView && isEmploymentHistory
@@ -130,7 +130,7 @@ export const SimilarPositionsSections: React.FC<SimilarPositionsSectionsProps> =
               currentPosition={position}
               isEmploymentHistory={isEmploymentHistory}
               isGenerationView={isGenerationView}
-              isLoading={loadingPositions.has(simId)}
+              isLoading={loadingPositions(simId)}
               onViewOriginal={() => viewOriginalWithForce(simId)}
               onRemove={
                 !isGenerationView && isEmploymentHistory

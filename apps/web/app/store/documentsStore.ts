@@ -3,6 +3,7 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { devtools } from 'zustand/middleware';
 import { toast } from 'react-toastify';
 import { DocumentType } from '@fedjobs/types';
 import { 
@@ -17,13 +18,16 @@ interface Document {
   name: string;
   url: string;
   type: DocumentType;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
   isParsed: boolean;
   userId: string;
   inKnowledgeBank: boolean;
   description: string;
   s3Key: string;
+  // Adding required properties from DocumentRecord
+  data: unknown;
+  content: string;
+  source: "USER_UPLOADED" | "APPLICATION_GENERATED";
 }
 
 interface DocumentsState {
@@ -54,7 +58,8 @@ interface DocumentsActions {
 }
 
 export const useDocumentsStore = create<DocumentsState & DocumentsActions>()(
-  immer((set, get) => ({
+  devtools(
+    immer((set, get) => ({
     // Initial state
     documents: [],
     isLoading: false,
@@ -138,7 +143,14 @@ export const useDocumentsStore = create<DocumentsState & DocumentsActions>()(
           // Add the new document to the state
           set(state => {
             state.uploadProgress = 100;
-            state.documents.push(result.success.document);
+            // Ensure document has all required fields
+            const document = {
+              ...result.success.document,
+              data: result.success.document.data || {},
+              content: result.success.document.content || '',
+              source: result.success.document.source || 'USER_UPLOADED'
+            };
+            state.documents.push(document);
           });
           
           toast.success('Document uploaded successfully');
@@ -224,5 +236,7 @@ export const useDocumentsStore = create<DocumentsState & DocumentsActions>()(
         state.error = null;
       });
     },
-  }))
+  })),
+  { name: 'documents-store' }
+  )
 );

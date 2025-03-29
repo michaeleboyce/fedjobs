@@ -2,7 +2,7 @@
 import { FaSave } from 'react-icons/fa';
 import { GenerateButton } from './GenerateButton';
 import { SaveButton } from './SaveButton';
-import { GeneratedDocumentInformation } from '../../types';
+import { GeneratedDocumentInformation } from '@fedjobs/types';
 import { availableModels } from '../../utils/modelSelectors';
 
 interface ActionBarProps {

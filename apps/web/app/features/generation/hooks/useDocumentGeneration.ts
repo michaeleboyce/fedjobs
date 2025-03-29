@@ -1,12 +1,10 @@
 // File path: apps/web/app/features/generation/hooks/useDocumentGeneration.ts
-import { useState, useCallback } from 'react';
-import { JobInfo, Position, DocumentType} from "@fedjobs/types";
-import { DocumentInfo, StreamingTextArray } from "../types";
+import { JobInfo, Position, DocumentType, DocumentInfo, StreamingTextArray } from "@fedjobs/types";
 import { ResumeObject } from '@/app/shared/types/Resume';
-import { useGenerationSettings } from './useGenerationSettings';
-import { useDocumentEditor } from './useDocumentEditor';
+import { useDocumentEditorManagement } from './useDocumentEditorManagement';
 import { usePositionSelection } from './usePositionSelection';
-import { GenerationSelection } from '../types/GenerationSelection';
+import { useGenerationManagement } from './useGenerationManagement';
+import { GenerationSelection } from '@fedjobs/types';
 import { saveGeneratedDocument } from '@/app/features/generation/actions/documentActions';
 import { createAPI } from '../utils';
 
@@ -27,25 +25,53 @@ export function useDocumentGeneration({
   jobInfo,
   otherInfo
 }: DocumentGenerationProps) {
-  // Get settings, editor and position selection state
-  const settings = useGenerationSettings();
-  const editor = useDocumentEditor();
+  // Log initial props
+  console.log('useDocumentGeneration initialized with jobInfo:', 
+    jobInfo ? JSON.stringify({
+      hasJob: !!jobInfo.job,
+      url: jobInfo.jobPostingURL,
+      descriptionLength: jobInfo.jobDescription?.length || 0
+    }) : 'no jobInfo');
+  
+  // Get state from stores
+  const editor = useDocumentEditorManagement();
   const selection = usePositionSelection(employmentHistory, otherPositions, resume);
-
-  // Model selection
-  const [model, setModel] = useState("claude-3-7-sonnet-20250219");
+  const { model, setModel: storeSetModel } = useGenerationManagement();
+  
+  // Create a React.Dispatch compatible wrapper for setModel
+  const setModel: React.Dispatch<React.SetStateAction<string>> = (value) => {
+    if (typeof value === 'function') {
+      // If it's a function like prevState => newState
+      const newValue = value(model);
+      storeSetModel(newValue);
+    } else {
+      // If it's just a value
+      storeSetModel(value);
+    }
+  };
 
   // Handle document generation
   const handleGenerateClick = async (paragraphId?: number, regenerationText?: string) => {
-    // Build selection data for generation
+    // Debug job info
+    console.log('Current job info in handleGenerateClick:', JSON.stringify(jobInfo));
+    
+    // Build selection data for generation using store data directly
     const generationSelection = buildGenerationSelection(
       selection.selectedState,
       employmentHistory,
       otherPositions,
-      settings.docInfo || docInfo,
-      settings.jobInfo || jobInfo,
-      settings.otherInfo || otherInfo
+      docInfo,
+      jobInfo,
+      otherInfo
     );
+    
+    // Enhanced debug logging for generation selection
+    console.log('generationSelection job info:', JSON.stringify({
+      url: generationSelection.jobInfo.jobPostingURL,
+      jobTitle: generationSelection.jobInfo.job?.MatchedObjectDescriptor?.PositionTitle || 'No job title',
+      hasJobObject: !!generationSelection.jobInfo.job,
+      descriptionLength: generationSelection.jobInfo.jobDescription?.length || 0
+    }));
 
     if (generationSelection.positions.length === 0) {
       console.warn("No positions selected!");
@@ -80,7 +106,7 @@ export function useDocumentGeneration({
     }
   };
 
-  // Inside useDocumentGeneration hook
+  // Insert a new paragraph
   const handleInsertParagraph = async (index: number, text: string, useAI: boolean) => {
     // Get current paragraphs
     const currentParagraphs = editor.streamingTextArray;
@@ -192,55 +218,62 @@ export function useDocumentGeneration({
     }
   };
 
-    // Helper function to generate document title
-    const getDocumentTitle = (docType: DocumentType, docInfo: DocumentInfo): string => {
-      switch (docType) {
-        case 'ecq':
-          return `ECQ Essay - ${docInfo.ecqShortTitle || 'Untitled'}`;
-        case 'tcq':
-          return `TCQ Document - ${new Date().toLocaleDateString()}`;
-        case 'cover_letter':
-          return `Cover Letter - ${new Date().toLocaleDateString()}`;
-        case 'resume':
-          return `Resume - ${new Date().toLocaleDateString()}`;
-        default:
-          return `Generated Document - ${new Date().toLocaleDateString()}`;
-      }
-    };
-  
-    // Helper function to create meaningful description
-    const createDocumentDescription = (
-      docType: DocumentType, 
-      docInfo: DocumentInfo, 
-      jobInfo: JobInfo
-    ): string => {
-      const parts = [];
-      
-      if (docType === 'ecq' && docInfo.ecqShortTitle) {
-        parts.push(`ECQ Topic: ${docInfo.ecqShortTitle}`);
-      }
-      
-      if (docInfo.additionalDocInfo) {
-        parts.push(docInfo.additionalDocInfo);
-      }
-      
-      if (jobInfo.jobPostingURL) {
-        parts.push(`Job URL: ${jobInfo.jobPostingURL}`);
-      }
-      
-      // Add date for reference
-      parts.push(`Generated on ${new Date().toLocaleDateString()}`);
-      
-      return parts.join(' | ');
-    };
+  // Helper function to generate document title
+  const getDocumentTitle = (docType: DocumentType, docInfo: DocumentInfo): string => {
+    switch (docType) {
+      case 'ecq':
+        return `ECQ Essay - ${docInfo.ecqShortTitle || 'Untitled'}`;
+      case 'tcq':
+        return `TCQ Document - ${new Date().toLocaleDateString()}`;
+      case 'cover_letter':
+        return `Cover Letter - ${new Date().toLocaleDateString()}`;
+      case 'resume':
+        return `Resume - ${new Date().toLocaleDateString()}`;
+      default:
+        return `Generated Document - ${new Date().toLocaleDateString()}`;
+    }
+  };
+
+  // Helper function to create meaningful description
+  const createDocumentDescription = (
+    docType: DocumentType, 
+    docInfo: DocumentInfo, 
+    jobInfo: JobInfo
+  ): string => {
+    const parts = [];
+    
+    if (docType === 'ecq' && docInfo.ecqShortTitle) {
+      parts.push(`ECQ Topic: ${docInfo.ecqShortTitle}`);
+    }
+    
+    if (docInfo.additionalDocInfo) {
+      parts.push(docInfo.additionalDocInfo);
+    }
+    
+    if (jobInfo.jobPostingURL) {
+      parts.push(`Job URL: ${jobInfo.jobPostingURL}`);
+    }
+    
+    // Add date for reference
+    parts.push(`Generated on ${new Date().toLocaleDateString()}`);
+    
+    return parts.join(' | ');
+  };
+
   // Combine everything for the public API
   return {
-    // Document settings
-    ...settings,
-
+    // Document data from props
+    jobInfo,
+    docInfo,
+    otherInfo,
+    
     // Editor state and handlers
-    ...editor,
-
+    streamingTextArray: editor.streamingTextArray,
+    isStreamingComplete: editor.isStreamingComplete,
+    selectedParagraphId: editor.selectedParagraphId,
+    saveResult: editor.saveResult,
+    generatedDocuments: editor.generatedDocuments,
+    
     // Position selection state and handlers
     ...selection,
 
@@ -252,6 +285,13 @@ export function useDocumentGeneration({
     handleGenerateClick,
     handleSaveDocument,
     handleInsertParagraph,
+    
+    // Editor actions
+    handleParagraphSelection: editor.handleParagraphSelection,
+    handleParagraphTextUpdate: editor.handleParagraphTextUpdate,
+    handleParagraphDelete: editor.handleParagraphDelete,
+    handleParagraphMove: editor.handleParagraphMove,
+    handleParagraphReorder: editor.handleParagraphReorder,
   };
 }
 

@@ -1,23 +1,23 @@
 // File path: apps/web/app/features/generation/components/DocumentInfo/index.tsx
-import { useGenerationContext } from "../../providers/GenerationProvider";
+import { useGenerationManagement } from "../../hooks/useGenerationManagement";
 import { DocumentTypeSelector } from "./DocumentTypeSelector";
 import { ECQSelector } from "./ECQSelector";
 import { JobInfoInput } from "./JobInfoInput";
 import { LengthSelector } from "./LengthSelector";
+import { DocumentInfo as DocumentInfoType } from "../../types/DocumentInfo";
 
 interface DocumentInfoProps {
   showIsDummy: boolean;
 }
 
 export function DocumentInfo({ showIsDummy }: DocumentInfoProps) {
-  const { otherInfo, setOtherInfo, docInfo, setDocInfo } =
-    useGenerationContext();
-  //Writing this function, otherwise I'll have to replace updateDocInfo, with setDocInfo({...docInfo, ...whatever the value is}),
-  //  this avoids the extra ...docInfo
+  const { 
+    otherInfo, 
+    docInfo,
+    updateDocInfo,
+    updateOtherInfo
+  } = useGenerationManagement();
 
-  const updateDocInfo = (updates: Partial<typeof DocumentInfo>) => {
-    setDocInfo({ ...docInfo, ...updates });
-  };
   return (
     <div className="upload-section bg-white p-4 border border-gray-200 rounded-lg mb-4">
       <div className="upload-card flex flex-col items-start">
@@ -86,7 +86,7 @@ export function DocumentInfo({ showIsDummy }: DocumentInfoProps) {
         <h4 className="text-md font-semibold mb-4">Other Information</h4>
         <textarea
           value={otherInfo}
-          onChange={(e) => setOtherInfo(e.target.value)}
+          onChange={(e) => updateOtherInfo(e.target.value)}
           placeholder="Please add other information about the document you need to provide, such as additional instructions, etc."
           className="mb-4 w-full text-base p-2 border border-gray-300 rounded-md bg-white"
         />

@@ -1,5 +1,5 @@
 // File path: apps/web/app/shared/utils/Constants/ECQConstants.ts
-import { ECQCompetency, ECQNamesType, ECQNamesTypeWithEmptyString } from "@/app/features/generation/types/ECQCompetencies";
+import { ECQCompetency, ECQNamesType, ECQNamesTypeWithEmptyString } from "@fedjobs/types";
 
 export const ECQ_NAMES = ['Leading Change','Leading People','Results Driven','Business Acumen','Building Coalitions'];
 export const ECQ_NAMES_WITH_EMPTY_STRING = ['Leading Change','Leading People','Results Driven','Business Acumen','Building Coalitions',''];

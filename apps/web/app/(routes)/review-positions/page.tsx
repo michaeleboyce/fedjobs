@@ -4,13 +4,8 @@
 "use client";
 
 import React from "react";
-import { PositionsProvider } from "@/app/features/positions/context";
 import ReviewPositions from "@/app/features/positions/components/ReviewPositions";
 
 export default function ReviewPositionsPage() {
-  return (
-    <PositionsProvider>
-      <ReviewPositions />
-    </PositionsProvider>
-  );
+  return <ReviewPositions />;
 }

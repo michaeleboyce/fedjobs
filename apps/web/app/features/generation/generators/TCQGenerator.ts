@@ -1,8 +1,7 @@
 // File path: apps/web/app/features/generation/generators/TCQGenerator.ts
 // TCQGenerator.ts
 import { EssayGenerator } from "./EssayGenerator";
-import { StreamingTextArray } from "@/app/features/generation/types/StreamingTextArray";
-import { GenerationSelection } from "@/app/features/generation/types/GenerationSelection";
+import { StreamingTextArray, GenerationSelection } from "@fedjobs/types";
 
 export class TCQGenerator extends EssayGenerator {
   constructor(generationSelection: GenerationSelection) {

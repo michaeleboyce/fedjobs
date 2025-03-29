@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { devtools } from 'zustand/middleware';
 import { Position } from '@fedjobs/types';
 import { toast } from 'react-toastify';
 import {
@@ -48,7 +49,8 @@ interface PositionsActions {
 enableMapSet();
 
 export const usePositionsStore = create<PositionsState & PositionsActions>()(
-  immer((set, get) => ({
+  devtools(
+    immer((set, get) => ({
     // Initial state
     employmentHistory: [],
     otherPositions: [],
@@ -486,5 +488,7 @@ export const usePositionsStore = create<PositionsState & PositionsActions>()(
         get().stopLoading(similarUuid);
       }
     },
-  }))
+  })),
+  { name: 'positions-store' }
+  )
 );
