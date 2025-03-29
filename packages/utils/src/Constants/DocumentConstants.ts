@@ -1,8 +1,8 @@
 // File path: packages/utils/src/Constants/DocumentConstants.ts
 import { DocumentType, GenerationType } from '@fedjobs/types';
 
-export const DOCUMENT_TYPES: [DocumentType, ...DocumentType[]] = ["resume", "ecq", "tcq", "cover_letter", "other"];
-export const GENERATION_TYPES: [GenerationType, ...GenerationType[]] = ["resume", "ecq", "tcq", "cover_letter", "paragraph", "other"];
+export const DOCUMENT_TYPES: [DocumentType, ...DocumentType[]] = ["cover_letter", "ecq","resume", "tcq", "other"];
+export const GENERATION_TYPES: [GenerationType, ...GenerationType[]] = ["cover_letter",  "ecq",  "paragraph","resume", "tcq", "other"];
 
 export const getPrettyPrintType = (type: string): string => {
   switch(type){

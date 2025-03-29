@@ -41,8 +41,8 @@ export const GenerationProvider: React.FC<GenerationProviderProps> = ({ children
 
   const [docInfo, setDocInfo] = useState<DocumentInfo>({
     isDummy: false,
-    type: DOCUMENT_TYPES[1], //Sets to 1, so that the Doc Info dropdown defaults properly to ECQ
-    ecqShortTitle: 'Leading Change',
+    type: DOCUMENT_TYPES[0],
+    ecqShortTitle: undefined,
     essayPrompt: '',
     additionalDocInfo: '',
     essayPromptSuggestions: [],

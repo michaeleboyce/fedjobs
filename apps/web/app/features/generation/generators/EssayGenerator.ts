@@ -103,7 +103,8 @@ export abstract class EssayGenerator {
         originalName,
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         userId,
-        buffer.length
+        buffer.length,
+        buffer
       );
 
       if (uploadResponse.status === "failure") {
