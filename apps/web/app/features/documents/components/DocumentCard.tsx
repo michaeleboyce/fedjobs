@@ -1,18 +1,31 @@
 // File path: apps/web/app/features/documents/components/DocumentCard.tsx
 'use client'
 import React, { useRef, useState } from 'react';
-import { deleteDocument, getDocumentSignedURL, } from '../actions/fileActions';
+import { deleteDocument, getDocumentSignedURL } from '@/app/features/documents/actions/fileActions';
 import { DocumentRecord } from '@fedjobs/database';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faChevronDown, faChevronUp, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faTrashAlt, 
+  faChevronDown, 
+  faChevronUp, 
+  faSpinner, 
+  faCheckCircle, 
+  faExclamationCircle,
+  faFileAlt,
+  faFileWord,
+  faFilePdf,
+  faFileExcel,
+  faExternalLinkAlt,
+  faDownload
+} from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
-import { truncateDescription } from '../../../shared/utils/textUtils';
+import { truncateDescription } from '@/app/shared/utils/textUtils';
 import { ParseResponse } from '@/app/features/documents/types/ParseResponse';
 import usePageVisibility from '@/app/shared/hooks/usePageVisibility';
 import { AnalysisStatus } from '@/app/features/documents/types/AnalysisStatus';
 import { useDocumentPolling } from '@/app/features/documents/hooks/useDocumentPolling';
 import { Button } from '@/app/shared/components/ui/Button';
-
+import Badge from '@/app/shared/components/ui/Badge';
 
 
 interface DocumentCardProps  {
@@ -105,80 +118,153 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     onPollingUpdate: handlePollingUpdate,
   });
 
+  // Function to get file icon based on document type or name
+  const getFileIcon = () => {
+    const fileName = document.name.toLowerCase();
+    if (fileName.endsWith('.pdf')) return faFilePdf;
+    if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) return faFileWord;
+    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) return faFileExcel;
+    return faFileAlt;
+  };
+  
+  // Function to get status badge variant
+  const getStatusBadgeVariant = (): BadgeVariant => {
+    if (analysisStatus.isComplete) return 'success';
+    if (analysisStatus.isError) return 'danger';
+    if (analysisStatus.isAnalyzing) return 'warning';
+    return 'default';
+  };
+  
+  // Function to get status text
+  const getStatusText = () => {
+    if (analysisStatus.isComplete) return 'Analyzed';
+    if (analysisStatus.isError) return 'Error';
+    if (analysisStatus.isAnalyzing) return 'Analyzing';
+    return 'Pending';
+  };
+  
+  // Get icon for status badge
+  const getStatusIcon = () => {
+    if (analysisStatus.isComplete) return <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />;
+    if (analysisStatus.isError) return <FontAwesomeIcon icon={faExclamationCircle} className="mr-1" />;
+    if (analysisStatus.isAnalyzing) return <FontAwesomeIcon icon={faSpinner} spin className="mr-1" />;
+    return null;
+  };
+
   return (
-    <div className="card bg-white border border-gray-200 rounded-lg p-4 m-2 flex flex-col justify-between">
-      {selectionMode && (
-        <div className="absolute top-2 right-2">
-          <input
-            type="checkbox"
-            className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:border-blue-500 focus:ring focus:ring-offset-0 focus:ring-blue-200 focus:ring-opacity-50"
-            checked={isSelected}
-            onChange={() => onSelect(document.id)}
-          />
-        </div>
-      )}
-      <div>
-          <h5 className="card-title text-lg font-semibold">{document.name}</h5>
-          <span className="badge bg-blue-200 text-blue-800 text-xs px-2 rounded-full uppercase font-semibold tracking-wide my-2">
-              {document.type}
-          </span>
-      {analysisStatus.isAnalyzing && (
-          <div className="flex items-center">
-            <FontAwesomeIcon icon={faSpinner} spin />
-            <span className="ml-2">Analyzing...{analysisStatus.progress.toString()}% Complete</span>
-          </div>
-        )}
-        {analysisStatus.isError && (
-          <div className="flex items-center">
-            <FontAwesomeIcon icon={faExclamationCircle} />
-            <span className="ml-2" title="Error analyzing this resume">Error</span>
-          </div>
-        )}
-        {analysisStatus.isComplete && (
-          <div className="flex items-center">
-            <FontAwesomeIcon icon={faCheckCircle} />
-            <span className="ml-2">Analysis Complete</span>
-          </div>
-        )}
-      </div>
-      {document.description && (
+    <div className="p-4 border border-gray-200 rounded-md bg-white shadow-sm">
+      <div className="flex justify-between items-start">
         <div>
-          <p>
-            {isExpanded ? document.description : truncateDescription(document.description)}
-          </p>
-          {isTruncated && (
-            <Button 
-              variant="link" 
+          <div className="flex items-center">
+            <FontAwesomeIcon icon={getFileIcon()} className="text-gray-400 mr-2" />
+            <h3 className="font-medium text-lg">{document.name}</h3>
+            
+            {selectionMode && (
+              <input
+                type="checkbox"
+                className="ml-2 form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:border-blue-500 focus:ring focus:ring-offset-0 focus:ring-blue-200 focus:ring-opacity-50"
+                checked={isSelected}
+                onChange={() => onSelect(document.id)}
+              />
+            )}
+          </div>
+          
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Badge 
+              variant="primary" 
               size="sm" 
-              onClick={() => setIsExpanded(!isExpanded)}
-              leftIcon={<FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />}
+              rounded 
+              className="uppercase font-semibold tracking-wide"
             >
-              {isExpanded ? 'Show Less' : 'Show More'}
-            </Button>
+              {document.type}
+            </Badge>
+            
+            <Badge 
+              variant={getStatusBadgeVariant()} 
+              size="sm" 
+              rounded 
+              icon={getStatusIcon()}
+            >
+              {getStatusText()}
+            </Badge>
+            
+            {document.createdAt && (
+              <Badge 
+                variant="default" 
+                size="sm" 
+                rounded
+              >
+                {new Date(document.createdAt).toLocaleDateString()}
+              </Badge>
+            )}
+          </div>
+          
+          {/* Progress indicator during analysis */}
+          {analysisStatus.isAnalyzing && (
+            <div className="mt-2 w-full max-w-md">
+              <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500" 
+                  style={{ width: `${analysisStatus.progress}%` }}
+                ></div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1 flex items-center">
+                <FontAwesomeIcon icon={faSpinner} spin className="mr-1" />
+                Analyzing... {analysisStatus.progress.toString()}% Complete
+              </div>
+            </div>
+          )}
+          
+          {/* Description section */}
+          {document.description && (
+            <div className="mt-3 text-sm text-gray-600">
+              <p>
+                {isExpanded ? document.description : truncateDescription(document.description, maxDescriptionLength)}
+              </p>
+              {isTruncated && (
+                <button 
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="mt-1 text-blue-500 hover:text-blue-700 text-xs flex items-center"
+                >
+                  <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} className="mr-1" />
+                  {isExpanded ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </div>
           )}
         </div>
-      )}
-      <div className="flex items-center justify-between mt-4">
-        {document.type === "resume" && isParsed && 
-        <Link 
-          href={`/resume/${document.id}`}
-          className="inline-flex items-center justify-center px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300"
-        >
-          Open Resume
-        </Link>}
-        <Button 
-          variant="primary"
-          onClick={() => handleViewClick(document.id)}
-        >
-          View Doc
-        </Button>
-        <Button 
-          variant="danger"
-          onClick={() => handleDeleteClick(document.id)}
-          leftIcon={<FontAwesomeIcon icon={faTrashAlt} />}
-        >
-          Delete
-        </Button>
+        
+        {/* Actions section */}
+        <div className="flex flex-col gap-2">
+          {document.type === "resume" && isParsed && (
+            <Link 
+              href={`/resume/${document.id}`}
+              className="inline-flex items-center justify-center font-medium rounded focus:outline-none focus:ring-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300 py-1 px-2 text-sm"
+            >
+              <span>Open Resume</span>
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="ml-1 h-3 w-3" />
+            </Link>
+          )}
+          
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => handleViewClick(document.id)}
+            leftIcon={<FontAwesomeIcon icon={faDownload} className="h-3.5 w-3.5" />}
+          >
+            View Document
+          </Button>
+          
+          <Button 
+            variant="outline"
+            size="sm"
+            className="text-red-500 hover:bg-red-50"
+            onClick={() => handleDeleteClick(document.id)}
+          >
+            <FontAwesomeIcon icon={faTrashAlt} className="mr-1" />
+            Delete
+          </Button>
+        </div>
       </div>
     </div>
   );

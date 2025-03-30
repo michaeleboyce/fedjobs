@@ -1,0 +1,9 @@
+{
+	"id": "jeReII4eETiwJqE",
+	"json": "{\"id\":\"jeReII4eETiwJqE\",\"url\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:03:54.032Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time",
+	"url": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time"
+}

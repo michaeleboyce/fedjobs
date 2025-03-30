@@ -1,0 +1,9 @@
+{
+	"id": "ap2hCpKA5SWwrQk",
+	"json": "{\"id\":\"ap2hCpKA5SWwrQk\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Leadership\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Leadership\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:04:28.566Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=onsite",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Leadership"
+}

@@ -1,0 +1,9 @@
+{
+	"id": "muupW32i9Peel4r",
+	"json": "{\"id\":\"muupW32i9Peel4r\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Policy\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Policy&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372423904,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Policy&workplaceType=hybrid",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Policy"
+}

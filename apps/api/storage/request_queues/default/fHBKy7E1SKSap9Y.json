@@ -1,0 +1,9 @@
+{
+	"id": "fHBKy7E1SKSap9Y",
+	"json": "{\"id\":\"fHBKy7E1SKSap9Y\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Jordan&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372263719,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Jordan&workplaceType=onsite",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan&commitment=Full-Time"
+}

@@ -11,9 +11,28 @@ interface JobSourceListProps {
   sources: JobSource[];
   onRefresh: (sourceId: number) => void;
   onDelete: () => void;
+  onCancelCrawl: (sourceId: number) => void;
 }
 
-export default function JobSourceList({ sources, onRefresh, onDelete }: JobSourceListProps) {
+/**
+ * Calculates and formats time elapsed since a given start time
+ */
+function getTimeElapsed(startTimeStr: string): string {
+  const startTime = new Date(startTimeStr).getTime();
+  const now = Date.now();
+  const elapsedMs = now - startTime;
+  
+  // Format as minutes:seconds
+  const minutes = Math.floor(elapsedMs / 60000);
+  const seconds = Math.floor((elapsedMs % 60000) / 1000);
+  
+  // If more than 5 minutes have passed, show a warning indication
+  const isLongRunning = minutes >= 5;
+  
+  return `${minutes}:${seconds.toString().padStart(2, '0')}${isLongRunning ? ' (!long-running)' : ''}`;
+}
+
+export default function JobSourceList({ sources, onRefresh, onDelete, onCancelCrawl }: JobSourceListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
   const handleDelete = async (sourceId: number) => {
@@ -88,14 +107,64 @@ export default function JobSourceList({ sources, onRefresh, onDelete }: JobSourc
             </div>
             
             <div className="flex space-x-2">
-              <Button
-                onClick={() => onRefresh(source.id)}
-                disabled={source.status === 'PENDING'}
-                variant="outline"
-                size="sm"
-              >
-                {source.status === 'PENDING' ? 'Refreshing...' : 'Refresh Now'}
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => onRefresh(source.id)}
+                  disabled={source.status === 'PENDING' || source.isProcessing}
+                  variant="outline"
+                  size="sm"
+                  className={source.status === 'PENDING' || source.isProcessing ? 'animate-pulse' : ''}
+                >
+                  {source.status === 'PENDING' || source.isProcessing ? 'Crawling...' : 'Refresh Now'}
+                </Button>
+                
+                {/* Cancel/Reset button that appears during processing */}
+                {(source.status === 'PENDING' || source.isProcessing) && (
+                  <Button
+                    onClick={() => onCancelCrawl(source.id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 hover:bg-red-50"
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
+              
+              {/* Show job count badge if available */}
+              {source.jobCount !== undefined && source.status !== 'PENDING' && !source.isProcessing && (
+                <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                  {source.jobCount} jobs
+                </span>
+              )}
+              
+              {/* Progress bar and details for jobs being processed */}
+              {(source.status === 'PENDING' || source.isProcessing) && (
+                <div className="mt-2 w-full">
+                  <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 animate-progress-indeterminate"></div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-500 mt-1">
+                      {source.progressMessage || 'Searching for job listings. This may take a few minutes...'}
+                    </p>
+                    
+                    {/* Time elapsed indicator */}
+                    {source.processingStartTime && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {getTimeElapsed(source.processingStartTime)}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {source.foundJobsCount !== undefined && source.foundJobsCount > 0 && (
+                    <div className="text-xs text-gray-600 mt-1 font-medium">
+                      Found {source.foundJobsCount} job listings so far
+                    </div>
+                  )}
+                </div>
+              )}
               
               <Button
                 onClick={() => handleDelete(source.id)}

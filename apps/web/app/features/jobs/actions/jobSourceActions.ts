@@ -8,9 +8,16 @@ import { type JobSource, type Job } from '../types';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Get all job sources for a user
-export async function getJobSources(userId: string): Promise<JobSource[]> {
+export async function getJobSources(userId: string, includeCounts: boolean = false): Promise<JobSource[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/job-sources?userId=${userId}`, {
+    const url = new URL(`${API_BASE_URL}/api/job-sources`);
+    url.searchParams.append('userId', userId);
+    
+    if (includeCounts) {
+      url.searchParams.append('includeCounts', 'true');
+    }
+    
+    const response = await fetch(url.toString(), {
       cache: 'no-store'
     });
     
@@ -160,6 +167,34 @@ export async function refreshJobSource(sourceId: number): Promise<{ message: str
     return result;
   } catch (error) {
     console.error(`Error refreshing job source ${sourceId}:`, error);
+    throw error;
+  }
+}
+
+// Cancel a job source refresh
+export async function cancelJobSourceRefresh(sourceId: number): Promise<{ message: string; sourceId: number; status: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/job-sources/${sourceId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to cancel job source refresh: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Revalidate related paths
+    revalidatePath('/jobs');
+    revalidatePath('/job-sources');
+    revalidatePath(`/job-sources/${sourceId}`);
+    
+    return result;
+  } catch (error) {
+    console.error(`Error canceling job source refresh ${sourceId}:`, error);
     throw error;
   }
 }

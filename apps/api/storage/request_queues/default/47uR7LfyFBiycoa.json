@@ -1,0 +1,9 @@
+{
+	"id": "47uR7LfyFBiycoa",
+	"json": "{\"id\":\"47uR7LfyFBiycoa\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Washington%20DC&team=Policy\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Policy\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372209310,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Policy",
+	"url": "https://jobs.eu.lever.co/refugeerights?location=Washington%20DC&team=Policy"
+}

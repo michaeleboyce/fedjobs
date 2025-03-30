@@ -4,6 +4,88 @@ import { JobPostingData, JobCrawlerResult } from './JobCrawlerService/types';
 import { JobPostingRepository } from '@fedjobs/database/src/repositories/jobPostings';
 import { JobSourceRepository } from '@fedjobs/database/src/repositories/jobSources';
 
+/**
+ * Normalizes employment type strings to match database enum values
+ */
+// Import the enum types from the database schema
+import { employmentType, organizationType } from '@fedjobs/database/src/schema/jobPostings';
+import { PgEnum } from 'drizzle-orm/pg-core';
+
+type EmploymentTypeEnum = (typeof employmentType.enumValues)[number];
+type OrganizationTypeEnum = (typeof organizationType.enumValues)[number];
+
+/**
+ * Normalizes employment type strings to match database enum values
+ */
+function normalizeEmploymentType(type?: string): EmploymentTypeEnum | undefined {
+  if (!type) return undefined;
+  
+  // Convert to uppercase for comparison
+  const normalized = type.toUpperCase();
+  
+  // Map common variations to database enum values
+  const typeMap: Record<string, EmploymentTypeEnum> = {
+    'INTERN': 'INTERNSHIP',
+    'INTERNSHIP': 'INTERNSHIP',
+    'FULL TIME': 'FULL_TIME',
+    'FULLTIME': 'FULL_TIME',
+    'FULL-TIME': 'FULL_TIME',
+    'FULL_TIME': 'FULL_TIME',
+    'PART TIME': 'PART_TIME', 
+    'PARTTIME': 'PART_TIME',
+    'PART-TIME': 'PART_TIME',
+    'PART_TIME': 'PART_TIME',
+    'CONTRACT': 'CONTRACT',
+    'CONTRACTOR': 'CONTRACT',
+    'TEMPORARY': 'TEMPORARY',
+    'TEMP': 'TEMPORARY',
+    'REMOTE': 'REMOTE',
+    'HYBRID': 'HYBRID',
+    'FREELANCE': 'CONTRACT',
+  };
+  
+  return typeMap[normalized] || 'OTHER';
+}
+
+/**
+ * Normalizes organization type strings to match database enum values
+ */
+function normalizeOrganizationType(type?: string): OrganizationTypeEnum | undefined {
+  if (!type) return undefined;
+  
+  // Convert to uppercase for comparison
+  const normalized = type.toUpperCase();
+  
+  // Map common variations to database enum values
+  const typeMap: Record<string, OrganizationTypeEnum> = {
+    'GOVERNMENT': 'GOVERNMENT',
+    'FEDERAL': 'GOVERNMENT',
+    'STATE': 'GOVERNMENT',
+    'LOCAL': 'GOVERNMENT',
+    'GOV': 'GOVERNMENT',
+    'NONPROFIT': 'NONPROFIT',
+    'NON-PROFIT': 'NONPROFIT',
+    'NON PROFIT': 'NONPROFIT',
+    'NOT FOR PROFIT': 'NONPROFIT',
+    'PRIVATE': 'PRIVATE',
+    'PRIVATE SECTOR': 'PRIVATE',
+    'CORPORATION': 'PRIVATE',
+    'PUBLIC': 'PUBLIC',
+    'PUBLICLY TRADED': 'PUBLIC',
+    'PUBLIC COMPANY': 'PUBLIC',
+    'ACADEMIC': 'ACADEMIC',
+    'EDUCATION': 'ACADEMIC',
+    'UNIVERSITY': 'ACADEMIC',
+    'COLLEGE': 'ACADEMIC',
+    'SCHOOL': 'ACADEMIC',
+    'STARTUP': 'STARTUP',
+    'START-UP': 'STARTUP',
+    'START UP': 'STARTUP',
+  };
+  
+  return typeMap[normalized] || 'OTHER';
+}
+
 export class JobScraperService {
   private crawler: JobCrawlerService;
   private jobPostingRepo: JobPostingRepository;
@@ -54,9 +136,9 @@ export class JobScraperService {
           salary: jobData.salary || null,
           requirements: jobData.requirements || null,
           url: jobData.url,
-          type: jobData.employmentType as any || null,
+          type: normalizeEmploymentType(jobData.employmentType) || null,
           externalId: jobData.externalId || null,
-          organizationType: jobData.organizationType as any || null,
+          organizationType: normalizeOrganizationType(jobData.organizationType) || null,
           datePosted: jobData.datePosted || new Date(),
           dateScraped: new Date(),
           structuredData: jobData.structuredData || {},

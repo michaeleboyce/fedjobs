@@ -188,6 +188,40 @@ export class JobPostingRepository {
       .where(eq(jobPostings.sourceId, sourceId));
   }
   
+  async getJobCountBySourceId(sourceId: number): Promise<number> {
+    const result = await db.select({
+      count: sql<number>`count(*)`,
+    })
+    .from(jobPostings)
+    .where(and(
+      eq(jobPostings.sourceId, sourceId),
+      eq(jobPostings.isActive, true)
+    ));
+    
+    return result[0]?.count || 0;
+  }
+  
+  async getJobCountsBySourceIds(sourceIds: number[]): Promise<Record<number, number>> {
+    if (sourceIds.length === 0) return {};
+    
+    const results = await db.select({
+      sourceId: jobPostings.sourceId,
+      count: sql<number>`count(*)`,
+    })
+    .from(jobPostings)
+    .where(and(
+      inArray(jobPostings.sourceId, sourceIds),
+      eq(jobPostings.isActive, true)
+    ))
+    .groupBy(jobPostings.sourceId);
+    
+    // Convert results to a map of sourceId -> count
+    return results.reduce((acc, { sourceId, count }) => {
+      acc[sourceId] = count;
+      return acc;
+    }, {} as Record<number, number>);
+  }
+  
   async getRecommendedJobs(
     userId: string, 
     options: { 

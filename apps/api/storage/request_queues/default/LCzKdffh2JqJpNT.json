@@ -1,0 +1,9 @@
+{
+	"id": "LCzKdffh2JqJpNT",
+	"json": "{\"id\":\"LCzKdffh2JqJpNT\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=Washington%20DC&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=Washington+DC&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
+	"method": "GET",
+	"orderNo": 1743372262845,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=Washington+DC&workplaceType=onsite",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=Washington%20DC&commitment=Intern"
+}

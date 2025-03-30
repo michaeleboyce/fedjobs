@@ -1,0 +1,9 @@
+{
+	"id": "xlUc3BhRUov6aAe",
+	"json": "{\"id\":\"xlUc3BhRUov6aAe\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Amman\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?location=Amman\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Amman\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:03:23.891Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Amman",
+	"url": "https://jobs.eu.lever.co/refugeerights?location=Amman"
+}

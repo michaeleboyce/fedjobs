@@ -52,20 +52,27 @@ export const DocumentManager: React.FC<DocumentsProps> = ({
   
   // Pass documents and actions to children
   return (
-    <div>
+    <div className="space-y-8">
       <QueryClientProvider client={queryClient}>
-        <FileUploadBox 
-          addDocument={(doc) => {
-            // This will be replaced with proper store integration
-            // Currently FileUploadBox expects this function
-            refetchDocuments();
-          }} 
-          processDocumentFromFormData={processDocumentFromFormData}
-        />
-        <Documents 
-          documents={documentsToDisplay} 
-          removeDocument={handleRemoveDocument} 
-        />
+        <div className="bg-white border border-gray-200 rounded-md shadow-sm p-4">
+          <h2 className="text-lg font-medium mb-4">Upload Documents</h2>
+          <FileUploadBox 
+            addDocument={(doc) => {
+              // This will be replaced with proper store integration
+              // Currently FileUploadBox expects this function
+              refetchDocuments();
+            }} 
+            processDocumentFromFormData={processDocumentFromFormData}
+          />
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-md shadow-sm p-4">
+          <h2 className="text-lg font-medium mb-4">Your Documents</h2>
+          <Documents 
+            documents={documentsToDisplay} 
+            removeDocument={handleRemoveDocument} 
+          />
+        </div>
       </QueryClientProvider>
     </div>
   );

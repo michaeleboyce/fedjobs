@@ -1,0 +1,9 @@
+{
+	"id": "10H8dZFZ01A5h3O",
+	"json": "{\"id\":\"10H8dZFZ01A5h3O\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=Washington%20DC&team=Operations\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Operations&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
+	"method": "GET",
+	"orderNo": 1743372262844,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Operations&workplaceType=onsite",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=Washington%20DC&team=Operations"
+}

@@ -1,0 +1,9 @@
+{
+	"id": "KmVP42abXc99ZCW",
+	"json": "{\"id\":\"KmVP42abXc99ZCW\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York&team=Leadership\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=New+York&team=Leadership&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372285509,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=New+York&team=Leadership&workplaceType=hybrid",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York&team=Leadership"
+}

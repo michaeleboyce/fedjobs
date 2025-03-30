@@ -1,4 +1,3 @@
-// File path: apps/web/app/shared/components/ui/Select/index.tsx
 'use client';
 
 import React, { forwardRef } from 'react';
@@ -11,7 +10,7 @@ export interface SelectOption {
 }
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onSelect'> {
-  options: SelectOption[];
+  options?: SelectOption[]; // Make options optional
   label?: string;
   helperText?: string;
   error?: string;
@@ -27,6 +26,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({
     className,
     options,
+    children,
     label,
     helperText,
     error,
@@ -87,11 +87,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
             {...props}
           >
-            {options.map((option) => (
+            {options ? options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
-            ))}
+            )) : children}
           </select>
           
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">

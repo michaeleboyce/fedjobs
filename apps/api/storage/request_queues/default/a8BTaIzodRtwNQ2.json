@@ -1,0 +1,9 @@
+{
+	"id": "a8BTaIzodRtwNQ2",
+	"json": "{\"id\":\"a8BTaIzodRtwNQ2\",\"url\":\"https://jobs.eu.lever.co/refugeerights/493bf855-2930-4c7f-be63-c507ab6088a4\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights/493bf855-2930-4c7f-be63-c507ab6088a4\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights/493bf855-2930-4c7f-be63-c507ab6088a4\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":2,\"aiSelected\":true,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:03:59.841Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights/493bf855-2930-4c7f-be63-c507ab6088a4",
+	"url": "https://jobs.eu.lever.co/refugeerights/493bf855-2930-4c7f-be63-c507ab6088a4"
+}

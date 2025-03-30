@@ -1,5 +1,49 @@
 FROM node:20-slim
 
+# Install Playwright dependencies
+RUN apt-get update && apt-get install -y \
+    libwoff1 \
+    libopus0 \
+    libwebp7 \
+    libwebpdemux2 \
+    libenchant-2-2 \
+    libgudev-1.0-0 \
+    libsecret-1-0 \
+    libhyphen0 \
+    libgdk-pixbuf2.0-0 \
+    libegl1 \
+    libnotify4 \
+    libxslt1.1 \
+    libevent-2.1-7 \
+    libgles2 \
+    libvpx7 \
+    libxcomposite1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libepoxy0 \
+    libgtk-3-0 \
+    libharfbuzz-icu0 \
+    libxshmfence1 \
+    libgbm1 \
+    libnss3 \
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    libasound2 \
+    libatspi2.0-0 \
+    libcups2 \
+    libxdamage1 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxrandr2 \
+    libffi7 \
+    libpangocairo-1.0-0 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libatspi2.0-0 \
+    libjpeg62-turbo \
+    libsqlite3-0 \
+    libxfixes3
+
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -12,6 +56,9 @@ COPY . .
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
+
+# Install Playwright browsers
+RUN npx playwright install --with-deps chromium
 
 # Build the API and its dependencies
 RUN npx turbo run build --filter="@fedjobs/api..."

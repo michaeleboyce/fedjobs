@@ -1,0 +1,9 @@
+{
+	"id": "ssboCCDl4AUVanF",
+	"json": "{\"id\":\"ssboCCDl4AUVanF\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Operations\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Operations\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372203889,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Operations",
+	"url": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Operations"
+}

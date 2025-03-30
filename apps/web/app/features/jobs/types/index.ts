@@ -12,6 +12,15 @@ export type JobSource = {
   refreshFrequency: 'DAILY' | 'WEEKLY' | 'MANUAL';
   createdAt: string;
   updatedAt: string;
+  // Extended fields for UI
+  jobCount?: number;
+  recentJobs?: Job[];
+  isProcessing?: boolean;
+  progressMessage?: string;
+  foundJobsCount?: number; // Count of jobs found during current crawl
+  processingStartTime?: string; // Time when processing started
+  lastUpdateTime?: string; // Last time we received an update
+  processingTimedOut?: boolean; // Flag to indicate if processing might have stalled
 };
 
 export type Job = {
@@ -67,4 +76,17 @@ export type NewJobSource = {
   name: string;
   keywords?: string;
   refreshFrequency?: 'DAILY' | 'WEEKLY' | 'MANUAL';
+};
+
+export type WebSocketJobUpdate = {
+  sourceId: number;
+  jobTitle: string;
+  organization: string;
+  url: string;
+};
+
+export type WebSocketMessage = {
+  type: string;
+  timestamp: string;
+  data: any;
 };

@@ -1,0 +1,9 @@
+{
+	"id": "N5mASSClEmh9YP5",
+	"json": "{\"id\":\"N5mASSClEmh9YP5\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Policy\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Policy&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372243919,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Policy&workplaceType=remote",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Policy"
+}

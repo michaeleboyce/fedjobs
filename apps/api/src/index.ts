@@ -2,6 +2,8 @@
 // apps/api/src/index.ts
 
 import express, { ErrorRequestHandler } from 'express';
+import http from 'http';
+import { WebSocket, WebSocketServer } from 'ws';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
@@ -15,7 +17,65 @@ import { errorHandler } from './middleware/error';
 import debug from 'debug';  
 import { JobScraperService } from '@fedjobs/utils/src/Services/JobScraperService';
 
+// Create Express app and HTTP server
 const app = express();
+const server = http.createServer(app);
+
+// Set up WebSocket server for real-time updates
+const wss = new WebSocketServer({ server });
+
+// Create a Map to store WebSocket clients by userId
+export const userWsClients = new Map<string, Set<WebSocket>>();
+
+// WebSocket connection handler
+wss.on('connection', (ws: WebSocket) => {
+  console.log('WebSocket client connected');
+  
+  // Handle connection messages (including userId)
+  ws.on('message', (message: string) => {
+    try {
+      const data = JSON.parse(message);
+      
+      // If this is a registration message with userId
+      if (data.type === 'register' && data.userId) {
+        const userId = data.userId;
+        
+        // Store client connection by userId
+        if (!userWsClients.has(userId)) {
+          userWsClients.set(userId, new Set());
+        }
+        userWsClients.get(userId)?.add(ws);
+        
+        console.log(`WebSocket client registered for user ${userId}`);
+        
+        // Send acknowledgement
+        ws.send(JSON.stringify({ 
+          type: 'registration_successful',
+          message: 'Successfully registered for real-time updates'
+        }));
+      }
+    } catch (error) {
+      console.error('Error handling WebSocket message:', error);
+    }
+  });
+  
+  // Handle disconnection
+  ws.on('close', () => {
+    console.log('WebSocket client disconnected');
+    
+    // Remove client from all userIds
+    userWsClients.forEach((clients, userId) => {
+      if (clients.has(ws)) {
+        clients.delete(ws);
+        
+        // Clean up empty sets
+        if (clients.size === 0) {
+          userWsClients.delete(userId);
+        }
+      }
+    });
+  });
+});
 
 app.use(helmet());
 app.use(cors({
@@ -84,8 +144,9 @@ console.log('Registered routes:',
     }))
 );
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+server.listen(port, () => {
+  console.log(`HTTP Server running on port ${port}`);
+  console.log(`WebSocket Server running on ws://localhost:${port}`);
   console.log(`Document parsing endpoint: http://localhost:${port}/api/parse/document`);
   console.log(`Job sources endpoint: http://localhost:${port}/api/job-sources`);
 });

@@ -1,0 +1,9 @@
+{
+	"id": "WLpB4wKS0E2uilG",
+	"json": "{\"id\":\"WLpB4wKS0E2uilG\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York&team=Policy\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=New+York&team=Policy&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
+	"method": "GET",
+	"orderNo": 1743372254764,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=New+York&team=Policy&workplaceType=onsite",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York&team=Policy"
+}

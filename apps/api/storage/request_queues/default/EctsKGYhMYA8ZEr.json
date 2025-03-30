@@ -1,0 +1,9 @@
+{
+	"id": "EctsKGYhMYA8ZEr",
+	"json": "{\"id\":\"EctsKGYhMYA8ZEr\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Washington%20DC&team=Leadership\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Leadership\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"method": "GET",
+	"orderNo": 1743372209309,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Washington+DC&team=Leadership",
+	"url": "https://jobs.eu.lever.co/refugeerights?location=Washington%20DC&team=Leadership"
+}
