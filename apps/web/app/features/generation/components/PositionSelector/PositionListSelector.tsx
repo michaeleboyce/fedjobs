@@ -10,7 +10,7 @@ interface PositionListSelectorProps {
   employmentHistory: Position[];
   otherPositions: Position[];
   selectedState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>;
-  onSelectionChange: (newState: PositionSelectionState) => void;
+  onSelectionChange: (newState: Record<string, PositionSelectionState>) => void;
 }
 
 export function PositionListSelector({

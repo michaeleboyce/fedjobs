@@ -9,7 +9,7 @@ interface PositionSelectorProps {
   resume?: ResumeObject;
   employmentHistory: Position[];
   otherPositions: Position[];
-  selectedState: PositionSelectionState; //PositionSelectionState preserves the activities and accomplishments bifurcation.
+  selectedState: Record<string, PositionSelectionState>; //PositionSelectionState preserves the activities and accomplishments bifurcation.
   onSelectionChange: (newState: PositionSelectionState) => void;
 }
 

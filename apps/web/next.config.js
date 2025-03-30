@@ -17,15 +17,18 @@ const nextConfig = {
     webpack: (config, { isServer }) => {
         // Optimize file watching
         config.watchOptions = {
-            poll: 1000,
-            aggregateTimeout: 300,
+            poll: 2000,
+            aggregateTimeout: 500,
             ignored: [
-                '**/node_modules',
-                '**/.git',
+                '**/node_modules/**',
+                '**/.git/**',
                 '**/package-lock.json',
                 '**/pnpm-lock.yaml',
                 '**/yarn.lock',
-                '**/.next'
+                '**/.next/**',
+                '**/dist/**',
+                '**/.cache/**',
+                '**/public/**'
             ]
         };
         return config;
