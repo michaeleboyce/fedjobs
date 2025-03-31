@@ -54,8 +54,8 @@ RUN corepack prepare pnpm@latest --activate
 # Copy ALL files including tsconfig
 COPY . .
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (no frozen lockfile to help with circular dependencies)
+RUN pnpm install --shamefully-hoist || (echo "pnpm install failed" && exit 1)
 
 # Install Playwright globally and then install browsers
 RUN npm install -g playwright

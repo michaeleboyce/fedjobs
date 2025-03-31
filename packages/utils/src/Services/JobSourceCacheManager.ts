@@ -1,10 +1,11 @@
 // File path: packages/utils/src/Services/JobSourceCacheManager.ts
 
-import { GlobalSourceCacheRepository } from "@fedjobs/database/src/repositories/globalSourceCache";
-import { JobSourceRepository } from "@fedjobs/database/src/repositories/jobSources";
-import { JobPostingRepository } from "@fedjobs/database/src/repositories/jobPostings";
+import { GlobalSourceCacheRepository } from "@fedjobs/database";
+import { JobSourceRepository } from "@fedjobs/database";
+import { JobPostingRepository } from "@fedjobs/database";
 import { UrlNormalizationService } from "./UrlNormalizationService";
-import { GlobalSourceCacheRecord } from "@fedjobs/database/src/schema/globalSourceCache";
+import { GlobalSourceCacheRecord } from "@fedjobs/database";
+import { JobSourceRecord } from "@fedjobs/database";
 import { JobPostingData } from "./JobCrawlerService/types";
 
 /**

@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@fedjobs/types": "workspace:*",
-    "@fedjobs/utils": "workspace:*",
     "@neondatabase/serverless": "^0.10.4",
     "@pinecone-database/pinecone": "^4.0.0",
     "dotenv": "^16.4.7",

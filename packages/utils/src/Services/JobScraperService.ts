@@ -1,17 +1,9 @@
 // packages/utils/src/Services/JobScraperService.ts
 import { JobCrawlerService } from './JobCrawlerService';
 import { JobPostingData, JobCrawlerResult } from './JobCrawlerService/types';
-import { JobPostingRepository } from '@fedjobs/database/src/repositories/jobPostings';
-import { JobSourceRepository } from '@fedjobs/database/src/repositories/jobSources';
+import { JobPostingRepository, JobSourceRepository, GlobalSourceCacheRepository, employmentType, organizationType, type JobPostingRecord } from '@fedjobs/database';
 import { JobSourceCacheManager } from './JobSourceCacheManager';
 import { UrlNormalizationService } from './UrlNormalizationService';
-import { GlobalSourceCacheRepository } from '@fedjobs/database/src/repositories/globalSourceCache';
-
-/**
- * Normalizes employment type strings to match database enum values
- */
-// Import the enum types from the database schema
-import { employmentType, organizationType, type JobPostingRecord } from '@fedjobs/database/src/schema/jobPostings';
 import { PgEnum } from 'drizzle-orm/pg-core';
 
 type EmploymentTypeEnum = (typeof employmentType.enumValues)[number];

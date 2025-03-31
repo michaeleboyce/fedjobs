@@ -14,6 +14,7 @@
     "@anthropic-ai/sdk": "^0.33.1",
     "@aws-sdk/client-s3": "^3.717.0",
     "@aws-sdk/s3-request-presigner": "^3.717.0",
+    "@fedjobs/database": "workspace:*",
     "@fedjobs/types": "workspace:*",
     "@google/generative-ai": "^0.21.0",
     "@kinde-oss/kinde-auth-nextjs": "^2.4.6",
