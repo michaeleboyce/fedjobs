@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
     libdrm2 \
     libxkbcommon0 \
     libxrandr2 \
-    libffi7 \
+    libffi8 \
     libpangocairo-1.0-0 \
     libpango-1.0-0 \
     libcairo2 \
@@ -57,8 +57,9 @@ COPY . .
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Install Playwright browsers
-RUN npx playwright install --with-deps chromium
+# Install Playwright globally and then install browsers
+RUN npm install -g playwright
+RUN playwright install --with-deps chromium
 
 # Build the API and its dependencies
 RUN npx turbo run build --filter="@fedjobs/api..."
