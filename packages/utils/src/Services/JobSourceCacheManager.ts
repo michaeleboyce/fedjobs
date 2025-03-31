@@ -145,7 +145,7 @@ export class JobSourceCacheManager {
         if (!latest.lastScraped) return current;
         if (!current.lastScraped) return latest;
         return current.lastScraped > latest.lastScraped ? current : latest;
-      });
+      }, sources[0]);
       
       // Get jobs from this source
       const jobs = await this.jobPostingRepo.getBySourceId(recentSource.id);

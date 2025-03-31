@@ -11,7 +11,7 @@ import { GlobalSourceCacheRepository } from '@fedjobs/database/src/repositories/
  * Normalizes employment type strings to match database enum values
  */
 // Import the enum types from the database schema
-import { employmentType, organizationType } from '@fedjobs/database/src/schema/jobPostings';
+import { employmentType, organizationType, type JobPostingRecord } from '@fedjobs/database/src/schema/jobPostings';
 import { PgEnum } from 'drizzle-orm/pg-core';
 
 type EmploymentTypeEnum = (typeof employmentType.enumValues)[number];
@@ -198,7 +198,7 @@ export class JobScraperService {
             console.log(`[JobScraperService] Calling onComplete callback for source ${sourceId}`);
             const jobs = await this.jobPostingRepo.getBySourceId(sourceId);
             // Convert database JobPostingRecord array to JobPostingData array
-            const jobsData = jobs.map(job => ({
+            const jobsData = jobs.map((job: JobPostingRecord) => ({
               title: job.title,
               organization: job.organization,
               location: job.location || undefined,
