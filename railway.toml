@@ -1,0 +1,43 @@
+# FILE: ./railway.toml
+
+# This section defines the build process for your service
+[build]
+# Explicitly use Nixpacks V2 builder, ignoring any Dockerfile
+builder = "NIXPACKS"
+# Specify the root directory of the application within the monorepo
+rootDir = "./apps/api"
+
+# Nixpacks-specific configuration overrides
+[build.nixpacksConfig]
+# Command to install dependencies. Runs relative to rootDir, so we cd up.
+# Needs to run from monorepo root to find pnpm-lock.yaml and pnpm-workspace.yaml
+installCommand = "cd ../.. && pnpm install --frozen-lockfile"
+# Command to build the application. Runs relative to rootDir, so we cd up.
+# Uses Turbo to build the API and its workspace dependencies.
+buildCommand = "cd ../.. && pnpm turbo run build --filter=@fedjobs/api..."
+# Nixpacks usually detects the start command from package.json within rootDir.
+# Only uncomment the line below if detection fails.
+# startCommand = "node dist/index.js"
+
+# --- Optional: Add OS packages if build fails due to missing system libraries ---
+# Only needed if native Node modules require compilation during install/build.
+# aptPkgs = ["build-essential", "pkg-config", "python3"]
+
+# This section defines how the built application is deployed and run
+[deploy]
+# Explicitly define the command to start the application after build.
+# This path is relative to the rootDir specified in the [build] section.
+startCommand = "node dist/index.js"
+# Policy for restarting the service if it fails
+restartPolicyType = "ON_FAILURE" # Options: ON_FAILURE, ALWAYS, NEVER
+# Maximum number of times to attempt restarting on failure
+restartPolicyMaxRetries = 10
+
+# Optional: Define a health check endpoint for Railway to monitor
+# Railway will check this path to see if your deployment is healthy.
+healthcheckPath = "/" # Use your API's health check endpoint if you have one
+# How long to wait (in seconds) for the health check to respond
+healthcheckTimeout = 15
+# How long to wait (in seconds) after starting before the first health check
+# healthcheckInterval = 10 # Interval between checks (seconds)
+# healthcheckRetries = 3 # Number of failed checks before marking as unhealthy
