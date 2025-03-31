@@ -1,9 +1,0 @@
-{
-	"id": "M7vHWgK648bc0nQ",
-	"json": "{\"id\":\"M7vHWgK648bc0nQ\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Leadership&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Leadership&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
-	"method": "GET",
-	"orderNo": 1743383200886,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Leadership&workplaceType=hybrid",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Leadership&commitment=Intern"
-}

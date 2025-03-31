@@ -1,9 +1,0 @@
-{
-	"id": "SyCstZOj3wKXwgM",
-	"json": "{\"id\":\"SyCstZOj3wKXwgM\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Jordan\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
-	"method": "GET",
-	"orderNo": 1743383399916,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Jordan",
-	"url": "https://jobs.eu.lever.co/refugeerights?team=Jordan&commitment=Intern"
-}

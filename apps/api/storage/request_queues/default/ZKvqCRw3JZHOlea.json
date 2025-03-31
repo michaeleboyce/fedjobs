@@ -1,9 +1,0 @@
-{
-	"id": "ZKvqCRw3JZHOlea",
-	"json": "{\"id\":\"ZKvqCRw3JZHOlea\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:05.635Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan"
-}

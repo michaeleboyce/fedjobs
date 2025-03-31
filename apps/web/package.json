@@ -11,6 +11,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fedjobs/database": "workspace:*",
+    "@fedjobs/types": "workspace:*",
+    "@fedjobs/utils": "workspace:*",
     "@ai-sdk/openai": "^1.0.11",
     "@anthropic-ai/sdk": "^0.33.1",
     "@auth/core": "^0.37.4",

@@ -15,7 +15,7 @@ import jobSourcesRouter from './routes/jobSources'; // Job sources route
 import jobPostingsRouter from './routes/jobPostings'; // Job postings route
 import { errorHandler } from './middleware/error';
 import debug from 'debug';  
-import { JobScraperService } from '@fedjobs/utils/src/Services/JobScraperService';
+import { JobScraperService } from '@fedjobs/crawler';
 
 // Create Express app and HTTP server
 const app = express();

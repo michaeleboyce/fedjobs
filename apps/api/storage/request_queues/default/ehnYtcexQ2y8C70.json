@@ -1,9 +1,0 @@
-{
-	"id": "ehnYtcexQ2y8C70",
-	"json": "{\"id\":\"ehnYtcexQ2y8C70\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743383159578,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York&commitment=Intern"
-}

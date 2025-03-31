@@ -1,9 +1,0 @@
-{
-	"id": "3Wq2Qufl9dbpHy1",
-	"json": "{\"id\":\"3Wq2Qufl9dbpHy1\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=Washington%20DC\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=Washington%20DC\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Washington+DC&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:27.829Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Washington+DC&workplaceType=hybrid",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=Washington%20DC"
-}

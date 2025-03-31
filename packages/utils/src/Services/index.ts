@@ -4,4 +4,4 @@ export * from './KeyGenerationService';
 export * from '../ServerActions/VectorizationActions';
 export * from './AIService';
 export * from './UrlNormalizationService';
-export * from './JobSourceCacheManager';
+// Crawler services moved to @fedjobs/crawler package

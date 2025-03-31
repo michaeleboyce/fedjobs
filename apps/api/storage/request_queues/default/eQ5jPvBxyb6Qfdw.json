@@ -1,9 +1,0 @@
-{
-	"id": "eQ5jPvBxyb6Qfdw",
-	"json": "{\"id\":\"eQ5jPvBxyb6Qfdw\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:05:09.830Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Jordan",
-	"url": "https://jobs.eu.lever.co/refugeerights?team=Jordan"
-}

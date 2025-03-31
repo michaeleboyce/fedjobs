@@ -1,9 +1,0 @@
-{
-	"id": "yNLHe3cLm71yOl6",
-	"json": "{\"id\":\"yNLHe3cLm71yOl6\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:07:01.171Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan",
-	"url": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan"
-}

@@ -505,22 +505,210 @@ function JobApplicationDocuments({ jobId }) {
 - Improved user experience for managing multiple applications
 - More insightful analytics on application effectiveness
 
+## 7. Enhanced Job Validation and Counting Metrics
+
+### Current Implementation
+- Basic job count displayed without details on validation or rejection
+- No transparency about why jobs might be skipped or rejected
+- Limited logging for debugging validation issues
+
+### Proposed Solution
+- Enhance logging and user feedback for job validation process
+- Add detailed statistics tracking for job processing
+- Create UI components to display job processing metrics
+
+```typescript
+// Enhanced scraping statistics interface
+interface JobScrapingStats {
+  totalFound: number;      // Total jobs found during crawling
+  added: number;           // New jobs added to database
+  updated: number;         // Existing jobs that were updated
+  skipped: number;         // Jobs skipped (duplicates, etc)
+  invalid: number;         // Jobs that failed validation
+  skipReasons: {           // Categorized reasons for skipping
+    [reason: string]: number;
+  };
+  validationFailures: {    // Categorized validation failures
+    [reason: string]: number;
+  };
+}
+
+// Enhanced ScraperService with detailed stats
+async refreshJobSource(
+  sourceId: number,
+  callbacks?: {
+    onJobFound?: (job: JobPostingData) => Promise<void>;
+    onComplete?: (jobs: JobPostingData[], stats: JobScrapingStats) => Promise<void>;
+    onError?: (error: Error, url: string) => Promise<void>;
+  },
+  forceRefresh: boolean = false
+): Promise<JobCrawlerResult> {
+  // Track detailed stats
+  const stats: JobScrapingStats = {
+    totalFound: 0,
+    added: 0,
+    updated: 0,
+    skipped: 0,
+    invalid: 0,
+    skipReasons: {},
+    validationFailures: {}
+  };
+  
+  // ...existing implementation...
+  
+  // Enhanced onJobFound handler
+  onJobFound: async (job) => {
+    stats.totalFound++;
+    
+    // Store with validation
+    const result = await this.storeJobPosting(sourceId, job);
+    
+    if (result.status === 'added') {
+      stats.added++;
+      jobsFound.push(job);
+      jobsStored.push(result.id);
+      if (callbacks?.onJobFound) {
+        await callbacks.onJobFound(job);
+      }
+    } else if (result.status === 'updated') {
+      stats.updated++;
+      jobsFound.push(job);
+      jobsStored.push(result.id);
+      if (callbacks?.onJobFound) {
+        await callbacks.onJobFound(job);
+      }
+    } else if (result.status === 'invalid') {
+      stats.invalid++;
+      // Track specific validation failure reasons
+      const reason = result.reason || 'unknown';
+      stats.validationFailures[reason] = (stats.validationFailures[reason] || 0) + 1;
+      console.log(`[ScraperService] Invalid job: ${job.title}, reason: ${reason}`);
+    } else if (result.status === 'skipped') {
+      stats.skipped++;
+      // Track skip reasons
+      const reason = result.reason || 'unknown';
+      stats.skipReasons[reason] = (stats.skipReasons[reason] || 0) + 1;
+      console.log(`[ScraperService] Skipped job: ${job.title}, reason: ${reason}`);
+    }
+  }
+}
+```
+
+### UI Components for Job Processing Stats
+```tsx
+// CrawlStatistics.tsx component
+function CrawlStatistics({ stats }: { stats: JobScrapingStats }) {
+  if (!stats) return null;
+  
+  return (
+    <div className="bg-white shadow rounded p-4 mt-4">
+      <h3 className="text-lg font-medium mb-2">Crawl Statistics</h3>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <StatCard title="Total Jobs Found" value={stats.totalFound} color="blue" />
+        <StatCard title="Added" value={stats.added} color="green" />
+        <StatCard title="Updated" value={stats.updated} color="indigo" />
+        <StatCard title="Invalid/Skipped" value={stats.invalid + stats.skipped} color="amber" />
+      </div>
+      
+      {(stats.invalid > 0 || stats.skipped > 0) && (
+        <div className="mt-4">
+          <h4 className="font-medium">Processing Details</h4>
+          
+          {stats.invalid > 0 && (
+            <div className="mt-2">
+              <h5 className="text-sm font-medium text-red-600">Invalid Jobs ({stats.invalid})</h5>
+              <ul className="mt-1 text-sm text-gray-600">
+                {Object.entries(stats.validationFailures).map(([reason, count]) => (
+                  <li key={reason}>{reason}: {count}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {stats.skipped > 0 && (
+            <div className="mt-2">
+              <h5 className="text-sm font-medium text-amber-600">Skipped Jobs ({stats.skipped})</h5>
+              <ul className="mt-1 text-sm text-gray-600">
+                {Object.entries(stats.skipReasons).map(([reason, count]) => (
+                  <li key={reason}>{reason}: {count}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Simple stat card component
+function StatCard({ title, value, color }) {
+  const colorClasses = {
+    blue: "bg-blue-50 text-blue-700",
+    green: "bg-green-50 text-green-700",
+    indigo: "bg-indigo-50 text-indigo-700",
+    amber: "bg-amber-50 text-amber-700",
+    red: "bg-red-50 text-red-700"
+  };
+  
+  return (
+    <div className={`p-3 rounded ${colorClasses[color]}`}>
+      <div className="text-sm font-medium">{title}</div>
+      <div className="text-2xl font-bold">{value}</div>
+    </div>
+  );
+}
+```
+
+### WebSocket Enhancements
+Extend WebSocket messaging to include detailed job processing statistics:
+
+```typescript
+// In jobSources.ts route
+sendWebSocketUpdate(userId, 'crawl_complete', {
+  sourceId: id,
+  jobCount: jobs.length,
+  status: 'ACTIVE',
+  usedCache: false,
+  message: 'Completed fresh crawl of job source',
+  stats: {
+    totalFound: stats.totalFound,
+    added: stats.added,
+    updated: stats.updated,
+    skipped: stats.skipped, 
+    invalid: stats.invalid,
+    skipReasons: stats.skipReasons,
+    validationFailures: stats.validationFailures
+  }
+});
+```
+
+### Benefits
+- Increased transparency for users about job processing
+- Better debugging information for administrators
+- More accurate metrics about job source quality
+- Improved user experience with clear feedback on processing results
+
 ## Implementation Timeline
 
 ### Phase 1: Foundation (Weeks 1-2)
 - Implement job source caching across users
 - Create database schema updates for document-job associations
 - Improve basic job search functionality with text normalization
+- Add detailed job counting and validation metrics
 
 ### Phase 2: Enhanced Features (Weeks 3-4)
 - Develop GitHub Action for automated job source updates
 - Build UI for job-to-generation integration
 - Implement enhanced crawler with pagination support
+- Integrate job processing statistics in the UI
 
 ### Phase 3: Refinement (Weeks 5-6)
 - Implement full-text search and fuzzy matching
 - Develop application tracking interface
 - Create analytics dashboard for job search effectiveness
+- Enhance job validation with AI-powered verification
 
 ## Conclusion
 

@@ -1,9 +1,0 @@
-{
-	"id": "PMfSH80hwXtr6nt",
-	"json": "{\"id\":\"PMfSH80hwXtr6nt\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
-	"method": "GET",
-	"orderNo": 1743383191920,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York&workplaceType=hybrid",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York&commitment=Intern"
-}

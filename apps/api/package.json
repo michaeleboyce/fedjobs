@@ -14,6 +14,7 @@
     "@fedjobs/database": "workspace:*",
     "@fedjobs/types": "workspace:*",
     "@fedjobs/utils": "workspace:*",
+    "@fedjobs/crawler": "workspace:*",
     "@types/pdf-parse": "^1.1.4",
     "bullmq": "^5.34.4",
     "cors": "^2.8.5",

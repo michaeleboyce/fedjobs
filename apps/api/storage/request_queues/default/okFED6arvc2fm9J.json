@@ -1,9 +1,0 @@
-{
-	"id": "okFED6arvc2fm9J",
-	"json": "{\"id\":\"okFED6arvc2fm9J\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&workplaceType=remote&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&location=Amman&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743383215018,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&location=Amman&workplaceType=remote",
-	"url": "https://jobs.eu.lever.co/refugeerights?location=Amman&workplaceType=remote&commitment=Full-Time"
-}

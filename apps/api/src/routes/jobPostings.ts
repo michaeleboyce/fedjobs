@@ -1,6 +1,6 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { JobPostingRepository } from '@fedjobs/database/src/repositories/jobPostings';
-import { UserJobFeedbackRepository } from '@fedjobs/database/src/repositories/userJobFeedback';
+import { JobPostingRepository } from '@fedjobs/database';
+import { UserJobFeedbackRepository } from '@fedjobs/database';
 
 const router: Router = express.Router();
 const jobPostingRepo = new JobPostingRepository();
@@ -85,8 +85,8 @@ router.get('/:id/similar', async (req: Request, res: Response, next: NextFunctio
     if (userId) {
       const userFeedback = await userJobFeedbackRepo.getFeedbackByUserId(userId);
       const notInterestedJobs = userFeedback
-        .filter(feedback => feedback.feedbackType === 'NOT_INTERESTED')
-        .map(feedback => feedback.jobId);
+        .filter((feedback: { feedbackType: string }) => feedback.feedbackType === 'NOT_INTERESTED')
+        .map((feedback: { jobId: number }) => feedback.jobId);
       
       excludeIds = [...notInterestedJobs];
     }
@@ -109,8 +109,8 @@ router.get('/recommended/:userId', async (req: Request, res: Response, next: Nex
     // Get excluded job IDs (e.g., jobs the user is not interested in)
     const userFeedback = await userJobFeedbackRepo.getFeedbackByUserId(userId);
     const notInterestedJobs = userFeedback
-      .filter(feedback => feedback.feedbackType === 'NOT_INTERESTED')
-      .map(feedback => feedback.jobId);
+      .filter((feedback: { feedbackType: string }) => feedback.feedbackType === 'NOT_INTERESTED')
+      .map((feedback: { jobId: number }) => feedback.jobId);
     
     // Get recommended jobs
     const recommendedJobs = await jobPostingRepo.getRecommendedJobs(userId, {

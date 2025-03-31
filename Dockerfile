@@ -57,9 +57,10 @@ COPY . .
 # Install dependencies (no frozen lockfile to help with circular dependencies)
 RUN pnpm install --shamefully-hoist || (echo "pnpm install failed" && exit 1)
 
-# Install Playwright globally and then install browsers
-RUN npm install -g playwright
+# Install Playwright and Puppeteer globally and then install browsers
+RUN npm install -g playwright puppeteer
 RUN playwright install --with-deps chromium
+RUN npx puppeteer browsers install chrome
 
 # Build packages in specific order to handle dependencies correctly
 # First build the types package
@@ -68,6 +69,8 @@ RUN npx turbo run build --filter="@fedjobs/types"
 RUN npx turbo run build --filter="@fedjobs/database"
 # Then build utils
 RUN npx turbo run build --filter="@fedjobs/utils"
+# Then build crawler (depends on types, database and utils)
+RUN npx turbo run build --filter="@fedjobs/crawler"
 # Finally build the API
 RUN npx turbo run build --filter="@fedjobs/api"
 

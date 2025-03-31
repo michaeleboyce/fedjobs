@@ -1,9 +1,0 @@
-{
-	"id": "4jxDTUYmw2cQoU4",
-	"json": "{\"id\":\"4jxDTUYmw2cQoU4\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=New+York&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:31.920Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=New+York&workplaceType=hybrid",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=New%20York"
-}

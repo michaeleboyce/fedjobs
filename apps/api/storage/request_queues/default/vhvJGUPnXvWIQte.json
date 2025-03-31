@@ -1,9 +1,0 @@
-{
-	"id": "vhvJGUPnXvWIQte",
-	"json": "{\"id\":\"vhvJGUPnXvWIQte\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&commitment=Intern\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:21.487Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&commitment=Intern"
-}

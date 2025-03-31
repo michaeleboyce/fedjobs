@@ -1,9 +1,0 @@
-{
-	"id": "pnRpRvW0jfcIbC2",
-	"json": "{\"id\":\"pnRpRvW0jfcIbC2\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Washington%20DC\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?location=Washington%20DC\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Washington+DC\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:05:02.854Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Washington+DC",
-	"url": "https://jobs.eu.lever.co/refugeerights?location=Washington%20DC"
-}

@@ -1,9 +1,0 @@
-{
-	"id": "VFSwtdW3W5uE9WO",
-	"json": "{\"id\":\"VFSwtdW3W5uE9WO\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Operations&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Operations&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743383201664,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Operations&workplaceType=hybrid",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&team=Operations&commitment=Full-Time"
-}

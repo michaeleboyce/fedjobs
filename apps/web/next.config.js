@@ -31,6 +31,21 @@ const nextConfig = {
                 '**/public/**'
             ]
         };
+        
+        // Handle browser-specific dependencies
+        if (!isServer) {
+            // These packages are used on the server side and aren't needed in the browser
+            config.resolve.alias = {
+                ...config.resolve.alias,
+                'puppeteer': false,
+                'puppeteer-core': false,
+                'playwright': false,
+                'playwright-core': false,
+                'electron': false,
+                'chromium-bidi': false
+            };
+        }
+        
         return config;
     },
 };

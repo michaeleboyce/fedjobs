@@ -1,14 +1,13 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { RequestHandler } from '../types/route-handlers';
-import { JobSourceRepository } from '@fedjobs/database/src/repositories/jobSources';
-import { JobPostingRepository } from '@fedjobs/database/src/repositories/jobPostings';
-import { JobScraperService } from '@fedjobs/utils/src/Services/JobScraperService';
+import { JobSourceRepository } from '@fedjobs/database';
+import { JobPostingRepository } from '@fedjobs/database';
+import { ScraperService } from '@fedjobs/crawler';
 import { userWsClients } from '../index';
 
 const router: Router = express.Router();
 const jobSourceRepo = new JobSourceRepository();
 const jobPostingRepo = new JobPostingRepository();
-const jobScraperService = new JobScraperService();
+const jobScraperService = new ScraperService();
 
 // Helper function to send WebSocket updates to a specific user
 function sendWebSocketUpdate(userId: string, eventType: string, data: any) {
@@ -44,11 +43,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction): Promise
     
     // Include job counts if requested
     if (req.query.includeCounts === 'true') {
-      const sourceIds = sources.map(source => source.id);
+      const sourceIds = sources.map((source: { id: number }) => source.id);
       const jobCounts = await jobPostingRepo.getJobCountsBySourceIds(sourceIds);
       
       // Add job counts to the sources
-      const sourcesWithCounts = sources.map(source => ({
+      const sourcesWithCounts = sources.map((source: { id: number }) => ({
         ...source,
         jobCount: jobCounts[source.id] || 0
       }));
@@ -219,21 +218,27 @@ router.post('/:id/cancel', async (req: Request, res: Response, next: NextFunctio
       return;
     }
     
-    // Immediately update the status to ACTIVE (cancel PENDING state)
-    await jobSourceRepo.updateStatus(id, 'ACTIVE');
+    console.log(`[JobSourcesAPI] Cancelling refresh for source ${id}`);
+    
+    // Use the JobScraperService to actually cancel the crawler
+    const cancelled = await jobScraperService.cancelRefresh(id);
+    
+    console.log(`[JobSourcesAPI] Cancellation result: ${cancelled ? 'Crawler stopped' : 'No active crawler found'}`);
     
     // Respond with acknowledgement
     res.json({ 
-      message: 'Job source refresh cancelled',
+      message: `Job source refresh cancelled${cancelled ? '' : ' (no active crawler found)'}`,
       sourceId: id,
-      status: 'ACTIVE'
+      status: 'ACTIVE',
+      crawlerStopped: cancelled
     });
     
     // Send WebSocket notification about cancellation
     sendWebSocketUpdate(sourceDetails.userId, 'crawl_cancelled', {
       sourceId: id,
       message: 'Crawl cancelled by user',
-      status: 'ACTIVE'
+      status: 'ACTIVE',
+      crawlerStopped: cancelled
     });
     
   } catch (error) {

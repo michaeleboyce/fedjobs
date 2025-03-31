@@ -1,9 +1,0 @@
-{
-	"id": "WyGOc6ln4yQy2su",
-	"json": "{\"id\":\"WyGOc6ln4yQy2su\",\"url\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:05:31.672Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern",
-	"url": "https://jobs.eu.lever.co/refugeerights?commitment=Intern"
-}

@@ -1,9 +1,0 @@
-{
-	"id": "tHNWot5mKZEbKY8",
-	"json": "{\"id\":\"tHNWot5mKZEbKY8\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Operations&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Operations&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743383170419,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Operations&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Operations&commitment=Full-Time"
-}

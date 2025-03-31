@@ -325,4 +325,59 @@ export class JobPostingRepository {
     
     return jobs as unknown as JobPostingRecord[];
   }
+  
+  /**
+   * Find a job posting by URL and source ID
+   * @param url The URL to search for
+   * @param sourceId The source ID to search in
+   * @returns The job posting if found, otherwise null
+   */
+  async findByUrlAndSourceId(url: string, sourceId: number): Promise<JobPostingRecord | null> {
+    const results = await db
+      .select()
+      .from(jobPostings)
+      .where(
+        and(
+          eq(jobPostings.url, url),
+          eq(jobPostings.sourceId, sourceId)
+        )
+      )
+      .limit(1);
+    
+    return (results.length > 0 ? results[0] : null) as unknown as JobPostingRecord | null;
+  }
+  
+  /**
+   * Find a job posting by title and organization
+   * @param title The job title
+   * @param organization The organization
+   * @param sourceId Optional source ID to limit search
+   * @returns The job posting if found, otherwise null
+   */
+  async findByTitleAndOrganization(
+    title: string, 
+    organization: string, 
+    sourceId?: number
+  ): Promise<JobPostingRecord | null> {
+    // Build the query conditions
+    const conditions = sourceId
+      ? and(
+          eq(jobPostings.title, title),
+          eq(jobPostings.organization, organization),
+          eq(jobPostings.sourceId, sourceId)
+        )
+      : and(
+          eq(jobPostings.title, title),
+          eq(jobPostings.organization, organization)
+        );
+    
+    const results = await db
+      .select()
+      .from(jobPostings)
+      .where(conditions)
+      .orderBy(desc(jobPostings.dateScraped))
+      .limit(1);
+    
+    return (results.length > 0 ? results[0] : null) as unknown as JobPostingRecord | null;
+  }
 }
