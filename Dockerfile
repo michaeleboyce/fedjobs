@@ -61,8 +61,15 @@ RUN pnpm install --frozen-lockfile
 RUN npm install -g playwright
 RUN playwright install --with-deps chromium
 
-# Build the API and its dependencies
-RUN npx turbo run build --filter="@fedjobs/api..."
+# Build packages in specific order to handle dependencies correctly
+# First build the types package
+RUN npx turbo run build --filter="@fedjobs/types"
+# Then build database
+RUN npx turbo run build --filter="@fedjobs/database"
+# Then build utils
+RUN npx turbo run build --filter="@fedjobs/utils"
+# Finally build the API
+RUN npx turbo run build --filter="@fedjobs/api"
 
 EXPOSE 3001
 CMD ["sh", "-c", "pnpm --filter @fedjobs/api start"]
