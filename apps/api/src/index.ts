@@ -15,7 +15,7 @@ import jobSourcesRouter from './routes/jobSources'; // Job sources route
 import jobPostingsRouter from './routes/jobPostings'; // Job postings route
 import { errorHandler } from './middleware/error';
 import debug from 'debug';  
-import { JobScraperService } from '@fedjobs/crawler';
+import { ScraperService } from '@fedjobs/crawler';
 
 // Create Express app and HTTP server
 const app = express();
@@ -188,9 +188,9 @@ app.post('/api/job-sources/scheduled-refresh', (req, res) => {
     const { frequency = 'DAILY' } = req.body;
     
     // Start refresh process in the background
-    const jobScraperService = new JobScraperService();
+    const jobScraperService = new ScraperService();
     jobScraperService.scheduleRefresh(frequency)
-      .catch(error => logger(`Error in scheduled refresh: ${error}`));
+      .catch((error: Error) => logger(`Error in scheduled refresh: ${error.message}`));
     
     res.json({ 
       message: `Scheduled job refresh started for frequency: ${frequency}`,

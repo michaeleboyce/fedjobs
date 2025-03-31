@@ -359,6 +359,52 @@ export class ScraperService {
    * @param forceRefresh Whether to skip the cache and force a fresh crawl
    * @returns Crawl result information
    */
+  /**
+   * Schedule refresh of job sources based on frequency
+   * @param frequency The refresh frequency (DAILY, WEEKLY, etc)
+   * @returns A promise that resolves when the refresh scheduling is complete
+   */
+  async scheduleRefresh(frequency: string): Promise<void> {
+    try {
+      console.log(`[ScraperService] Scheduling refresh for ${frequency} frequency sources`);
+      
+      // Get sources with the specified refresh frequency
+      const sources = await this.jobSourceRepo.getSourcesForScheduledRefresh(frequency);
+      console.log(`[ScraperService] Found ${sources.length} sources with ${frequency} refresh frequency`);
+      
+      // Process each source
+      for (const source of sources) {
+        try {
+          console.log(`[ScraperService] Scheduling refresh for source ${source.id}: ${source.name || source.url}`);
+          
+          // Queue up the refresh operation
+          this.refreshJobSource(source.id, {
+            onComplete: async (jobs) => {
+              console.log(`[ScraperService] Scheduled refresh completed for source ${source.id} with ${jobs.length} jobs`);
+            },
+            onError: async (error) => {
+              console.error(`[ScraperService] Error in scheduled refresh for source ${source.id}:`, error);
+            }
+          }, false).catch(error => {
+            console.error(`[ScraperService] Failed to refresh source ${source.id}:`, error);
+          });
+          
+          // Small delay between sources to avoid overwhelming the system
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+        } catch (error) {
+          console.error(`[ScraperService] Error processing source ${source.id}:`, error);
+          // Continue with next source
+        }
+      }
+      
+      console.log(`[ScraperService] Scheduled refresh initialized for ${sources.length} sources`);
+    } catch (error) {
+      console.error(`[ScraperService] Error in scheduleRefresh:`, error);
+      throw error;
+    }
+  }
+  
   async refreshJobSource(
     sourceId: number,
     callbacks?: {
