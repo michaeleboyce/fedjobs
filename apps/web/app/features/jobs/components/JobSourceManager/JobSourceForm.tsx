@@ -81,6 +81,12 @@ export default function JobSourceForm({ userId, onSuccess, onCancel }: JobSource
         </div>
       )}
       
+      {/* Cache information notice */}
+      <div className="p-3 bg-blue-50 text-blue-700 rounded-md text-sm mb-4">
+        <p><strong>Pro Tip:</strong> Job sources are cached across all users.</p>
+        <p className="text-xs mt-1">If another user has recently crawled the same URL, we'll use the cached data to save time and reduce load on job sites.</p>
+      </div>
+        
       <div className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">

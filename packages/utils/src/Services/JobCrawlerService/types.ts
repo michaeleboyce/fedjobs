@@ -25,6 +25,7 @@ export interface JobCrawlerResult {
   jobsFound: number;
   jobsStored: number;
   error?: string;
+  usedCache?: boolean; // Indicates if the result came from cache
   dateCompleted: Date;
 }
 

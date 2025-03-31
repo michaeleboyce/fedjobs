@@ -1,4 +1,3 @@
-// File path: packages/database/src/repositories/parsings.ts
 // packages/database/src/repositories/parsings.ts
 import { db } from '../db-connection';
 import { eq, desc } from 'drizzle-orm';
@@ -16,8 +15,7 @@ export class ParsingRepository {
     return await db
       .select()
       .from(parsings)
-      .where(eq(parsings.documentId, documentId))
-      .execute();
+      .where(eq(parsings.documentId, documentId));
   }
 
   // Retrieves the latest parsing record for a given document.
@@ -27,8 +25,7 @@ export class ParsingRepository {
       .from(parsings)
       .where(eq(parsings.documentId, documentId))
       .orderBy(desc(parsings.createdAt))
-      .limit(1)
-      .execute();
+      .limit(1);
     return records.length ? records[0] : null;
   }
 
@@ -37,8 +34,7 @@ export class ParsingRepository {
     await db
       .update(parsings)
       .set({ analysisPercent: progress })
-      .where(eq(parsings.id, parsingId))
-      .execute();
+      .where(eq(parsings.id, parsingId));
   }
 
   // Marks a parsing record as an error.
@@ -46,8 +42,7 @@ export class ParsingRepository {
     await db
       .update(parsings)
       .set({ completion: "Error", isComplete: true })
-      .where(eq(parsings.id, parsingId))
-      .execute();
+      .where(eq(parsings.id, parsingId));
   }
 
   // Finalizes a parsing record with the completed XML.
@@ -59,17 +54,15 @@ export class ParsingRepository {
         analysisPercent: 100,
         isComplete: true,
       })
-      .where(eq(parsings.id, parsingId))
-      .execute();
+      .where(eq(parsings.id, parsingId));
   }
 
   // Retrieves a parsing record by its primary key.
   async getById(parsingId: number): Promise<ParsingRecord | null> {
-    const [record] = await db
+    const records = await db
       .select()
       .from(parsings)
-      .where(eq(parsings.id, parsingId))
-      .execute();
-    return record ?? null;
+      .where(eq(parsings.id, parsingId));
+    return records.length > 0 ? records[0] : null;
   }
 }

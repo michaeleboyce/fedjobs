@@ -1,6 +1,6 @@
 {
 	"id": "EXklZRPoznDiuwy",
-	"json": "{\"id\":\"EXklZRPoznDiuwy\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=New+York&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:04:14.765Z\"}",
+	"json": "{\"id\":\"EXklZRPoznDiuwy\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&location=New%20York\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=New+York&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T23:45:19.130Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

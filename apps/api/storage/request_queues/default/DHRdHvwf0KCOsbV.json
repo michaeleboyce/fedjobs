@@ -1,9 +1,0 @@
-{
-	"id": "DHRdHvwf0KCOsbV",
-	"json": "{\"id\":\"DHRdHvwf0KCOsbV\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Leadership&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Leadership&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743372268564,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&team=Leadership&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Leadership&commitment=Full-Time"
-}

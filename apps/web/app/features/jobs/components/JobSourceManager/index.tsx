@@ -68,19 +68,28 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
     
     // Handler for when crawling completes
     const crawlCompleteHandler = addMessageHandler('crawl_complete', (message) => {
-      const { sourceId, jobCount, status } = message.data;
+      const { sourceId, jobCount, status, usedCache, globalCacheId, cacheExpiresAt } = message.data;
       const now = new Date().toISOString();
       
       setSources(prev => prev.map(source => {
         if (source.id === sourceId) {
+          // Create message based on whether cache was used
+          const progressMessage = usedCache 
+            ? `Used cached data. ${jobCount} jobs added.` 
+            : `Crawl complete. Found ${jobCount} jobs.`;
+            
           return {
             ...source,
             status: status,
             isProcessing: false,
             jobCount: jobCount,
-            progressMessage: `Crawl complete. Found ${jobCount} jobs.`,
+            progressMessage: progressMessage,
             lastUpdateTime: now,
-            processingTimedOut: false
+            processingTimedOut: false,
+            usedCache: usedCache || source.usedCache,
+            usedCacheForLastUpdate: usedCache,
+            globalCacheId: globalCacheId || source.globalCacheId,
+            cacheExpiresAt: cacheExpiresAt
           };
         }
         return source;
@@ -146,7 +155,7 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
     };
   }, [addMessageHandler, userId]);
 
-  const handleRefresh = async (sourceId: number) => {
+  const handleRefresh = async (sourceId: number, forceRefresh: boolean = false) => {
     try {
       const now = new Date().toISOString();
       
@@ -159,7 +168,9 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
                 status: 'PENDING',
                 isProcessing: true,
                 foundJobsCount: 0,
-                progressMessage: 'Starting job crawl...',
+                progressMessage: forceRefresh 
+                  ? 'Starting fresh job crawl (bypassing cache)...' 
+                  : 'Starting job crawl...',
                 processingStartTime: now,
                 lastUpdateTime: now,
                 processingTimedOut: false
@@ -168,8 +179,24 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
         )
       );
       
-      // Call API to start refresh
-      await refreshJobSource(sourceId);
+      // Call API to start refresh with forceRefresh flag
+      const result = await refreshJobSource(sourceId, forceRefresh);
+      
+      // Update if we used the cache
+      if (result.usedCache) {
+        setSources(prev => 
+          prev.map(source => 
+            source.id === sourceId 
+              ? { 
+                  ...source,
+                  usedCache: true,
+                  usedCacheForLastUpdate: true,
+                  progressMessage: 'Using cached job data...',
+                } 
+              : source
+          )
+        );
+      }
       
       // Three polling mechanisms for resilience:
       // 1. WebSockets for real-time updates (primary)

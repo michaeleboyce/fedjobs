@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { cn } from '@/app/shared/utils/classNames';
 import Icon from '../Icon';
 
@@ -38,8 +38,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     onChange,
     ...props
   }, ref) => {
-    // Generate a random ID if none is provided
-    const selectId = id || `select-${Math.random().toString(36).substring(2, 9)}`;
+    // Always call useId() unconditionally
+    const generatedId = useId();
+    // Then use the id prop if available, otherwise use the generated id
+    const selectId = id || `select-${generatedId}`;
     
     // Handle onChange to call both the native onChange and our custom onSelect
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

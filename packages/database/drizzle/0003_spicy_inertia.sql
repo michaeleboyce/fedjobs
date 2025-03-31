@@ -1,0 +1,1 @@
+ALTER TABLE "job_sources" ADD COLUMN "used_cache_for_last_update" boolean DEFAULT false;

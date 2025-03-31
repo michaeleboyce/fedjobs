@@ -89,6 +89,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       return;
     }
     
+    // Create the new job source
     const newSource = await jobSourceRepo.insert({
       userId,
       url,
@@ -98,18 +99,17 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       status: 'PENDING'
     });
     
-    // Trigger initial scrape as a background process with WebSocket updates
-    // Use the userId from the new source
-    
     // Send initial status via WebSocket
     sendWebSocketUpdate(userId, 'job_source_created', { 
       sourceId: newSource.id,
       status: 'PENDING',
-      message: 'Job source created, starting initial crawl...'
+      message: 'Job source created, checking cache and starting initial crawl...'
     });
     
     // Start the job crawl with progress updates
-    jobScraperService.refreshJobSource(newSource.id, {
+    // The refreshJobSource method will automatically check if there's a cached version available
+    let crawlResult: any = null;
+    crawlResult = await jobScraperService.refreshJobSource(newSource.id, {
       onJobFound: async (job) => {
         // Send real-time job updates
         sendWebSocketUpdate(userId, 'job_found', {
@@ -120,11 +120,18 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         });
       },
       onComplete: async (jobs) => {
+        // Check if the refresh used cached data
+        const usedCache = crawlResult?.usedCache === true;
+        
         // Send completion update
         sendWebSocketUpdate(userId, 'crawl_complete', {
           sourceId: newSource.id,
           jobCount: jobs.length,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          usedCache: usedCache,
+          message: usedCache 
+            ? 'Used cached data from previous crawl' 
+            : 'Completed fresh crawl of job source'
         });
       },
       onError: async (error) => {
@@ -135,7 +142,18 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
           status: 'ERROR'
         });
       }
-    }).catch(error => console.error(`Error in initial scrape for source ${newSource.id}:`, error));
+    },
+    false // Don't force refresh for new sources
+    ).catch(error => {
+      console.error(`Error in initial scrape for source ${newSource.id}:`, error);
+      
+      // Send error update via WebSocket
+      sendWebSocketUpdate(userId, 'crawl_error', {
+        sourceId: newSource.id,
+        error: error.message || 'Unknown error occurred during crawl',
+        status: 'ERROR'
+      });
+    });
     
     res.status(201).json(newSource);
   } catch (error) {
@@ -242,37 +260,57 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
       return;
     }
     
+    // Force refresh flag - if true, bypass cache and force a fresh crawl
+    const forceRefresh = req.query.forceRefresh === 'true' || req.body.forceRefresh === true;
+    console.log(`Job source refresh for ID ${id}, forceRefresh: ${forceRefresh}`);
+    console.log(`Query params:`, req.query);
+    console.log(`Body:`, req.body);
+    
     // Respond with acknowledgement that the refresh has started
     res.json({ 
       message: 'Job source refresh started',
       sourceId: id,
-      status: 'PENDING'
+      status: 'PENDING',
+      forceRefresh
     });
     
     // Send initial WebSocket update
     sendWebSocketUpdate(sourceDetails.userId, 'job_source_refresh_started', {
       sourceId: id,
       status: 'PENDING',
-      message: 'Job source refresh started'
+      message: forceRefresh 
+        ? 'Starting forced refresh of job source'
+        : 'Job source refresh started, checking cache first'
     });
     
     // Start the refresh in the background with WebSocket updates
-    jobScraperService.refreshJobSource(id, {
-      onJobFound: async (job) => {
-        // Send real-time job updates
-        sendWebSocketUpdate(sourceDetails.userId, 'job_found', {
-          sourceId: id,
-          jobTitle: job.title,
-          organization: job.organization,
-          url: job.url
-        });
-      },
+    console.log(`Starting refresh with forceRefresh=${forceRefresh}`);
+    let crawlResult: any = null;
+    crawlResult = await jobScraperService.refreshJobSource(
+      id, 
+      {
+        onJobFound: async (job) => {
+          // Send real-time job updates
+          sendWebSocketUpdate(sourceDetails.userId, 'job_found', {
+            sourceId: id,
+            jobTitle: job.title,
+            organization: job.organization,
+            url: job.url
+          });
+        },
       onComplete: async (jobs) => {
+        // Check if the refresh used cached data
+        const usedCache = crawlResult?.usedCache === true;
+        
         // Send completion update
         sendWebSocketUpdate(sourceDetails.userId, 'crawl_complete', {
           sourceId: id,
           jobCount: jobs.length,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          usedCache,
+          message: usedCache 
+            ? 'Used cached data from previous crawl' 
+            : 'Completed fresh crawl of job source'
         });
       },
       onError: async (error) => {
@@ -283,7 +321,18 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
           status: 'ERROR'
         });
       }
-    }).catch(error => console.error(`Error refreshing source ${id}:`, error));
+    }, 
+    forceRefresh
+    ).catch(error => {
+      console.error(`Error refreshing source ${id}:`, error);
+      
+      // Send error update via WebSocket
+      sendWebSocketUpdate(sourceDetails.userId, 'crawl_error', {
+        sourceId: id,
+        error: error.message || 'Unknown error occurred during refresh',
+        status: 'ERROR'
+      });
+    });
     
   } catch (error) {
     next(error);

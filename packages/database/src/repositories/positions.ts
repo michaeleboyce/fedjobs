@@ -1,4 +1,3 @@
-// File path: packages/database/src/repositories/positions.ts
 // packages/database/src/repositories/positions.ts
 import { db } from '../db-connection';
 import { eq } from 'drizzle-orm';
@@ -16,8 +15,7 @@ export class PositionRepository {
     const results = await db
       .select()
       .from(positions)
-      .where(eq(positions.positionUuid, positionUuid))
-      .execute();
+      .where(eq(positions.positionUuid, positionUuid));
     return results.length ? results[0] : undefined;
   }
 
@@ -26,8 +24,7 @@ export class PositionRepository {
     return await db
       .select()
       .from(positions)
-      .where(eq(positions.userId, userId))
-      .execute();
+      .where(eq(positions.userId, userId));
   }
 
   // New optimized method to fetch all positions for a user in one query
@@ -54,7 +51,7 @@ export class PositionRepository {
 
   // Deletes a position record by its UUID.
   async deleteByUuid(positionUuid: string): Promise<void> {
-    await db.delete(positions).where(eq(positions.positionUuid, positionUuid)).execute();
+    await db.delete(positions).where(eq(positions.positionUuid, positionUuid));
   }
 
   // Updates specific fields of a position record.

@@ -1,6 +1,6 @@
 {
 	"id": "JDjuEmgk9wTnhIe",
-	"json": "{\"id\":\"JDjuEmgk9wTnhIe\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:03:44.490Z\"}",
+	"json": "{\"id\":\"JDjuEmgk9wTnhIe\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Operations\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T23:44:46.503Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

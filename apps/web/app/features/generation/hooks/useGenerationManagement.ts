@@ -80,8 +80,8 @@ export function useGenerationManagement() {
   };
 
   // Position selection handler
-  const handleSelectionChange = (newSelectedPositions: typeof selectedPositions) => {
-    setSelectedPositions(newSelectedPositions);
+  const handleSelectionChange = (newPositionState: Record<string, { selectedActivities: number[]; selectedAccomplishments: number[] }>) => {
+    setSelectedPositions(newPositionState);
   };
 
   return {

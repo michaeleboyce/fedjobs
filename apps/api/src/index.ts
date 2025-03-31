@@ -31,26 +31,47 @@ export const userWsClients = new Map<string, Set<WebSocket>>();
 wss.on('connection', (ws: WebSocket) => {
   console.log('WebSocket client connected');
   
+  // Add isAlive property to the WebSocket object
+  const extendedWs = ws as WebSocket & { isAlive: boolean; userId?: string };
+  extendedWs.isAlive = true;
+  
+  // Set up ping handler
+  extendedWs.on('pong', () => {
+    extendedWs.isAlive = true;
+  });
+  
   // Handle connection messages (including userId)
-  ws.on('message', (message: string) => {
+  extendedWs.on('message', (message: string) => {
     try {
       const data = JSON.parse(message);
+      
+      // Handle ping messages directly
+      if (data.type === 'ping') {
+        extendedWs.isAlive = true;
+        extendedWs.send(JSON.stringify({
+          type: 'pong',
+          timestamp: new Date().toISOString()
+        }));
+        return;
+      }
       
       // If this is a registration message with userId
       if (data.type === 'register' && data.userId) {
         const userId = data.userId;
+        extendedWs.userId = userId;
         
         // Store client connection by userId
         if (!userWsClients.has(userId)) {
           userWsClients.set(userId, new Set());
         }
-        userWsClients.get(userId)?.add(ws);
+        userWsClients.get(userId)?.add(extendedWs);
         
         console.log(`WebSocket client registered for user ${userId}`);
         
         // Send acknowledgement
-        ws.send(JSON.stringify({ 
+        extendedWs.send(JSON.stringify({ 
           type: 'registration_successful',
+          timestamp: new Date().toISOString(),
           message: 'Successfully registered for real-time updates'
         }));
       }
@@ -60,21 +81,75 @@ wss.on('connection', (ws: WebSocket) => {
   });
   
   // Handle disconnection
-  ws.on('close', () => {
+  extendedWs.on('close', () => {
     console.log('WebSocket client disconnected');
     
-    // Remove client from all userIds
-    userWsClients.forEach((clients, userId) => {
-      if (clients.has(ws)) {
-        clients.delete(ws);
-        
-        // Clean up empty sets
+    // If we have a userId stored, use it for faster cleanup
+    if (extendedWs.userId) {
+      const clients = userWsClients.get(extendedWs.userId);
+      if (clients) {
+        clients.delete(extendedWs);
         if (clients.size === 0) {
-          userWsClients.delete(userId);
+          userWsClients.delete(extendedWs.userId);
         }
       }
-    });
+    } else {
+      // Fall back to checking all clients
+      userWsClients.forEach((clients, userId) => {
+        if (clients.has(extendedWs)) {
+          clients.delete(extendedWs);
+          
+          // Clean up empty sets
+          if (clients.size === 0) {
+            userWsClients.delete(userId);
+          }
+        }
+      });
+    }
   });
+  
+  // Send initial heartbeat
+  extendedWs.send(JSON.stringify({
+    type: 'heartbeat',
+    timestamp: new Date().toISOString(),
+    message: 'Connection established'
+  }));
+});
+
+// Set up interval to check for dead connections and send heartbeats
+const heartbeatInterval = setInterval(() => {
+  wss.clients.forEach((ws) => {
+    const extendedWs = ws as WebSocket & { isAlive: boolean };
+    
+    if (extendedWs.isAlive === false) {
+      // Connection is dead, terminate it
+      console.log('Terminating inactive WebSocket connection');
+      return extendedWs.terminate();
+    }
+    
+    // Mark as inactive for next cycle
+    extendedWs.isAlive = false;
+    
+    // Send a ping
+    try {
+      extendedWs.ping();
+      
+      // Also send a heartbeat message
+      extendedWs.send(JSON.stringify({
+        type: 'heartbeat',
+        timestamp: new Date().toISOString()
+      }));
+    } catch (err) {
+      // If sending fails, terminate the connection
+      console.error('Error sending heartbeat:', err);
+      extendedWs.terminate();
+    }
+  });
+}, 30000); // Check every 30 seconds
+
+// Clean up interval on server close
+server.on('close', () => {
+  clearInterval(heartbeatInterval);
 });
 
 app.use(helmet());

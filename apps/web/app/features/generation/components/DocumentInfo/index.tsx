@@ -4,7 +4,6 @@ import { DocumentTypeSelector } from "./DocumentTypeSelector";
 import { ECQSelector } from "./ECQSelector";
 import { JobInfoInput } from "./JobInfoInput";
 import { LengthSelector } from "./LengthSelector";
-import { DocumentInfo as DocumentInfoType } from "../../types/DocumentInfo";
 
 interface DocumentInfoProps {
   showIsDummy: boolean;

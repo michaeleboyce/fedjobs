@@ -1,0 +1,1009 @@
+{
+  "id": "794ad420-d129-44af-8720-cfe5e9df5723",
+  "prevId": "92455f22-caf3-4ee0-bfee-19caeab23905",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.documents": {
+      "name": "documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "document_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "document_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'USER_UPLOADED'"
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "s3_key": {
+          "name": "s3_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_parsed": {
+          "name": "is_parsed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "in_knowledge_bank": {
+          "name": "in_knowledge_bank",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "data": {
+          "name": "data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(75)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.generations": {
+      "name": "generations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "generation_type": {
+          "name": "generation_type",
+          "type": "generation_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_paragraph": {
+          "name": "is_paragraph",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completion": {
+          "name": "completion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "temperature": {
+          "name": "temperature",
+          "type": "numeric(2, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.global_source_cache": {
+      "name": "global_source_cache",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "normalized_url": {
+          "name": "normalized_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_url": {
+          "name": "original_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_crawled": {
+          "name": "last_crawled",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_frequency": {
+          "name": "refresh_frequency",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'DAILY'"
+        },
+        "status": {
+          "name": "status",
+          "type": "global_cache_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_count": {
+          "name": "job_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "user_count": {
+          "name": "user_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 1
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "global_source_cache_normalized_url_unique": {
+          "name": "global_source_cache_normalized_url_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "normalized_url"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.job_postings": {
+      "name": "job_postings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organization": {
+          "name": "organization",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organization_type": {
+          "name": "organization_type",
+          "type": "organization_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "department": {
+          "name": "department",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "salary": {
+          "name": "salary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requirements": {
+          "name": "requirements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "employment_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "experience": {
+          "name": "experience",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "status": {
+          "name": "status",
+          "type": "job_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
+        },
+        "date_posted": {
+          "name": "date_posted",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date_scraped": {
+          "name": "date_scraped",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "structured_data": {
+          "name": "structured_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::json"
+        },
+        "benefits": {
+          "name": "benefits",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skills": {
+          "name": "skills",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "job_postings_source_id_job_sources_id_fk": {
+          "name": "job_postings_source_id_job_sources_id_fk",
+          "tableFrom": "job_postings",
+          "tableTo": "job_sources",
+          "columnsFrom": [
+            "source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.job_sources": {
+      "name": "job_sources",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "keywords": {
+          "name": "keywords",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "''"
+        },
+        "last_scraped": {
+          "name": "last_scraped",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "source_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refresh_frequency": {
+          "name": "refresh_frequency",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'DAILY'"
+        },
+        "global_cache_id": {
+          "name": "global_cache_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "used_cache": {
+          "name": "used_cache",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "job_sources_global_cache_id_global_source_cache_id_fk": {
+          "name": "job_sources_global_cache_id_global_source_cache_id_fk",
+          "tableFrom": "job_sources",
+          "tableTo": "global_source_cache",
+          "columnsFrom": [
+            "global_cache_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.parsings": {
+      "name": "parsings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parsing_type": {
+          "name": "parsing_type",
+          "type": "parsing_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completion": {
+          "name": "completion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "analysis_percent": {
+          "name": "analysis_percent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "is_complete": {
+          "name": "is_complete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "temperature": {
+          "name": "temperature",
+          "type": "numeric(2, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "parsings_document_id_documents_id_fk": {
+          "name": "parsings_document_id_documents_id_fk",
+          "tableFrom": "parsings",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.positions": {
+      "name": "positions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "position_uuid": {
+          "name": "position_uuid",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "organization": {
+          "name": "organization",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "present": {
+          "name": "present",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "activities": {
+          "name": "activities",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accomplishments": {
+          "name": "accomplishments",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_employment_history": {
+          "name": "is_employment_history",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "original_position_uuid": {
+          "name": "original_position_uuid",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "original_document_id": {
+          "name": "original_document_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "similar_position_uuids": {
+          "name": "similar_position_uuids",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
+        },
+        "approved_similar_position_uuids": {
+          "name": "approved_similar_position_uuids",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
+        },
+        "rejected_similar_position_uuids": {
+          "name": "rejected_similar_position_uuids",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "positions_document_id_documents_id_fk": {
+          "name": "positions_document_id_documents_id_fk",
+          "tableFrom": "positions",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "positions_position_uuid_unique": {
+          "name": "positions_position_uuid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "position_uuid"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_job_feedback": {
+      "name": "user_job_feedback",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "feedback_type": {
+          "name": "feedback_type",
+          "type": "feedback_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reasons": {
+          "name": "reasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "viewed": {
+          "name": "viewed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_job_feedback_job_id_job_postings_id_fk": {
+          "name": "user_job_feedback_job_id_job_postings_id_fk",
+          "tableFrom": "user_job_feedback",
+          "tableTo": "job_postings",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.document_source": {
+      "name": "document_source",
+      "schema": "public",
+      "values": [
+        "USER_UPLOADED",
+        "APPLICATION_GENERATED"
+      ]
+    },
+    "public.document_type": {
+      "name": "document_type",
+      "schema": "public",
+      "values": [
+        "cover_letter",
+        "ecq",
+        "resume",
+        "tcq",
+        "other"
+      ]
+    },
+    "public.generation_type": {
+      "name": "generation_type",
+      "schema": "public",
+      "values": [
+        "cover_letter",
+        "ecq",
+        "resume",
+        "tcq",
+        "other"
+      ]
+    },
+    "public.global_cache_status": {
+      "name": "global_cache_status",
+      "schema": "public",
+      "values": [
+        "ACTIVE",
+        "STALE",
+        "ERROR",
+        "PENDING"
+      ]
+    },
+    "public.employment_type": {
+      "name": "employment_type",
+      "schema": "public",
+      "values": [
+        "FULL_TIME",
+        "PART_TIME",
+        "CONTRACT",
+        "TEMPORARY",
+        "INTERNSHIP",
+        "REMOTE",
+        "HYBRID",
+        "OTHER"
+      ]
+    },
+    "public.job_status": {
+      "name": "job_status",
+      "schema": "public",
+      "values": [
+        "ACTIVE",
+        "INACTIVE",
+        "FILLED",
+        "EXPIRED"
+      ]
+    },
+    "public.organization_type": {
+      "name": "organization_type",
+      "schema": "public",
+      "values": [
+        "GOVERNMENT",
+        "NONPROFIT",
+        "PRIVATE",
+        "PUBLIC",
+        "ACADEMIC",
+        "STARTUP",
+        "OTHER"
+      ]
+    },
+    "public.source_status": {
+      "name": "source_status",
+      "schema": "public",
+      "values": [
+        "ACTIVE",
+        "INACTIVE",
+        "ERROR",
+        "PENDING"
+      ]
+    },
+    "public.parsing_type": {
+      "name": "parsing_type",
+      "schema": "public",
+      "values": [
+        "cover_letter",
+        "ecq",
+        "resume",
+        "tcq",
+        "other"
+      ]
+    },
+    "public.feedback_type": {
+      "name": "feedback_type",
+      "schema": "public",
+      "values": [
+        "INTERESTED",
+        "NOT_INTERESTED",
+        "APPLIED",
+        "SAVED",
+        "VIEWED"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

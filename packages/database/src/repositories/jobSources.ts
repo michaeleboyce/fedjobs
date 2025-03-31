@@ -1,7 +1,7 @@
 // packages/database/src/repositories/jobSources.ts
-import { db } from '../db-connection';
-import { eq, and, lt, desc } from 'drizzle-orm';
-import { jobSources, type JobSourceRecord, type NewJobSourceRecord } from '../schema/jobSources';
+import { db } from "../db-connection";
+import { eq, and, lt, desc, isNull, not } from "drizzle-orm";
+import { jobSources, type JobSourceRecord, type NewJobSourceRecord } from "../schema/jobSources";
 
 export class JobSourceRepository {
   async insert(data: NewJobSourceRecord): Promise<JobSourceRecord> {
@@ -19,28 +19,38 @@ export class JobSourceRepository {
       .where(eq(jobSources.userId, userId))
       .orderBy(desc(jobSources.createdAt));
   }
-  
-  async getSourcesForScheduledRefresh(refreshFrequency: string): Promise<JobSourceRecord[]> {
+
+  async getByGlobalCacheId(globalCacheId: number): Promise<JobSourceRecord[]> {
+    return await db.select().from(jobSources)
+      .where(eq(jobSources.globalCacheId, globalCacheId))
+      .orderBy(desc(jobSources.lastScraped));
+  }
+
+  async getSourcesForScheduledRefresh(frequency: string): Promise<JobSourceRecord[]> {
     const now = new Date();
-    let timeCutoff: Date;
+    const oneDayAgo = new Date(now);
+    oneDayAgo.setDate(now.getDate() - 1);
     
-    // Set cutoff time based on refresh frequency
-    switch (refreshFrequency) {
-      case 'DAILY':
-        timeCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
-        break;
-      case 'WEEKLY':
-        timeCutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
-        break;
-      default:
-        timeCutoff = new Date(now.getTime());
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    
+    // Handle frequency-based filter
+    let timeFilter;
+    if (frequency === "DAILY") {
+      timeFilter = lt(jobSources.lastScraped, oneDayAgo);
+    } else if (frequency === "WEEKLY") {
+      timeFilter = lt(jobSources.lastScraped, oneWeekAgo);
+    } else {
+      // For MANUAL frequency, we will only include sources that have never been scraped
+      timeFilter = isNull(jobSources.lastScraped);
     }
     
     return await db.select().from(jobSources)
       .where(and(
-        eq(jobSources.status, 'ACTIVE'),
-        eq(jobSources.refreshFrequency, refreshFrequency),
-        lt(jobSources.lastScraped, timeCutoff)
+        eq(jobSources.refreshFrequency, frequency),
+        eq(jobSources.status, "ACTIVE"),
+        not(eq(jobSources.status, "PENDING")),
+        timeFilter
       ))
       .orderBy(jobSources.lastScraped);
   }
@@ -56,16 +66,18 @@ export class JobSourceRepository {
   }
 
   async updateStatus(id: number, status: string, errorMessage?: string): Promise<JobSourceRecord[]> {
-    return await this.update(id, { 
+    return await this.update(id, {
       status: status as any,
       errorMessage,
       updatedAt: new Date()
     });
   }
 
-  async updateLastScraped(id: number): Promise<JobSourceRecord[]> {
-    return await this.update(id, { 
-      lastScraped: new Date(),
+  async linkToGlobalCache(id: number, globalCacheId: number, usedCache: boolean = true): Promise<JobSourceRecord[]> {
+    return await this.update(id, {
+      globalCacheId,
+      usedCache,
+      usedCacheForLastUpdate: usedCache,
       updatedAt: new Date()
     });
   }
@@ -74,3 +86,4 @@ export class JobSourceRepository {
     await db.delete(jobSources).where(eq(jobSources.id, id));
   }
 }
+

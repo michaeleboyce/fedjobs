@@ -1,5 +1,5 @@
 // File path: apps/web/app/features/generation/utils/documentTransformers.ts
-import { StreamingTextArray } from '../types';
+import { StreamingTextArray } from '@fedjobs/types';
 
 /**
  * Convert a plain text document into paragraphs

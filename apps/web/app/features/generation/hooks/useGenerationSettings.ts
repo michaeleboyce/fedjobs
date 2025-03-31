@@ -1,7 +1,7 @@
 // File path: apps/web/app/features/generation/hooks/useGenerationSettings.ts
 import { useState, useEffect } from 'react';
 import { DOCUMENT_TYPES } from '@fedjobs/utils';
-import { DocumentInfo } from '../types';
+import { DocumentInfo } from '@fedjobs/types';
 import { Job, JobInfo } from '@fedjobs/types';
 import { getTCQEssayPrompts } from '@/app/shared/actions/usaJobsActions';
 

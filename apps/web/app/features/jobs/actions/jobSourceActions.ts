@@ -144,9 +144,19 @@ export async function deleteJobSource(sourceId: number): Promise<void> {
 }
 
 // Refresh a job source
-export async function refreshJobSource(sourceId: number): Promise<{ message: string; sourceId: number; status: string }> {
+export async function refreshJobSource(
+  sourceId: number, 
+  forceRefresh: boolean = false
+): Promise<{ message: string; sourceId: number; status: string; usedCache?: boolean }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/job-sources/${sourceId}/refresh`, {
+    const url = new URL(`${API_BASE_URL}/api/job-sources/${sourceId}/refresh`);
+    
+    // Add forceRefresh parameter if specified
+    if (forceRefresh) {
+      url.searchParams.append('forceRefresh', 'true');
+    }
+    
+    const response = await fetch(url.toString(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

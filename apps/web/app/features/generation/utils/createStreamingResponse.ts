@@ -1,7 +1,7 @@
 // File path: apps/web/app/features/generation/utils/createStreamingResponse.ts
-import { StreamingTextArray } from '../types';
+import { StreamingTextArray } from '@fedjobs/types';
 import { createMockReader } from '@/app/shared/utils/mockReader';
-import { GenerationSelection } from '../types';
+import { GenerationSelection } from '@fedjobs/types';
 
 // API url based on environment
 // TODO: Refactor this to be a generic function that is called in some manner

@@ -1,4 +1,3 @@
-// File path: packages/database/src/repositories/documents.ts
 // packages/database/src/repositories/documents.ts
 import { db } from '../db-connection';
 import { eq, and, sql } from 'drizzle-orm';
@@ -25,18 +24,18 @@ export class DocumentRepository {
     const condition = userId
       ? and(eq(documents.id, documentId), eq(documents.userId, userId))
       : eq(documents.id, documentId);
-    const results = await db.select().from(documents).where(condition).execute();
+    const results = await db.select().from(documents).where(condition);
     return results.length ? results[0] : undefined;
   }
 
   // Deletes a document record by ID.
   async delete(documentId: number): Promise<void> {
-    await db.delete(documents).where(eq(documents.id, documentId)).execute();
+    await db.delete(documents).where(eq(documents.id, documentId));
   }
 
   // Retrieves all documents for a given user.
   async getByUserId(userId: string): Promise<DocumentRecord[]> {
-    return await db.select().from(documents).where(eq(documents.userId, userId)).execute();
+    return await db.select().from(documents).where(eq(documents.userId, userId));
   }
 
   // Optionally, include prepared query functionality:

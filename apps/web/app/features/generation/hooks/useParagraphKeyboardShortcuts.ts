@@ -1,6 +1,6 @@
 // File path: apps/web/app/features/generation/hooks/useParagraphKeyboardShortcuts.ts
 import { useEffect } from 'react';
-import { StreamingTextArray } from '../types';
+import { StreamingTextArray } from '@fedjobs/types';
 
 interface UseParagraphKeyboardShortcutsProps {
   editMode: boolean;

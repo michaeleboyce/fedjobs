@@ -1,9 +1,0 @@
-{
-	"id": "6ieAjANKXBlcuns",
-	"json": "{\"id\":\"6ieAjANKXBlcuns\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Operations&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Operations&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
-	"method": "GET",
-	"orderNo": 1743372269050,
-	"retryCount": 0,
-	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&team=Operations&workplaceType=onsite",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Operations&commitment=Intern"
-}

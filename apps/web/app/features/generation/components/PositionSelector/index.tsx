@@ -10,7 +10,7 @@ interface PositionSelectorProps {
   employmentHistory: Position[];
   otherPositions: Position[];
   selectedState: Record<string, PositionSelectionState>; //PositionSelectionState preserves the activities and accomplishments bifurcation.
-  onSelectionChange: (newState: PositionSelectionState) => void;
+  onSelectionChange: (newState: Record<string, PositionSelectionState>) => void;
 }
 
 export function PositionSelector({

@@ -1,5 +1,5 @@
 // packages/utils/src/Services/JobCrawlerService/index.ts
-import { PlaywrightCrawler } from 'crawlee';
+import { PlaywrightCrawler, LogLevel, log } from 'crawlee';
 import { JobParser } from './JobParser';
 import { URL } from 'url';
 import { JobPostingData } from './types';
@@ -12,29 +12,52 @@ export interface CrawlJobOptions {
   onComplete?: (jobs: JobPostingData[]) => Promise<void>;
   onError?: (error: Error, url: string) => Promise<void>;
 }
+log.setLevel(LogLevel.INFO);
 
 export class JobCrawlerService {
   private parser: JobParser;
   
   constructor() {
     this.parser = new JobParser();
+    console.log('[JobCrawlerService] Initialized with PlaywrightCrawler from crawlee');
+    
+    // Check if Playwright is properly installed
+    try {
+      const playwrightPath = require.resolve('playwright');
+      console.log('[JobCrawlerService] Playwright found at:', playwrightPath);
+    } catch (error) {
+      console.error('[JobCrawlerService] Error finding Playwright:', error);
+    }
   }
   
   async crawlJobSite(options: CrawlJobOptions): Promise<JobPostingData[]> {
     const { url, keywords, maxJobs = 20, onJobFound, onComplete, onError } = options;
+    console.log(`[JobCrawlerService] Starting crawl of ${url} with keywords: ${keywords || 'none'}`);
+    console.log(`[JobCrawlerService] Max jobs: ${maxJobs}`);
+    
     const results: JobPostingData[] = [];
-    const hostname = new URL(url).hostname;
+    
+    let hostname: string;
+    try {
+      hostname = new URL(url).hostname;
+      console.log(`[JobCrawlerService] Hostname: ${hostname}`);
+    } catch (error) {
+      console.error(`[JobCrawlerService] Invalid URL: ${url}`, error);
+      throw new Error(`Invalid URL: ${url}`);
+    }
     
     // Create a crawler
+    console.log(`[JobCrawlerService] Creating PlaywrightCrawler for ${url}`);
     const crawler = new PlaywrightCrawler({
       // Use headless browser to handle JavaScript-heavy sites
       headless: true,
       // Limit concurrent requests
       maxConcurrency: 2,
       // More time for pages to load
-      navigationTimeoutSecs: 60,
+      navigationTimeoutSecs: 90,
       // Log successful requests too
       failedRequestHandler: async ({ request, error, log }) => {
+        console.error(`[JobCrawlerService] Request ${request.url} failed:`, error);
         log.error(`Request ${request.url} failed: ${error}`);
         if (onError) {
           await onError(error as Error, request.url);
@@ -43,107 +66,177 @@ export class JobCrawlerService {
       // Limit crawl to the specified domain
       requestHandler: async ({ request, page, enqueueLinks, log }) => {
         log.info(`Processing ${request.url}`);
-        console.log(`[JobCrawler] Processing ${request.url}`);
+        console.log(`[JobCrawler] ======== CRAWLING PAGE: ${request.url} ========`);
         
         try {
+          // Log browser and page details
+          const browser = page.context().browser();
+          if (browser) {
+            console.log(`[JobCrawler] Using browser:`, browser.version());
+          } else {
+            console.log(`[JobCrawler] Browser information not available`);
+          }
+          
           // Set a reasonable viewport
+          console.log(`[JobCrawler] Setting viewport size`);
           await page.setViewportSize({ width: 1280, height: 800 });
           
           // Wait for page to load with longer timeout
+          console.log(`[JobCrawler] Waiting for domcontentloaded state`);
           await page.waitForLoadState('domcontentloaded');
+          console.log(`[JobCrawler] Waiting additional 2s for scripts to execute`);
           await page.waitForTimeout(2000); // Give JS some time to execute
           
           try {
+            console.log(`[JobCrawler] Waiting for networkidle state (max 10s)`);
             await page.waitForLoadState('networkidle', { timeout: 10000 });
+            console.log(`[JobCrawler] Network idle achieved`);
           } catch (e) {
             // Continue anyway if networkidle times out
-            console.log(`[JobCrawler] NetworkIdle timeout for ${request.url}`);
+            console.log(`[JobCrawler] NetworkIdle timeout for ${request.url} - continuing anyway`);
           }
           
           // Get page content as HTML
+          console.log(`[JobCrawler] Getting page content`);
           const content = await page.content();
           console.log(`[JobCrawler] Got content from ${request.url}, length: ${content.length}`);
           
           // Get metadata from page
+          console.log(`[JobCrawler] Getting page title`);
           const title = await page.title();
-          console.log(`[JobCrawler] Page title: ${title}`);
+          console.log(`[JobCrawler] Page title: "${title}"`);
           
           let description = '';
           try {
+            console.log(`[JobCrawler] Getting meta description`);
             description = await page.evaluate(() => {
               const metaTag = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
               return metaTag ? metaTag.getAttribute('content') || '' : '';
             });
+            if (description) {
+              console.log(`[JobCrawler] Meta description: "${description.substring(0, 100)}${description.length > 100 ? '...' : ''}"`);
+            } else {
+              console.log(`[JobCrawler] No meta description found`);
+            }
           } catch (error) {
-            // If meta description tag doesn't exist, use an empty string
-            console.log(`[JobCrawler] No meta description found`);
+            // If meta description tag doesn't exist, use an empty string 
+            console.log(`[JobCrawler] Error getting meta description:`, error);
           }
           
-          // Take screenshot for debugging (optional, remove in production)
-          // await page.screenshot({ path: `screenshot-${Date.now()}.png` });
+          // Take screenshot for debugging
+          const screenshotPath = `screenshot-${Date.now()}.png`;
+          console.log(`[JobCrawler] Taking page screenshot to ${screenshotPath}`);
+          try {
+            await page.screenshot({ path: screenshotPath, fullPage: true });
+            console.log(`[JobCrawler] Screenshot saved successfully`);
+          } catch (screenshotError) {
+            console.error(`[JobCrawler] Error taking screenshot:`, screenshotError);
+          }
           
           // Parse job data using LLM
-          console.log(`[JobCrawler] Parsing job data from ${request.url}`);
-          const jobData = await this.parser.parseJobsFromPage({
-            url: request.url,
-            content,
-            title,
-            description,
-            keywords
-          });
+          console.log(`[JobCrawler] Parsing job data from ${request.url} using AI`);
+          console.log(`[JobCrawler] Starting AI analysis at ${new Date().toISOString()}`);
           
-          console.log(`[JobCrawler] Found ${jobData.length} jobs on ${request.url}`);
-          
-          if (jobData.length > 0) {
-            // Process and store job data
-            for (const job of jobData) {
-              // Skip if we've already found enough jobs
-              if (results.length >= maxJobs) break;
-              
-              // Add to results
-              results.push(job);
-              console.log(`[JobCrawler] Job found: ${job.title} at ${job.organization}`);
-              
-              // Call onJobFound callback if provided
-              if (onJobFound) {
-                await onJobFound(job);
-              }
-            }
+          try {
+            const jobData = await this.parser.parseJobsFromPage({
+              url: request.url,
+              content,
+              title,
+              description,
+              keywords
+            });
             
-            // If we've found enough jobs, stop crawling
-            if (results.length >= maxJobs) {
-              console.log(`[JobCrawler] Reached maximum jobs limit (${maxJobs})`);
-              await crawler.stop();
-              return;
+            console.log(`[JobCrawler] AI analysis complete at ${new Date().toISOString()}`);
+            console.log(`[JobCrawler] Found ${jobData.length} jobs on ${request.url}`);
+            
+            if (jobData.length > 0) {
+              // Detailed logging of each job found
+              jobData.forEach((job, index) => {
+                console.log(`[JobCrawler] Job #${index + 1} details:`);
+                console.log(`  Title: ${job.title}`);
+                console.log(`  Organization: ${job.organization}`);
+                console.log(`  Location: ${job.location || 'N/A'}`);
+                console.log(`  URL: ${job.url}`);
+                if (job.salary) console.log(`  Salary: ${job.salary}`);
+                console.log(`  Description length: ${job.description?.length || 0} chars`);
+              });
+              
+              // Process and store job data
+              for (const job of jobData) {
+                // Skip if we've already found enough jobs
+                if (results.length >= maxJobs) {
+                  console.log(`[JobCrawler] Reached maximum jobs limit (${maxJobs}), stopping processing`);
+                  break;
+                }
+                
+                // Add to results (including possible duplicates)
+                results.push(job);
+                console.log(`[JobCrawler] Added job to results: ${job.title} at ${job.organization}`);
+                
+                // Call onJobFound callback if provided
+                if (onJobFound) {
+                  console.log(`[JobCrawler] Calling onJobFound callback for "${job.title}"`);
+                  await onJobFound(job);
+                }
+              }
+            } else {
+              console.log(`[JobCrawler] No jobs found on this page`);
             }
+          } catch (parseError) {
+            console.error(`[JobCrawler] Error parsing jobs from page:`, parseError);
+            if (onError) {
+              await onError(parseError as Error, request.url);
+            }
+          }
+          
+          // If we've found enough jobs, stop crawling
+          if (results.length >= maxJobs) {
+            console.log(`[JobCrawler] Reached maximum jobs limit (${maxJobs})`);
+            await crawler.stop();
+            return;
           }
           
           // Find and enqueue links to job listings on the same site
+          console.log(`[JobCrawler] Looking for links to crawl on ${request.url}`);
           
           // Get all links on the page
+          console.log(`[JobCrawler] Extracting all links from DOM`);
           const links = await page.evaluate(() => {
-            return Array.from(document.querySelectorAll('a'))
-              .map(a => {
-                return {
-                  href: a.href,
-                  text: a.textContent?.trim() || '',
-                  title: a.getAttribute('title') || '',
-                  aria: a.getAttribute('aria-label') || ''
-                };
-              });
+            const allLinks = Array.from(document.querySelectorAll('a'));
+            console.log(`Found ${allLinks.length} total links in the DOM`);
+            
+            return allLinks.map(a => {
+              return {
+                href: a.href,
+                text: a.textContent?.trim() || '',
+                title: a.getAttribute('title') || '',
+                aria: a.getAttribute('aria-label') || ''
+              };
+            });
           });
           
+          console.log(`[JobCrawler] Extracted ${links.length} links from page`);
+          
           // Filter out invalid or non-HTTP links
+          console.log(`[JobCrawler] Filtering links for valid URLs`);
           const validLinks = links.filter(link => 
             link.href && 
             (link.href.startsWith('http://') || link.href.startsWith('https://')) &&
             link.href !== url // Skip self-links
           );
           
+          console.log(`[JobCrawler] Found ${validLinks.length} valid links after basic filtering`);
+          
           if (validLinks.length === 0) {
             console.log(`[JobCrawler] No valid links found on page ${url}`);
             return;
           }
+          
+          // Log some example links for debugging
+          console.log(`[JobCrawler] Example links from the page (up to 5):`);
+          validLinks.slice(0, 5).forEach((link, i) => {
+            console.log(`  ${i+1}. "${link.text}" -> ${link.href}`);
+          });
           
           // Skip certain paths that are unlikely to contain job listings
           const skipPatterns = [
@@ -163,27 +256,38 @@ export class JobCrawlerService {
           // If there are too many links, use AI to analyze them in batch
           if (filteredLinks.length > 5) {
             console.log(`[JobCrawler] Using AI to analyze ${filteredLinks.length} links on ${url}`);
+            console.log(`[JobCrawler] Starting AI link analysis at ${new Date().toISOString()}`);
             
-            // Create a formatted list of links for the AI
-            const linkList = filteredLinks.map(link => 
-              `URL: ${link.href}\nText: ${link.text}\nTitle: ${link.title}\nAria: ${link.aria}`
-            ).join('\n\n');
+            // Show some of the filtered links we're sending to AI
+            console.log(`[JobCrawler] Sample of links being sent to AI for analysis:`);
+            filteredLinks.slice(0, 5).forEach((link, i) => {
+              console.log(`  Link ${i+1}: "${link.text}" -> ${link.href}`);
+            });
             
             try {
               // Use AI to identify which links are likely job listings
+              console.log(`[JobCrawler] Sending ${filteredLinks.length} links to AI for analysis`);
               const aiResponse = await this.parser.analyzeLinks({
                 sourceUrl: url,
                 pageTitle: title,
                 links: filteredLinks
               });
               
+              console.log(`[JobCrawler] AI link analysis complete at ${new Date().toISOString()}`);
               console.log(`[JobCrawler] AI identified ${aiResponse.length} job-related links`);
               
               if (aiResponse.length > 0) {
+                // Show the links AI identified as job postings
+                console.log(`[JobCrawler] Links AI identified as job postings:`);
+                aiResponse.forEach((jobUrl, i) => {
+                  console.log(`  Job Link ${i+1}: ${jobUrl}`);
+                });
+                
                 // Create a set of prioritized links
                 const prioritizedUrls = new Set(aiResponse);
                 
                 // Enqueue the AI-selected links with high priority
+                console.log(`[JobCrawler] Enqueueing AI-selected links with high priority`);
                 await enqueueLinks({
                   globs: [`https://${hostname}/**`],
                   label: 'job-page',
@@ -201,10 +305,14 @@ export class JobCrawlerService {
                   }
                 });
                 
+                console.log(`[JobCrawler] Finished enqueueing AI-selected links`);
                 return; // Skip the standard enqueueing
+              } else {
+                console.log(`[JobCrawler] AI did not identify any job-related links, falling back to standard prioritization`);
               }
             } catch (error) {
               console.error('[JobCrawler] Error using AI to analyze links:', error);
+              console.log('[JobCrawler] Falling back to standard link prioritization due to AI error');
               // Fall back to standard link prioritization on error
             }
           }

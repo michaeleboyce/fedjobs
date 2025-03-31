@@ -9,7 +9,7 @@ import { deleteJobSource } from '../../actions/jobSourceActions';
 
 interface JobSourceListProps {
   sources: JobSource[];
-  onRefresh: (sourceId: number) => void;
+  onRefresh: (sourceId: number, forceRefresh?: boolean) => void;
   onDelete: () => void;
   onCancelCrawl: (sourceId: number) => void;
 }
@@ -64,6 +64,9 @@ export default function JobSourceList({ sources, onRefresh, onDelete, onCancelCr
         return 'bg-gray-100 text-gray-800';
     }
   };
+  
+  // Menu for refresh options
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -91,11 +94,26 @@ export default function JobSourceList({ sources, onRefresh, onDelete, onCancelCr
                 <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
                   {source.refreshFrequency}
                 </span>
+                
+                {/* Badge to show if source used cache */}
+                {source.usedCacheForLastUpdate && (
+                  <span 
+                    className="text-xs px-2 py-1 rounded-full bg-cyan-100 text-cyan-800 cursor-help"
+                    title="This source used data from the global job cache. To fetch fresh data, use the 'Force Fresh Crawl' option."
+                  >
+                    From Cache
+                  </span>
+                )}
               </div>
               
               {source.lastScraped && (
                 <p className="text-xs text-gray-500 mt-2">
                   Last updated: {format(parseISO(source.lastScraped), 'MMM d, yyyy h:mm a')}
+                  {source.usedCacheForLastUpdate && source.cacheExpiresAt && (
+                    <span className="ml-2 text-cyan-600">
+                      (Cache expires: {format(parseISO(source.cacheExpiresAt), 'MMM d, yyyy h:mm a')})
+                    </span>
+                  )}
                 </p>
               )}
               
@@ -108,15 +126,64 @@ export default function JobSourceList({ sources, onRefresh, onDelete, onCancelCr
             
             <div className="flex space-x-2">
               <div className="flex space-x-2">
-                <Button
-                  onClick={() => onRefresh(source.id)}
-                  disabled={source.status === 'PENDING' || source.isProcessing}
-                  variant="outline"
-                  size="sm"
-                  className={source.status === 'PENDING' || source.isProcessing ? 'animate-pulse' : ''}
-                >
-                  {source.status === 'PENDING' || source.isProcessing ? 'Crawling...' : 'Refresh Now'}
-                </Button>
+                {/* Refresh dropdown - either standard refresh or force refresh */}
+                <div className="relative">
+                  {/* Main refresh button */}
+                  <Button
+                    onClick={() => {
+                      if (source.status === 'PENDING' || source.isProcessing) {
+                        return;
+                      }
+                      
+                      if (openMenu === source.id) {
+                        // Close menu if clicking the button while menu is open
+                        setOpenMenu(null);
+                      } else {
+                        // Normal refresh if not showing menu
+                        onRefresh(source.id);
+                      }
+                    }}
+                    onMouseEnter={() => setOpenMenu(source.id)}
+                    disabled={source.status === 'PENDING' || source.isProcessing}
+                    variant="outline"
+                    size="sm"
+                    className={`${source.status === 'PENDING' || source.isProcessing ? 'animate-pulse' : ''} relative`}
+                  >
+                    {source.status === 'PENDING' || source.isProcessing ? 'Crawling...' : 'Refresh Now'}
+                  </Button>
+                  
+                  {/* Dropdown menu for refresh options */}
+                  {openMenu === source.id && !(source.status === 'PENDING' || source.isProcessing) && (
+                    <div 
+                      className="absolute z-10 right-0 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                      onMouseLeave={() => setOpenMenu(null)}
+                    >
+                      <div className="py-1" role="menu" aria-orientation="vertical">
+                        <button
+                          onClick={() => {
+                            onRefresh(source.id);
+                            setOpenMenu(null);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          role="menuitem"
+                        >
+                          Standard Refresh
+                        </button>
+                        <button
+                          onClick={() => {
+                            onRefresh(source.id, true);
+                            setOpenMenu(null);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t border-gray-100"
+                          role="menuitem"
+                        >
+                          Force Fresh Crawl
+                          <span className="block text-xs text-gray-500">Skip cache, fetch fresh data</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Cancel/Reset button that appears during processing */}
                 {(source.status === 'PENDING' || source.isProcessing) && (

@@ -1,8 +1,12 @@
-// File path: packages/database/src/db-connection.ts
-// packages/database/db-connection.ts
+// packages/database/src/db-connection.ts
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-const sql = neon(process.env.DATABASE_URL!);
+// Get the database URL
+const databaseUrl = process.env.DATABASE_URL || '';
 
+// Create the neon client
+const sql = neon(databaseUrl);
+
+// Initialize the database with the client
 export const db = drizzle(sql, { logger: true });

@@ -1,4 +1,3 @@
-// File path: packages/database/src/repositories/generations.ts
 // packages/database/src/repositories/generations.ts
 import { db } from '../db-connection';
 import { eq } from 'drizzle-orm';
@@ -22,17 +21,17 @@ export class GenerationRepository {
 
   // Retrieves a generation record by its ID.
   async getById(generationId: number): Promise<GenerationRecord | undefined> {
-    const results = await db.select().from(generations).where(eq(generations.id, generationId)).execute();
+    const results = await db.select().from(generations).where(eq(generations.id, generationId));
     return results.length ? results[0] : undefined;
   }
 
   // Deletes a generation record by its ID.
   async delete(generationId: number): Promise<void> {
-    await db.delete(generations).where(eq(generations.id, generationId)).execute();
+    await db.delete(generations).where(eq(generations.id, generationId));
   }
 
   // Retrieves all generation records for a given user.
   async getByUserId(userId: string): Promise<GenerationRecord[]> {
-    return await db.select().from(generations).where(eq(generations.userId, userId)).execute();
+    return await db.select().from(generations).where(eq(generations.userId, userId));
   }
 }

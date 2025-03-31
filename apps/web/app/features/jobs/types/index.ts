@@ -12,6 +12,11 @@ export type JobSource = {
   refreshFrequency: 'DAILY' | 'WEEKLY' | 'MANUAL';
   createdAt: string;
   updatedAt: string;
+  // Cache-related fields
+  globalCacheId?: number | null; // Reference to global cache
+  usedCache?: boolean; // Whether this source used the cache
+  usedCacheForLastUpdate?: boolean; // Whether the last update used the cache
+  cacheExpiresAt?: string; // When the cache entry expires
   // Extended fields for UI
   jobCount?: number;
   recentJobs?: Job[];

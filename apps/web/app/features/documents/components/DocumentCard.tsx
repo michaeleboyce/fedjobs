@@ -25,7 +25,7 @@ import usePageVisibility from '@/app/shared/hooks/usePageVisibility';
 import { AnalysisStatus } from '@/app/features/documents/types/AnalysisStatus';
 import { useDocumentPolling } from '@/app/features/documents/hooks/useDocumentPolling';
 import { Button } from '@/app/shared/components/ui/Button';
-import Badge from '@/app/shared/components/ui/Badge';
+import Badge, { BadgeVariant } from '@/app/shared/components/ui/Badge';
 
 
 interface DocumentCardProps  {

@@ -32,7 +32,7 @@ export const jobStatus = pgEnum("job_status", [
 
 export const jobPostings = pgTable("job_postings", {
   id: serial("id").primaryKey(),
-  sourceId: integer("source_id").references(() => jobSources.id).notNull(),
+  sourceId: integer("source_id").references(() => jobSources.id, {onDelete: "cascade"}).notNull(),
   externalId: varchar("external_id", { length: 255 }),
   title: varchar("title", { length: 255 }).notNull(),
   organization: varchar("organization", { length: 255 }).notNull(),

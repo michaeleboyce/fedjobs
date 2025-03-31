@@ -1,6 +1,6 @@
 {
 	"id": "iSouVarNKdTFobt",
-	"json": "{\"id\":\"iSouVarNKdTFobt\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T22:03:20.955Z\"}",
+	"json": "{\"id\":\"iSouVarNKdTFobt\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-30T23:44:29.138Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

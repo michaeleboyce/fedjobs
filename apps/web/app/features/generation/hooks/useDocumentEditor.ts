@@ -1,7 +1,6 @@
 // File path: apps/web/app/features/generation/hooks/useDocumentEditor.ts
-// apps/web/app/features/generation/hooks/useDocumentEditor.ts
 import { useState, useCallback } from 'react';
-import { StreamingTextArray } from '../types';
+import { StreamingTextArray } from '@fedjobs/types';
 
 export function useDocumentEditor() {
   // Document state
