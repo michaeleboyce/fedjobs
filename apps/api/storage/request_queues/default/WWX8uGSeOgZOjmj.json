@@ -1,0 +1,9 @@
+{
+	"id": "WWX8uGSeOgZOjmj",
+	"json": "{\"id\":\"WWX8uGSeOgZOjmj\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&workplaceType=remote&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
+	"method": "GET",
+	"orderNo": 1743383215016,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Jordan&workplaceType=remote",
+	"url": "https://jobs.eu.lever.co/refugeerights?location=Amman&workplaceType=remote&team=Jordan"
+}

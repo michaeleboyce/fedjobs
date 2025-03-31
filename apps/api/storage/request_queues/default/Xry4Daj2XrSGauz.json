@@ -1,9 +1,9 @@
 {
 	"id": "Xry4Daj2XrSGauz",
-	"json": "{\"id\":\"Xry4Daj2XrSGauz\",\"url\":\"https://jobs.eu.lever.co/refugeerights?location=New%20York&commitment=Intern\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"json": "{\"id\":\"Xry4Daj2XrSGauz\",\"url\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New%20York\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
 	"method": "GET",
-	"orderNo": 1743378280686,
+	"orderNo": 1743383131671,
 	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New+York",
-	"url": "https://jobs.eu.lever.co/refugeerights?location=New%20York&commitment=Intern"
+	"url": "https://jobs.eu.lever.co/refugeerights?commitment=Intern&location=New%20York"
 }

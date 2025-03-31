@@ -1,9 +1,9 @@
 {
 	"id": "ZKvqCRw3JZHOlea",
-	"json": "{\"id\":\"ZKvqCRw3JZHOlea\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":1,\"errorMessages\":[\"Error: browserController.newPage() failed: znJWlpPbyvqOxB9P4OfeC\\nCause:browserContext.newPage: Target page, context or browser has been closed.\\n    at BrowserPool._createPageForBrowser (/Users/michaelboyce/Documents/Programming/ai-ml/fedjobs-monorepo/node_modules/.pnpm/@crawlee+browser-pool@3.13.0_playwright@1.51.1/node_modules/@crawlee/src/browser-pool.ts:593:19)\"],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":5}}}",
+	"json": "{\"id\":\"ZKvqCRw3JZHOlea\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=onsite\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:05.635Z\"}",
 	"method": "GET",
-	"orderNo": 1743378319135,
-	"retryCount": 1,
+	"orderNo": null,
+	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=onsite",
 	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=onsite&team=Jordan"
 }

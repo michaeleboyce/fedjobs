@@ -264,16 +264,19 @@ export class JobPostingRepository {
   }
 
   async getSimilarJobs(jobId: number, limit: number = 5): Promise<JobPostingRecord[]> {
-    const interestedJobs = (await db
+    // Get the job we want similar jobs for
+    const targetJobs = await db
       .select()
       .from(jobPostings)
-      .where(eq(jobPostings.id, jobId))) as unknown as JobPostingRecord[];
+      .where(eq(jobPostings.id, jobId));
 
-    if (interestedJobs.length === 0) {
+    if (targetJobs.length === 0) {
       return [];
     }
 
-    const job = interestedJobs[0];
+    const job = targetJobs[0];
+    
+    // Extract meaningful words from the title for matching
     const titleWords = job.title
       .split(/\s+/)
       .filter(word => word.length > 3)
@@ -294,5 +297,32 @@ export class JobPostingRepository {
       .limit(limit);
 
     return (await query) as unknown as JobPostingRecord[];
+  }
+  
+  async getRecommendedJobs(userId: string, options: {
+    limit?: number;
+    excludeIds?: number[];
+  } = {}): Promise<JobPostingRecord[]> {
+    const { limit = 10, excludeIds = [] } = options;
+    
+    // Build filter conditions
+    const filterConditions = [
+      eq(jobPostings.isActive, true) // Only active jobs
+    ];
+    
+    // Exclude specific job IDs if provided
+    if (excludeIds.length > 0) {
+      filterConditions.push(not(inArray(jobPostings.id, excludeIds)));
+    }
+    
+    // For now, just get recent jobs - in the future, this could use more sophisticated recommendation logic
+    const jobs = await db
+      .select()
+      .from(jobPostings)
+      .where(and(...filterConditions))
+      .orderBy(desc(jobPostings.datePosted))
+      .limit(limit);
+    
+    return jobs as unknown as JobPostingRecord[];
   }
 }

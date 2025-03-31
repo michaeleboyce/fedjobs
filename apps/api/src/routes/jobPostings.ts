@@ -9,14 +9,27 @@ const userJobFeedbackRepo = new UserJobFeedbackRepository();
 // Search jobs
 router.get('/search', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    console.log('[JobPostingsAPI] Search query params:', req.query);
+    
     const { 
       keywords, 
       location, 
       organization, 
       organizationType,
       employmentType,
-      userId 
+      userId,
+      limit,
+      offset
     } = req.query;
+    
+    // Parse numeric parameters
+    const parsedLimit = limit ? parseInt(limit as string, 10) : undefined;
+    const parsedOffset = offset ? parseInt(offset as string, 10) : undefined;
+    
+    console.log('[JobPostingsAPI] Searching jobs with params:', {
+      keywords, location, organization, organizationType, employmentType, 
+      userId, limit: parsedLimit, offset: parsedOffset
+    });
     
     const jobs = await jobPostingRepo.searchJobs({
       keywords: keywords as string,
@@ -24,11 +37,15 @@ router.get('/search', async (req: Request, res: Response, next: NextFunction): P
       organization: organization as string,
       organizationType: organizationType as string,
       employmentType: employmentType as string,
-      userId: userId as string
+      userId: userId as string,
+      limit: parsedLimit,
+      offset: parsedOffset
     });
     
+    console.log(`[JobPostingsAPI] Found ${jobs.length} jobs matching search criteria`);
     res.json(jobs);
   } catch (error) {
+    console.error('[JobPostingsAPI] Error searching jobs:', error);
     next(error);
   }
 });
@@ -75,11 +92,7 @@ router.get('/:id/similar', async (req: Request, res: Response, next: NextFunctio
     }
     
     // Find similar jobs
-    const similarJobs = await jobPostingRepo.findSimilarJobs(jobId, {
-      limit,
-      excludeIds,
-      excludeFeedback: 'NOT_INTERESTED'
-    });
+    const similarJobs = await jobPostingRepo.getSimilarJobs(jobId, limit);
     
     res.json(similarJobs);
   } catch (error) {

@@ -1,0 +1,9 @@
+{
+	"id": "E8Z09mPpFuh70Xj",
+	"json": "{\"id\":\"E8Z09mPpFuh70Xj\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=Amman&team=Leadership\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?location=Amman&team=Leadership&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":1}}",
+	"method": "GET",
+	"orderNo": 1743383182870,
+	"retryCount": 0,
+	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?location=Amman&team=Leadership&workplaceType=hybrid",
+	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&location=Amman&team=Leadership"
+}

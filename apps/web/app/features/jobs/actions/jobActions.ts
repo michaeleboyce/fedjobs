@@ -27,17 +27,26 @@ export async function searchJobs(params: {
       }
     });
     
+    console.log(`[Client] Searching jobs with params: ${queryParams.toString()}`);
+    console.log(`[Client] API URL: ${API_BASE_URL}/api/job-postings/search?${queryParams.toString()}`);
+    
     const response = await fetch(`${API_BASE_URL}/api/job-postings/search?${queryParams.toString()}`, {
       cache: 'no-store'
     });
     
+    console.log(`[Client] Search jobs response status: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error(`Failed to search jobs: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`[Client] Search jobs error response: ${errorText}`);
+      throw new Error(`Failed to search jobs: ${response.statusText}. ${errorText}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Client] Retrieved ${data.length} jobs`);
+    return data;
   } catch (error) {
-    console.error('Error searching jobs:', error);
+    console.error('[Client] Error searching jobs:', error);
     throw error;
   }
 }
@@ -80,20 +89,26 @@ export async function getSimilarJobs(
       queryParams.append('limit', options.limit.toString());
     }
     
-    const response = await fetch(
-      `${API_BASE_URL}/api/job-postings/${jobId}/similar${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
-      {
-        cache: 'no-store'
-      }
-    );
+    const url = `${API_BASE_URL}/api/job-postings/${jobId}/similar${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log(`[Client] Fetching similar jobs from: ${url}`);
+    
+    const response = await fetch(url, {
+      cache: 'no-store'
+    });
+    
+    console.log(`[Client] Similar jobs response status: ${response.status}`);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Client] Similar jobs error response:`, errorText);
       throw new Error(`Failed to fetch similar jobs: ${response.statusText}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Client] Retrieved ${data.length} similar jobs`);
+    return data;
   } catch (error) {
-    console.error(`Error fetching similar jobs for job ${jobId}:`, error);
+    console.error(`[Client] Error fetching similar jobs for job ${jobId}:`, error);
     throw error;
   }
 }

@@ -1,9 +1,9 @@
 {
 	"id": "8j4Esbm3EwIt6kI",
-	"json": "{\"id\":\"8j4Esbm3EwIt6kI\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Jordan\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"json": "{\"id\":\"8j4Esbm3EwIt6kI\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=remote\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
 	"method": "GET",
-	"orderNo": 1743378487600,
+	"orderNo": 1743383399916,
 	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=remote",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Jordan"
+	"url": "https://jobs.eu.lever.co/refugeerights?team=Jordan&workplaceType=remote"
 }

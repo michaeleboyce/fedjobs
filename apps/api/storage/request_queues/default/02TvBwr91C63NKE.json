@@ -1,9 +1,9 @@
 {
 	"id": "02TvBwr91C63NKE",
-	"json": "{\"id\":\"02TvBwr91C63NKE\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Leadership\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"json": "{\"id\":\"02TvBwr91C63NKE\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=remote\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
 	"method": "GET",
-	"orderNo": 1743378487600,
+	"orderNo": 1743383399916,
 	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=remote",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Leadership"
+	"url": "https://jobs.eu.lever.co/refugeerights?team=Leadership&workplaceType=remote"
 }

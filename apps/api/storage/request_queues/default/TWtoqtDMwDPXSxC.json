@@ -1,9 +1,9 @@
 {
 	"id": "TWtoqtDMwDPXSxC",
-	"json": "{\"id\":\"TWtoqtDMwDPXSxC\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Operations\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Operations&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"json": "{\"id\":\"TWtoqtDMwDPXSxC\",\"url\":\"https://jobs.eu.lever.co/refugeerights?team=Operations&workplaceType=remote\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?team=Operations&workplaceType=remote\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
 	"method": "GET",
-	"orderNo": 1743378487600,
+	"orderNo": 1743383399916,
 	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?team=Operations&workplaceType=remote",
-	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=remote&team=Operations"
+	"url": "https://jobs.eu.lever.co/refugeerights?team=Operations&workplaceType=remote"
 }

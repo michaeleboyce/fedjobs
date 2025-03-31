@@ -82,13 +82,17 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
 // Create a new job source
 router.post('/', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    console.log('[JobSourcesAPI] POST / - Creating new job source', req.body);
+    
     const { userId, url, name, keywords, refreshFrequency } = req.body;
     
     if (!userId || !url || !name) {
+      console.log('[JobSourcesAPI] Missing required fields', { userId, url, name });
       res.status(400).json({ error: 'userId, url, and name are required' });
       return;
     }
     
+    console.log('[JobSourcesAPI] Creating new job source in database');
     // Create the new job source
     const newSource = await jobSourceRepo.insert({
       userId,
@@ -99,6 +103,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       status: 'PENDING'
     });
     
+    console.log('[JobSourcesAPI] Job source created successfully', newSource);
+    
     // Send initial status via WebSocket
     sendWebSocketUpdate(userId, 'job_source_created', { 
       sourceId: newSource.id,
@@ -106,10 +112,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       message: 'Job source created, checking cache and starting initial crawl...'
     });
     
-    // Start the job crawl with progress updates
+    // Return the new source to the client immediately
+    console.log('[JobSourcesAPI] Sending response to client');
+    res.status(201).json(newSource);
+    
+    // Start the job crawl with progress updates in the background
     // The refreshJobSource method will automatically check if there's a cached version available
-    let crawlResult: any = null;
-    crawlResult = await jobScraperService.refreshJobSource(newSource.id, {
+    jobScraperService.refreshJobSource(newSource.id, {
       onJobFound: async (job) => {
         // Send real-time job updates
         sendWebSocketUpdate(userId, 'job_found', {
@@ -120,18 +129,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         });
       },
       onComplete: async (jobs) => {
-        // Check if the refresh used cached data
-        const usedCache = crawlResult?.usedCache === true;
-        
         // Send completion update
         sendWebSocketUpdate(userId, 'crawl_complete', {
           sourceId: newSource.id,
           jobCount: jobs.length,
           status: 'ACTIVE',
-          usedCache: usedCache,
-          message: usedCache 
-            ? 'Used cached data from previous crawl' 
-            : 'Completed fresh crawl of job source'
+          usedCache: false, // Initial crawl is never from cache
+          message: 'Completed fresh crawl of job source'
         });
       },
       onError: async (error) => {
@@ -154,8 +158,6 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         status: 'ERROR'
       });
     });
-    
-    res.status(201).json(newSource);
   } catch (error) {
     next(error);
   }

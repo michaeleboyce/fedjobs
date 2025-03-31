@@ -127,7 +127,7 @@ export class JobCrawlerService {
           const screenshotPath = `screenshot-${Date.now()}.png`;
           console.log(`[JobCrawler] Taking page screenshot to ${screenshotPath}`);
           try {
-            await page.screenshot({ path: screenshotPath, fullPage: true });
+            //await page.screenshot({ path: screenshotPath, fullPage: true });
             console.log(`[JobCrawler] Screenshot saved successfully`);
           } catch (screenshotError) {
             console.error(`[JobCrawler] Error taking screenshot:`, screenshotError);

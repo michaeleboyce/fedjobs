@@ -1,8 +1,8 @@
 {
 	"id": "rSW5p1jgv5IAmwf",
-	"json": "{\"id\":\"rSW5p1jgv5IAmwf\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0}}",
+	"json": "{\"id\":\"rSW5p1jgv5IAmwf\",\"url\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&commitment=Full-Time\",\"loadedUrl\":\"https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&commitment=Full-Time\",\"uniqueKey\":\"https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&workplaceType=hybrid\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"label\":\"job-page\",\"priority\":0,\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-03-31T01:06:50.338Z\"}",
 	"method": "GET",
-	"orderNo": 1743378487600,
+	"orderNo": null,
 	"retryCount": 0,
 	"uniqueKey": "https://jobs.eu.lever.co/refugeerights?commitment=Full-Time&workplaceType=hybrid",
 	"url": "https://jobs.eu.lever.co/refugeerights?workplaceType=hybrid&commitment=Full-Time"
