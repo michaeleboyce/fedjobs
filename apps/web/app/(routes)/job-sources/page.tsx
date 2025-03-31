@@ -1,3 +1,4 @@
+// File path: apps/web/app/(routes)/job-sources/page.tsx
 // apps/web/app/(routes)/job-sources/page.tsx
 import React from 'react';
 import { Metadata } from 'next';

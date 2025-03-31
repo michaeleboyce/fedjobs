@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/PositionsSection.tsx
 import React from "react";
 import { Position } from "@fedjobs/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

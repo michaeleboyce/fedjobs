@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/jobs/components/JobSourceManager/JobSourceList.tsx
 // apps/web/app/features/jobs/components/JobSourceManager/JobSourceList.tsx
 "use client";
 

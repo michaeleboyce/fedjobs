@@ -4,7 +4,7 @@
  * It extracts positions and their details and returns structured objects.
  */
 
-import { Resume, Position, Organization, Title, ResumeDate, Details } from '@fedjobs/types/src/ResumeTypes';
+import { Resume, Position, Organization, Title, ResumeDate, Details } from '@fedjobs/types';
 import { v4 as uuidV4 } from 'uuid';
 
 /**

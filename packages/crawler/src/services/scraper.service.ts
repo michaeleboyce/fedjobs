@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/services/scraper.service.ts
 import { WebCrawler } from '../core/crawler';
 import { JobParserService } from '../core/parser';
 import { CacheService } from './cache.service';
@@ -6,7 +7,9 @@ import {
   JobPostingRepository, 
   JobSourceRepository,
   employmentType,
-  organizationType
+  organizationType,
+  JobPostingRecord,
+  JobSourceRecord
 } from '@fedjobs/database';
 import { UrlNormalizationService } from '@fedjobs/utils';
 
@@ -447,7 +450,7 @@ export class ScraperService {
           if (callbacks?.onComplete) {
             const jobs = await this.jobPostingRepo.getBySourceId(sourceId);
             // Convert database records to JobPostingData
-            const jobsData = jobs.map(job => ({
+            const jobsData = jobs.map((job: JobPostingRecord) => ({
               title: job.title,
               organization: job.organization,
               location: job.location || undefined,

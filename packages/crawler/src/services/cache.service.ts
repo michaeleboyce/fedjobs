@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/services/cache.service.ts
 import { 
   GlobalSourceCacheRepository, 
   JobSourceRepository, 
@@ -171,8 +172,8 @@ export class CacheService {
       }
       
       // Sort sources by last scraped date (most recent first)
-      const sortedSources = sources.filter(s => s.lastScraped !== null)
-        .sort((a, b) => {
+      const sortedSources = sources.filter((s: JobSourceRecord) => s.lastScraped !== null)
+        .sort((a: JobSourceRecord, b: JobSourceRecord) => {
           const dateA = a.lastScraped ? new Date(a.lastScraped).getTime() : 0;
           const dateB = b.lastScraped ? new Date(b.lastScraped).getTime() : 0;
           return dateB - dateA;
@@ -191,7 +192,7 @@ export class CacheService {
       }
       
       // Copy jobs to the new source
-      const jobsToInsert = jobs.map(job => ({
+      const jobsToInsert = jobs.map((job: JobPostingRecord) => ({
         sourceId,
         title: job.title,
         organization: job.organization,

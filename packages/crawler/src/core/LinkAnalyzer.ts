@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/core/LinkAnalyzer.ts
 import { EnqueueStrategy } from '../types';
 import { Logger } from '../utils/Logger';
 

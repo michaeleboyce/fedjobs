@@ -1,3 +1,4 @@
+// File path: apps/api/src/routes/jobPostings.ts
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { JobPostingRepository } from '@fedjobs/database';
 import { UserJobFeedbackRepository } from '@fedjobs/database';

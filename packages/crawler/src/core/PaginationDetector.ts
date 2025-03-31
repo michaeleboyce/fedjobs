@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/core/PaginationDetector.ts
 import { Logger } from '../utils/Logger';
 
 const logger = new Logger('PaginationDetector');

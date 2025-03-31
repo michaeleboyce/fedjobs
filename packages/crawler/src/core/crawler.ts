@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/core/crawler.ts
 import { PlaywrightCrawler, LogLevel, log } from 'crawlee';
 import { URL } from 'url';
 import { CrawlHistoryEntry, CrawlJobOptions, JobPostingData } from '../types';

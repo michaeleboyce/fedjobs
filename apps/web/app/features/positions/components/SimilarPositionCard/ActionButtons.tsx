@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/SimilarPositionCard/ActionButtons.tsx
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";

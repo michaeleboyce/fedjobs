@@ -1,3 +1,4 @@
+// File path: packages/database/src/repositories/parsings.ts
 // packages/database/src/repositories/parsings.ts
 import { db } from '../db-connection';
 import { eq, desc } from 'drizzle-orm';

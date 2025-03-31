@@ -1,3 +1,4 @@
+// File path: packages/database/src/repositories/generations.ts
 // packages/database/src/repositories/generations.ts
 import { db } from '../db-connection';
 import { eq } from 'drizzle-orm';

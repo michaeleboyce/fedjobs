@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/PositionCard/PositionDetails.tsx
 import React from "react";
 
 interface PositionDetailsProps {

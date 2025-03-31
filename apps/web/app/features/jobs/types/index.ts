@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/jobs/types/index.ts
 // apps/web/app/features/jobs/types/index.ts
 
 export type JobSource = {

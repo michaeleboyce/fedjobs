@@ -1,0 +1,6 @@
+.git
+README.md
+node_modules/.cache
+*.log
+*.md
+.env*.local

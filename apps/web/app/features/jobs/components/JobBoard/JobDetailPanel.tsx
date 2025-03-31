@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/jobs/components/JobBoard/JobDetailPanel.tsx
 // apps/web/app/features/jobs/components/JobBoard/JobDetailPanel.tsx
 "use client";
 

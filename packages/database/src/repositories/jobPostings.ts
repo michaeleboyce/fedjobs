@@ -1,3 +1,4 @@
+// File path: packages/database/src/repositories/jobPostings.ts
 // packages/database/src/repositories/jobPostings.ts
 import { db } from "../db-connection";
 import { eq, and, like, desc, sql, not, or, inArray } from "drizzle-orm";

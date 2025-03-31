@@ -1,4 +1,3 @@
-
 {
   "name": "fedjobs-monorepo",
   "private": true,
@@ -10,11 +9,20 @@
     "export-key-contents-and-web": "bash projectRefactor.sh ./apps/web/app",
     "test": "turbo run test",
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build", 
     "lint": "turbo run lint",
-    "web:dev": "pnpm --filter @fedjobs/web dev",
-    "api:deploy": "railway up --service fedjobs-api --environment production",
-    "web:deploy": "vercel --prod"
+
+    
+    "build:web": "turbo run build --filter=@fedjobs/web...",
+    "build:api": "turbo run build --filter=@fedjobs/api...", 
+
+
+    "dev:web": "turbo run dev --filter=@fedjobs/web...",
+    "dev:api": "turbo run dev --filter=@fedjobs/api...",
+
+   
+    "deploy:api": "pnpm run build:api && railway up --service fedjobs-api --environment production", 
+    "deploy:web": "vercel deploy --prod" 
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/SimilarPositionCard/index.tsx
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faCheckCircle, faChevronUp, faChevronDown } from "@fortawesome/free-solid-svg-icons";

@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/actions/vectorizePositions.ts
 import { Resume, Position } from "@fedjobs/types";
 import { voyage } from 'voyage-ai-provider';
 import { Pinecone } from '@pinecone-database/pinecone';

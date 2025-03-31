@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/EditPositionsForm.tsx
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";

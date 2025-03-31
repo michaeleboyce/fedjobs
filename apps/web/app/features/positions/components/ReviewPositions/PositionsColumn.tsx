@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/PositionsColumn.tsx
 // File: apps/web/app/features/positions/components/ReviewPositions/PositionsColumn.tsx
 "use client";
 

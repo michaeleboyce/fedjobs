@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/jobs/hooks/useWebSocketConnection.ts
 // app/features/jobs/hooks/useWebSocketConnection.ts
 "use client";
 

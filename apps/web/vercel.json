@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm --filter @fedjobs/types build && pnpm --filter @fedjobs/utils build && pnpm --filter @fedjobs/database build && cd apps/web && next build",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}

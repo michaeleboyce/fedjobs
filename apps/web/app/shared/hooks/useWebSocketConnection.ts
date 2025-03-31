@@ -1,3 +1,4 @@
+// File path: apps/web/app/shared/hooks/useWebSocketConnection.ts
 // app/shared/hooks/useWebSocketConnection.ts
 "use client";
 

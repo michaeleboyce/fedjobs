@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/PositionCard/index.tsx
 // app/features/positions/components/PositionCard/index.tsx
 import React, { useState } from "react";
 import { Position } from "@fedjobs/types";

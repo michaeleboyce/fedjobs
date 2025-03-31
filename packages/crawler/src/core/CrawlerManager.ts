@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/core/CrawlerManager.ts
 import { PlaywrightCrawler } from 'crawlee';
 import { Logger } from '../utils/Logger';
 

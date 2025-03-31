@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/ReviewPositions/index.tsx
 // app/features/positions/components/ReviewPositions/index.tsx
 "use client";
 

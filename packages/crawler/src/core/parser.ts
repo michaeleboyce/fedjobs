@@ -1,3 +1,4 @@
+// File path: packages/crawler/src/core/parser.ts
 import { load } from 'cheerio';
 import { AnalyzeLinksInput, JobPostingData, ParsePageInput } from '../types';
 import { AIService } from '@fedjobs/utils';

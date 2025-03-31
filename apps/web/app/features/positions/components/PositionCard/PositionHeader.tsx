@@ -1,3 +1,4 @@
+// File path: apps/web/app/features/positions/components/PositionCard/PositionHeader.tsx
 import React from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faPlus, faTrash, faChevronDown, faChevronUp, faCheck } from "@fortawesome/free-solid-svg-icons";

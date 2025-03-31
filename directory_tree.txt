@@ -11,16 +11,24 @@
 │   │   │   ├── index.ts
 │   │   │   ├── middleware
 │   │   │   │   └── error.ts
-│   │   │   ├── queues
 │   │   │   ├── routes
 │   │   │   │   ├── documentParse.ts
 │   │   │   │   ├── generate.ts
+│   │   │   │   ├── jobPostings.ts
+│   │   │   │   ├── jobSources.ts
 │   │   │   │   ├── parse.ts
 │   │   │   │   └── parsingStatus.ts
 │   │   │   ├── services
 │   │   │   │   └── parsingService.ts
 │   │   │   └── types
-│   │   │       └── index.ts
+│   │   │       ├── express.d.ts
+│   │   │       ├── index.ts
+│   │   │       └── route-handlers.ts
+│   │   ├── storage
+│   │   │   ├── key_value_stores
+│   │   │   │   └── default
+│   │   │   └── request_queues
+│   │   │       └── default
 │   │   ├── tests
 │   │   │   └── services
 │   │   │       └── parsingService.test.ts
@@ -32,27 +40,13 @@
 │       │   │   │   ├── ai
 │       │   │   │   │   ├── generate
 │       │   │   │   │   │   ├── (utils)
-│       │   │   │   │   │   │   ├── ClaudeStream.ts
-│       │   │   │   │   │   │   ├── OpenAIStream.ts
 │       │   │   │   │   │   │   ├── callAndStream.ts
 │       │   │   │   │   │   │   ├── callApi.ts
 │       │   │   │   │   │   │   ├── interfaces.ts
 │       │   │   │   │   │   │   ├── streamHandler.ts
 │       │   │   │   │   │   │   ├── types.d.ts
 │       │   │   │   │   │   │   └── types.ts
-│       │   │   │   │   │   ├── cover_letter
-│       │   │   │   │   │   │   ├── paragraph
-│       │   │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   ├── ecq
-│       │   │   │   │   │   │   ├── paragraph
-│       │   │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   ├── other
-│       │   │   │   │   │   │   ├── paragraph
-│       │   │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   │   └── route.ts
-│       │   │   │   │   │   └── tcq
+│       │   │   │   │   │   └── [type]
 │       │   │   │   │   │       ├── paragraph
 │       │   │   │   │   │       │   └── route.ts
 │       │   │   │   │   │       └── route.ts
@@ -64,152 +58,249 @@
 │       │   │   ├── dashboard
 │       │   │   │   └── page.tsx
 │       │   │   ├── documents
-│       │   │   │   ├── DocumentManager.tsx
-│       │   │   │   ├── _Components
-│       │   │   │   │   ├── DocumentCard.tsx
-│       │   │   │   │   └── FileUploadBox.tsx
-│       │   │   │   ├── documents.tsx
 │       │   │   │   └── page.tsx
 │       │   │   ├── generate
-│       │   │   │   ├── UnifiedGenerationManager.tsx
-│       │   │   │   ├── _Components
-│       │   │   │   │   ├── AdditionalInfoBox.tsx
-│       │   │   │   │   ├── GenerateBottomBar.tsx
-│       │   │   │   │   ├── GeneratePositions.tsx
-│       │   │   │   │   ├── GeneratedDocumentCard.tsx
-│       │   │   │   │   ├── StreamingDocumentViewer.tsx
-│       │   │   │   │   └── _Subcomponents
-│       │   │   │   │       ├── GenerateButton.tsx
-│       │   │   │   │       ├── ParagraphControls.tsx
-│       │   │   │   │       ├── RegenerationTools.tsx
-│       │   │   │   │       ├── SaveSuccessMessage.tsx
-│       │   │   │   │       └── _AdditionalInfoBox
-│       │   │   │   │           ├── DocumentInfo.tsx
-│       │   │   │   │           ├── JobInfoInput.tsx
-│       │   │   │   │           └── JobSearch.tsx
-│       │   │   │   ├── _Providers
-│       │   │   │   │   └── GenerationProvider.tsx
 │       │   │   │   ├── page.tsx
 │       │   │   │   └── resume
 │       │   │   │       └── [id]
-│       │   │   │           ├── PageClient.tsx
-│       │   │   │           ├── _Components
-│       │   │   │           │   ├── AdditionalInfoBox.tsx
-│       │   │   │           │   ├── GenerateBottomBar.tsx
-│       │   │   │           │   ├── GeneratedDocumentCard.tsx
-│       │   │   │           │   ├── GenerationManager.tsx
-│       │   │   │           │   ├── StreamingDocumentViewer.tsx
-│       │   │   │           │   └── _Subcomponents
-│       │   │   │           │       ├── GenerateButton.tsx
-│       │   │   │           │       ├── ParagraphControls.tsx
-│       │   │   │           │       ├── RegenerationTools.tsx
-│       │   │   │           │       ├── SaveSuccessMessage.tsx
-│       │   │   │           │       └── _AdditionalInfoBox
 │       │   │   │           └── page.tsx
+│       │   │   ├── job-sources
+│       │   │   │   └── page.tsx
+│       │   │   ├── jobs
+│       │   │   │   └── page.tsx
 │       │   │   ├── resume
 │       │   │   │   └── [id]
-│       │   │   │       ├── _Components
-│       │   │   │       │   └── ResumePageManager.tsx
 │       │   │   │       └── page.tsx
 │       │   │   └── review-positions
 │       │   │       └── page.tsx
-│       │   ├── _actions
-│       │   │   ├── files
-│       │   │   │   └── fileActions.ts
-│       │   │   ├── parsings
-│       │   │   │   └── parsingStatusActions.ts
-│       │   │   ├── positions
-│       │   │   │   ├── positionActions.ts
-│       │   │   │   └── reviewPositionActions.ts
-│       │   │   ├── usaJobsActions.ts
-│       │   │   ├── utilActions.ts
-│       │   │   └── vectorize
-│       │   │       ├── __tests__
-│       │   │       │   └── vectorizePositions.test.ts
-│       │   │       ├── vectorizeActions.ts
-│       │   │       └── vectorizePositions.ts
-│       │   ├── _classes
-│       │   │   ├── Details.ts
-│       │   │   ├── Organization.ts
-│       │   │   ├── Position.ts
-│       │   │   ├── Resume.ts
-│       │   │   ├── ResumeDate.ts
-│       │   │   ├── Title.ts
-│       │   │   └── _generationClasses
-│       │   │       ├── CoverLetterGenerator.ts
-│       │   │       ├── ECQGenerator.ts
-│       │   │       ├── EssayGenerator.ts
-│       │   │       ├── OtherGenerator.ts
-│       │   │       └── TCQGenerator.ts
-│       │   ├── _components
-│       │   │   ├── Breadcrumbs.tsx
-│       │   │   ├── PositionCard
-│       │   │   │   ├── Context
-│       │   │   │   │   └── PositionsContext.tsx
-│       │   │   │   ├── PositionDetails.tsx
-│       │   │   │   ├── PositionEditForm.tsx
-│       │   │   │   ├── PositionHeader.tsx
-│       │   │   │   ├── SimilarPositionsSections.tsx
-│       │   │   │   └── index.tsx
-│       │   │   ├── Resume
+│       │   ├── error.tsx
+│       │   ├── features
+│       │   │   ├── documents
+│       │   │   │   ├── actions
+│       │   │   │   │   ├── fileActions.ts
+│       │   │   │   │   ├── parsingStatusActions.ts
+│       │   │   │   │   └── vectorizeActions.ts
 │       │   │   │   ├── components
-│       │   │   │   │   ├── DetailsToggle
+│       │   │   │   │   ├── DocumentCard.tsx
+│       │   │   │   │   ├── DocumentManager.tsx
+│       │   │   │   │   ├── FileUploadBox.tsx
+│       │   │   │   │   └── documents.tsx
+│       │   │   │   ├── hooks
+│       │   │   │   │   ├── useDocumentPolling.ts
+│       │   │   │   │   └── useDocumentsManagement.ts
+│       │   │   │   ├── types
+│       │   │   │   │   ├── AnalysisStatus.ts
+│       │   │   │   │   ├── FunctionReturns.ts
+│       │   │   │   │   └── ParseResponse.ts
+│       │   │   │   └── utils
+│       │   │   │       ├── documentParsing.ts
+│       │   │   │       └── fileHelpers.ts
+│       │   │   ├── generation
+│       │   │   │   ├── actions
+│       │   │   │   │   └── documentActions.ts
+│       │   │   │   ├── components
+│       │   │   │   │   ├── DocumentEditor
+│       │   │   │   │   │   ├── Key.tsx
+│       │   │   │   │   │   ├── Paragraph.tsx
+│       │   │   │   │   │   ├── ParagraphContent.tsx
+│       │   │   │   │   │   ├── ParagraphControls.tsx
+│       │   │   │   │   │   ├── ParagraphEditForm.tsx
+│       │   │   │   │   │   ├── ParagraphInsertion.tsx
+│       │   │   │   │   │   ├── ParagraphRegenerateForm.tsx
+│       │   │   │   │   │   ├── ShortcutGuide.tsx
 │       │   │   │   │   │   └── index.tsx
-│       │   │   │   │   ├── PositionCard
-│       │   │   │   │   │   ├── index.tsx
-│       │   │   │   │   │   └── styles.ts
-│       │   │   │   │   ├── PositionDetails
-│       │   │   │   │   │   ├── PositionDetailsSection.tsx
+│       │   │   │   │   ├── DocumentGeneration
 │       │   │   │   │   │   └── index.tsx
-│       │   │   │   │   ├── SelectionControls
+│       │   │   │   │   ├── DocumentInfo
+│       │   │   │   │   │   ├── DocumentTypeSelector.tsx
+│       │   │   │   │   │   ├── ECQSelector.tsx
+│       │   │   │   │   │   ├── JobInfoInput.tsx
+│       │   │   │   │   │   ├── JobSearch.tsx
+│       │   │   │   │   │   ├── LengthSelector.tsx
 │       │   │   │   │   │   └── index.tsx
-│       │   │   │   │   └── SimilarPositionCard
+│       │   │   │   │   ├── PositionSelector
+│       │   │   │   │   │   ├── PositionItem.tsx
+│       │   │   │   │   │   ├── PositionListSelector.tsx
+│       │   │   │   │   │   ├── ResumePositionSelector.tsx
+│       │   │   │   │   │   └── index.tsx
+│       │   │   │   │   └── ui
+│       │   │   │   │       ├── ActionBar.tsx
+│       │   │   │   │       ├── GenerateButton.tsx
+│       │   │   │   │       ├── SaveButton.tsx
+│       │   │   │   │       └── index.tsx
+│       │   │   │   ├── generators
+│       │   │   │   │   ├── CoverLetterGenerator.ts
+│       │   │   │   │   ├── ECQGenerator.ts
+│       │   │   │   │   ├── EssayGenerator.ts
+│       │   │   │   │   ├── GeneratorFactory.ts
+│       │   │   │   │   ├── OtherGenerator.ts
+│       │   │   │   │   ├── ResumeGenerator.ts
+│       │   │   │   │   └── TCQGenerator.ts
+│       │   │   │   ├── hooks
+│       │   │   │   │   ├── index.ts
+│       │   │   │   │   ├── useAutosizeTextArea.ts
+│       │   │   │   │   ├── useDocumentEditor.ts
+│       │   │   │   │   ├── useDocumentEditorManagement.ts
+│       │   │   │   │   ├── useDocumentGeneration.ts
+│       │   │   │   │   ├── useGenerationManagement.ts
+│       │   │   │   │   ├── useGenerationSettings.ts
+│       │   │   │   │   ├── useParagraphKeyboardShortcuts.ts
+│       │   │   │   │   └── usePositionSelection.ts
+│       │   │   │   ├── types
+│       │   │   │   │   └── index.ts
+│       │   │   │   └── utils
+│       │   │   │       ├── createStreamingResponse.ts
+│       │   │   │       ├── documentTransformers.ts
+│       │   │   │       ├── index.ts
+│       │   │   │       └── modelSelectors.ts
+│       │   │   ├── jobs
+│       │   │   │   ├── actions
+│       │   │   │   │   ├── jobActions.ts
+│       │   │   │   │   └── jobSourceActions.ts
+│       │   │   │   ├── components
+│       │   │   │   │   ├── JobBoard
+│       │   │   │   │   │   ├── JobDetailPanel.tsx
+│       │   │   │   │   │   ├── JobFilter.tsx
+│       │   │   │   │   │   ├── JobList.tsx
+│       │   │   │   │   │   ├── JobSimilarList.tsx
+│       │   │   │   │   │   └── index.tsx
+│       │   │   │   │   └── JobSourceManager
+│       │   │   │   │       ├── JobSourceForm.tsx
+│       │   │   │   │       ├── JobSourceList.tsx
 │       │   │   │   │       └── index.tsx
 │       │   │   │   ├── hooks
-│       │   │   │   │   └── usePositionSelections.ts
-│       │   │   │   ├── index.tsx
+│       │   │   │   │   └── useWebSocketConnection.ts
+│       │   │   │   └── types
+│       │   │   │       └── index.ts
+│       │   │   ├── positions
+│       │   │   │   ├── actions
+│       │   │   │   │   ├── __tests__
+│       │   │   │   │   │   └── vectorizePositions.test.ts
+│       │   │   │   │   ├── positionActions.ts
+│       │   │   │   │   ├── reviewPositionActions.ts
+│       │   │   │   │   └── vectorizePositions.ts
+│       │   │   │   ├── components
+│       │   │   │   │   ├── PositionCard
+│       │   │   │   │   │   ├── PositionDetails.tsx
+│       │   │   │   │   │   ├── PositionEditForm.tsx
+│       │   │   │   │   │   ├── PositionHeader.tsx
+│       │   │   │   │   │   ├── SimilarPositionsSections.tsx
+│       │   │   │   │   │   └── index.tsx
+│       │   │   │   │   ├── ReviewPositions
+│       │   │   │   │   │   ├── ColumnHeader.tsx
+│       │   │   │   │   │   ├── ColumnToggle.tsx
+│       │   │   │   │   │   ├── EditPositionsForm.tsx
+│       │   │   │   │   │   ├── PositionsColumn.tsx
+│       │   │   │   │   │   ├── PositionsSection.tsx
+│       │   │   │   │   │   ├── YearSection.tsx
+│       │   │   │   │   │   └── index.tsx
+│       │   │   │   │   └── SimilarPositionCard
+│       │   │   │   │       ├── ActionButtons.tsx
+│       │   │   │   │       ├── ExpandedDetails.tsx
+│       │   │   │   │       ├── LoadingSkeleton.tsx
+│       │   │   │   │       ├── SimilarPositionHeader.tsx
+│       │   │   │   │       ├── __tests__
+│       │   │   │   │       │   └── index.test.tsx
+│       │   │   │   │       └── index.tsx
+│       │   │   │   ├── hooks
+│       │   │   │   │   ├── __tests__
+│       │   │   │   │   │   └── useFetchSimilarPosition.test.tsx
+│       │   │   │   │   ├── useFetchSimilarPosition.ts
+│       │   │   │   │   └── usePositionsManagement.ts
+│       │   │   │   ├── store
 │       │   │   │   ├── types
-│       │   │   │   │   └── resume.types.ts
 │       │   │   │   └── utils
-│       │   │   │       └── selectionUtils.ts
-│       │   │   ├── ReviewPositions
-│       │   │   │   ├── ColumnToggle.tsx
-│       │   │   │   ├── EditPositionsForm.tsx
-│       │   │   │   ├── PositionsSection.tsx
-│       │   │   │   └── index.tsx
-│       │   │   ├── SearchBar.tsx
-│       │   │   ├── SimilarPositionCard
-│       │   │   │   └── index.tsx
-│       │   │   ├── TopBar.tsx
-│       │   │   └── YearSidebar.tsx
-│       │   ├── _hooks
-│       │   │   ├── useDocumentPolling.ts
-│       │   │   └── usePageVisibility.ts
-│       │   ├── _types
-│       │   │   ├── AnalysisStatus.ts
-│       │   │   ├── DocumentInfo.ts
-│       │   │   ├── ECQCompetencies.ts
-│       │   │   ├── FunctionReturns.ts
-│       │   │   ├── GeneratedDocumentInformation.ts
-│       │   │   ├── GenerationSelection.ts
-│       │   │   ├── ParseResponse.ts
-│       │   │   └── StreamingTextArray.ts
-│       │   ├── _utils
-│       │   │   ├── Compare.ts
-│       │   │   ├── Constants
-│       │   │   │   ├── ECQConstants.ts
-│       │   │   │   └── index.ts
-│       │   │   ├── DateUtils.ts
-│       │   │   ├── accomplishmentProcessor.ts
-│       │   │   ├── documentParsing.ts
-│       │   │   ├── fileHelpers.ts
-│       │   │   ├── mockReader.ts
-│       │   │   ├── resumeProcessor.ts
-│       │   │   └── textUtils.ts
-│       │   ├── error.tsx
+│       │   │   │       ├── __tests__
+│       │   │   │       │   └── positionRelationships.test.ts
+│       │   │   │       ├── positionMapper.ts
+│       │   │   │       └── positionRelationships.ts
+│       │   │   └── resume
+│       │   │       ├── components
+│       │   │       │   ├── DetailsToggle
+│       │   │       │   │   └── index.tsx
+│       │   │       │   ├── PositionCard
+│       │   │       │   │   ├── index.tsx
+│       │   │       │   │   └── styles.ts
+│       │   │       │   ├── PositionDetails
+│       │   │       │   │   ├── PositionDetailsSection.tsx
+│       │   │       │   │   └── index.tsx
+│       │   │       │   ├── ResumePageManager.tsx
+│       │   │       │   ├── ResumeView.tsx
+│       │   │       │   ├── SelectionControls
+│       │   │       │   │   └── index.tsx
+│       │   │       │   └── SimilarPositionCard
+│       │   │       │       └── index.tsx
+│       │   │       ├── hooks
+│       │   │       │   └── usePositionSelections.ts
+│       │   │       ├── types
+│       │   │       │   └── resume.types.ts
+│       │   │       └── utils
+│       │   │           └── selectionUtils.ts
 │       │   ├── images
 │       │   ├── layout.tsx
-│       │   └── page.tsx
+│       │   ├── page.tsx
+│       │   ├── providers
+│       │   │   └── AppProviders.tsx
+│       │   ├── services
+│       │   │   ├── aiService.ts
+│       │   │   ├── documentService.ts
+│       │   │   ├── documentUploadService.ts
+│       │   │   └── positionService.ts
+│       │   ├── shared
+│       │   │   ├── actions
+│       │   │   │   └── usaJobsActions.ts
+│       │   │   ├── components
+│       │   │   │   ├── Breadcrumbs.tsx
+│       │   │   │   ├── MainNavigation.tsx
+│       │   │   │   ├── SearchBar.tsx
+│       │   │   │   ├── TopBar.tsx
+│       │   │   │   ├── YearSidebar.tsx
+│       │   │   │   └── ui
+│       │   │   │       ├── Badge
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Button
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Card
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Checkbox
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Icon
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Input
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Select
+│       │   │   │       │   └── index.tsx
+│       │   │   │       ├── Textarea
+│       │   │   │       │   └── index.tsx
+│       │   │   │       └── index.ts
+│       │   │   ├── hooks
+│       │   │   │   ├── usePageVisibility.ts
+│       │   │   │   └── useWebSocketConnection.ts
+│       │   │   ├── styles
+│       │   │   ├── types
+│       │   │   │   ├── Details.ts
+│       │   │   │   ├── Organization.ts
+│       │   │   │   ├── Position.ts
+│       │   │   │   ├── Resume.ts
+│       │   │   │   ├── ResumeDate.ts
+│       │   │   │   └── Title.ts
+│       │   │   └── utils
+│       │   │       ├── Compare.ts
+│       │   │       ├── Constants
+│       │   │       │   ├── ECQConstants.ts
+│       │   │       │   └── index.ts
+│       │   │       ├── classNames.ts
+│       │   │       ├── dateUtils.ts
+│       │   │       ├── mockReader.ts
+│       │   │       ├── positionSorting.ts
+│       │   │       ├── resumeProcessor.ts
+│       │   │       └── textUtils.ts
+│       │   └── store
+│       │       ├── documentEditorStore.ts
+│       │       ├── documentsStore.ts
+│       │       ├── generationStore.ts
+│       │       ├── index.ts
+│       │       └── positionsStore.ts
 │       ├── drizzle.config.ts
 │       ├── next-env.d.ts
 │       ├── next.config.js
@@ -222,25 +313,54 @@
 │       └── turbo.json
 ├── package.json
 ├── packages
+│   ├── crawler
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── core
+│   │   │   │   ├── CrawlerManager.ts
+│   │   │   │   ├── JobRequestQueue.ts
+│   │   │   │   ├── LinkAnalyzer.ts
+│   │   │   │   ├── PaginationDetector.ts
+│   │   │   │   ├── crawler.ts
+│   │   │   │   └── parser.ts
+│   │   │   ├── github-actions
+│   │   │   │   └── refresh-popular-job-sources.ts
+│   │   │   ├── index.ts
+│   │   │   ├── services
+│   │   │   │   ├── cache.service.ts
+│   │   │   │   └── scraper.service.ts
+│   │   │   ├── types
+│   │   │   │   └── index.ts
+│   │   │   └── utils
+│   │   │       ├── Logger.ts
+│   │   │       └── index.ts
+│   │   └── tsconfig.json
 │   ├── database
 │   │   ├── drizzle
 │   │   │   └── meta
 │   │   ├── drizzle.config.ts
 │   │   ├── package.json
 │   │   ├── src
-│   │   │   ├── _depricated_old)dbService.ts
 │   │   │   ├── db-connection.ts
 │   │   │   ├── index.ts
 │   │   │   ├── repositories
 │   │   │   │   ├── documents.ts
 │   │   │   │   ├── generations.ts
+│   │   │   │   ├── globalSourceCache.ts
+│   │   │   │   ├── jobPostings.ts
+│   │   │   │   ├── jobSources.ts
 │   │   │   │   ├── parsings.ts
-│   │   │   │   └── positions.ts
+│   │   │   │   ├── positions.ts
+│   │   │   │   └── userJobFeedback.ts
 │   │   │   └── schema
 │   │   │       ├── documents.ts
 │   │   │       ├── generations.ts
+│   │   │       ├── globalSourceCache.ts
+│   │   │       ├── jobPostings.ts
+│   │   │       ├── jobSources.ts
 │   │   │       ├── parsings.ts
-│   │   │       └── positions.ts
+│   │   │       ├── positions.ts
+│   │   │       └── userJobFeedback.ts
 │   │   ├── tests
 │   │   │   └── repositories
 │   │   │       ├── documents.test.ts
@@ -254,6 +374,7 @@
 │   │   │   ├── APIResponseTypes.ts
 │   │   │   ├── DocumentTypes.ts
 │   │   │   ├── ECQCompetencies.ts
+│   │   │   ├── GenerationTypes.ts
 │   │   │   ├── JobTypes.ts
 │   │   │   ├── ParseTypes.ts
 │   │   │   ├── ResumeTypes.ts
@@ -271,13 +392,19 @@
 │       │   │   └── index.ts
 │       │   ├── ServerActions
 │       │   │   ├── VectorizationActions.ts
+│       │   │   ├── authActions.ts
 │       │   │   └── index.ts
 │       │   ├── Services
-│       │   │   ├── AuthService.ts
+│       │   │   ├── AIService
+│       │   │   │   ├── __tests__
+│       │   │   │   │   └── AIService.test.ts
+│       │   │   │   ├── index.ts
+│       │   │   │   └── types.ts
 │       │   │   ├── KeyGenerationService.ts
 │       │   │   ├── S3Service
 │       │   │   │   ├── Config.ts
 │       │   │   │   └── index.ts
+│       │   │   ├── UrlNormalizationService.ts
 │       │   │   └── index.ts
 │       │   ├── index.ts
 │       │   └── retry.ts
@@ -295,4 +422,4 @@
 ├── turbo.json
 └── vitest.config.ts
 
-99 directories, 197 files
+142 directories, 281 files

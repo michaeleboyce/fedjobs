@@ -1,3 +1,4 @@
+// File path: apps/api/src/types/express.d.ts
 import express from 'express';
 
 declare module 'express' {

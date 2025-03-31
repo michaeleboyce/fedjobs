@@ -1,0 +1,6 @@
+{
+  "installCommand": "echo 'Skipping default install'",
+  "buildCommand": "pnpm --filter @fedjobs/types build && pnpm --filter @fedjobs/utils build && pnpm --filter @fedjobs/database build && pnpm --filter @fedjobs/web build",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
+}
