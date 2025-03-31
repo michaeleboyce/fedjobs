@@ -1,6 +1,6 @@
 // File path: packages/database/src/schema/documents.ts
 import { serial, boolean, text, integer, json, varchar, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
-import { DOCUMENT_TYPES } from '@fedjobs/utils';
+import { DOCUMENT_TYPES } from '@fedjobs/types';
 
 export const documentType = pgEnum("document_type", DOCUMENT_TYPES)
 export const documentSource = pgEnum("document_source", ["USER_UPLOADED", "APPLICATION_GENERATED"]);

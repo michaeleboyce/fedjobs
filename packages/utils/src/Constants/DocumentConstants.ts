@@ -1,25 +1,8 @@
 // File path: packages/utils/src/Constants/DocumentConstants.ts
-import { DocumentType, GenerationType } from '@fedjobs/types';
+// Re-export from types package for backward compatibility
+import { DOCUMENT_TYPES, GENERATION_TYPES, getPrettyPrintType } from '@fedjobs/types';
 
-export const DOCUMENT_TYPES: [DocumentType, ...DocumentType[]] = ["cover_letter", "ecq","resume", "tcq", "other"];
-export const GENERATION_TYPES: [GenerationType, ...GenerationType[]] = ["cover_letter",  "ecq",  "paragraph","resume", "tcq", "other"];
-
-export const getPrettyPrintType = (type: string): string => {
-  switch(type){
-    case 'resume':
-        return 'Resume';
-    case 'ecq':
-        return 'ECQ';
-    case 'tcq':
-        return 'TCQ';
-    case 'cover_letter':
-        return 'Cover Letter';
-    case 'other':
-        return 'Other';
-    default:
-        return 'Other';
-  }
-};
+export { DOCUMENT_TYPES, GENERATION_TYPES, getPrettyPrintType };
 
 export const PINECONE_INDEX_NAME = 'fedjobs';
 

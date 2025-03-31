@@ -1,6 +1,6 @@
 // File path: packages/database/src/schema/parsings.ts
 import { serial, boolean, text, integer, json, varchar, decimal, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
-import { DOCUMENT_TYPES, GENERATION_TYPES } from '@fedjobs/utils';
+import { DOCUMENT_TYPES } from '@fedjobs/types';
 import { documents as documentsTable } from './documents';
 export const parsingType = pgEnum("parsing_type", DOCUMENT_TYPES)
 

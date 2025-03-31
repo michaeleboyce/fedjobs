@@ -4,7 +4,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
-import { DOCUMENT_TYPES } from '@fedjobs/utils';
+import { DOCUMENT_TYPES } from '@fedjobs/types';
 import { Job, JobInfo, DocumentInfo, PositionSelectionState } from '@fedjobs/types';
 import { getTCQEssayPrompts } from '@/app/shared/actions/usaJobsActions';
 
