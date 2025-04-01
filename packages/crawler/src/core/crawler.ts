@@ -80,7 +80,7 @@ export class WebCrawler {
     const { 
       url, 
       keywords, 
-      maxJobs = 20, 
+      maxJobs = 50, 
       onJobFound, 
       onComplete, 
       onError, 
@@ -259,6 +259,18 @@ export class WebCrawler {
   
   /**
    * Process job data found on a page
+   * This method:
+   * 1. Checks if we've reached the maximum jobs limit
+   * 2. Validates each job by checking for duplicates (based on URL and title)
+   * 3. Adds valid jobs to the results array
+   * 4. Triggers the onJobFound callback for each valid job
+   * 
+   * In the API integration:
+   * - The API passes an onJobFound callback when refreshing job sources
+   * - When a job is found, the API receives it via this callback
+   * - The API then sends real-time updates to users via WebSockets
+   * - This enables live progress updates in the UI as jobs are discovered
+   * - The API also handles storing jobs in the database and updating job source status
    */
   private async processJobData(
     jobData: JobPostingData[], 

@@ -181,6 +181,10 @@ export class ScraperService {
       
       // Parse the AI response
       try {
+        // This regex matches any JSON object in the text:
+        // \{ matches an opening curly brace
+        // [\s\S]* matches any characters including newlines (non-greedy)
+        // \} matches a closing curly brace
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const validation = JSON.parse(jsonMatch[0]);

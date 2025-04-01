@@ -58,6 +58,7 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
             ...source,
             isProcessing: true,
             foundJobsCount,
+            errorMessage: '',
             progressMessage: `Found job: ${jobTitle} at ${organization} (${foundJobsCount} total)`,
             lastUpdateTime: now,
             processingTimedOut: false // Reset timeout flag on activity
@@ -86,6 +87,7 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
             jobCount: jobCount,
             progressMessage: progressMessage,
             lastUpdateTime: now,
+            errorMessage: '',
             processingTimedOut: false,
             usedCache: usedCache || source.usedCache,
             usedCacheForLastUpdate: usedCache,
@@ -136,6 +138,7 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
             status: 'ACTIVE',
             isProcessing: false,
             progressMessage: cancelMessage || 'Crawl cancelled',
+            errorMessage: '',
             lastUpdateTime: now,
             processingTimedOut: false
           };
@@ -169,6 +172,7 @@ export default function JobSourceManager({ userId }: JobSourceManagerProps) {
                 status: 'PENDING',
                 isProcessing: true,
                 foundJobsCount: 0,
+                errorMessage: '',
                 progressMessage: forceRefresh 
                   ? 'Starting fresh job crawl (bypassing cache)...' 
                   : 'Starting job crawl...',
