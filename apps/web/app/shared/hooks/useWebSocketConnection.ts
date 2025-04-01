@@ -19,7 +19,8 @@ export default function useWebSocketConnection(userId: string) {
   const messageHandlersRef = useRef<Map<string, Set<MessageHandler>>>(new Map());
   
   // Get API URL from environment or use default
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
+
   const wsUrl = apiUrl.replace(/^http/, 'ws');
   
   // Function to establish WebSocket connection

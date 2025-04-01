@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { type JobSource, type Job } from '../types';
 
 // API endpoint base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ? "https://fedjobs-api-production.up.railway.app" : "http://localhost:3001"; // Adjust port as needed
+
 
 // Get all job sources for a user
 export async function getJobSources(userId: string, includeCounts: boolean = false): Promise<JobSource[]> {
