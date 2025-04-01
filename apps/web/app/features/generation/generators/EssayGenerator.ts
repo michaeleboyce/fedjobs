@@ -5,7 +5,6 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { DocumentType, GenerationSelection, StreamingTextArray } from "@fedjobs/types";
 import { formatDateMMDDYYYY } from "@/app/shared/utils/dateUtils";
 import { uploadFile, generateKeyFromFileName } from "@fedjobs/utils";
-// Import DocumentRepository from our repository layer.
 import { DocumentRepository } from "@fedjobs/database";
 import { OpenAI } from 'openai';
 
