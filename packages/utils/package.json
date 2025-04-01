@@ -6,6 +6,8 @@
   "scripts": {
     "test": "vitest",
     "test:watch": "vitest --watch",
+    "test:aiservice": "vitest src/Services/AIService/__tests__/structured-output.test.ts",
+    "test:jobparser": "vitest src/Parsers/__tests__/JobPostingParser.test.ts",
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint src/**/*.ts"
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

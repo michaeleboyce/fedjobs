@@ -127,6 +127,28 @@ export class ScraperService {
       
       // Check for minimum description length
       if (jobData.description.length < 50) {
+        console.log(`[ScraperService] Job has short description (${jobData.description.length} chars):
+        Title: ${jobData.title}
+        Organization: ${jobData.organization}
+        URL: ${jobData.url}
+        Description preview: "${jobData.description.substring(0, 100)}${jobData.description.length > 100 ? '...' : ''}"
+        `);
+        
+        // For URLs that look like job detail pages, be more lenient
+        if (/\/job(s)?\/[^\/]+/i.test(jobData.url) || 
+            /\/careers?\/[^\/]+/i.test(jobData.url) || 
+            /position/i.test(jobData.url)) {
+          console.log(`[ScraperService] Allowing short description because this appears to be a job detail page`);
+          return { isValid: true };
+        }
+        
+        // For descriptions that aren't extremely short, let them through
+        if (jobData.description.length >= 20) {
+          console.log(`[ScraperService] Allowing marginally short description`);
+          return { isValid: true };
+        }
+        
+        // For extremely short descriptions, reject
         return { isValid: false, reasons: ['Job description too short'] };
       }
       
@@ -256,6 +278,7 @@ export class ScraperService {
       console.log(`[ScraperService] Processing job: "${jobData.title}" at ${jobData.organization}`);
       
       // Step 1: Validate the job posting
+      console.log(`[ScraperService] Validating job: "${jobData.title}" at ${jobData.organization}, description length: ${jobData.description.length} chars`);
       const validation = await this.validateJobPosting(jobData);
       if (!validation.isValid) {
         console.log(`[ScraperService] Skipping invalid job posting: ${validation.reasons?.join(', ')}`);

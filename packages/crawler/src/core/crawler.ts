@@ -3,17 +3,82 @@ import { PlaywrightCrawler, LogLevel, log } from 'crawlee';
 import { URL } from 'url';
 import { CrawlHistoryEntry, CrawlJobOptions, JobPostingData } from '../types';
 import { JobParserService } from './parser';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 export class WebCrawler {
   private urlHistory: Map<string, Date> = new Map();
   private readonly HISTORY_EXPIRATION = 24 * 60 * 60 * 1000; // 24 hours
   private activeCrawlers: Map<number, PlaywrightCrawler> = new Map();
   private parser: JobParserService;
+  private static playwrightCheckCompleted = false;
   
   constructor(parser?: JobParserService) {
     log.setLevel(LogLevel.INFO);
     this.parser = parser || new JobParserService();
     console.log('[WebCrawler] Initialized with PlaywrightCrawler from crawlee');
+  }
+  
+  /**
+   * Checks if Playwright dependencies are installed and installs them if needed
+   */
+  private async checkPlaywrightDependencies(): Promise<void> {
+    if (WebCrawler.playwrightCheckCompleted) {
+      return;
+    }
+    
+    try {
+      console.log('[WebCrawler] Checking Playwright dependencies...');
+      
+      // Create a minimal test crawler using the correct Crawlee API
+      const testCrawler = new PlaywrightCrawler({
+        // Configure Playwright launch options
+        launchContext: {
+          launchOptions: {
+            headless: true
+          }
+        },
+        // Set minimal crawl options
+        maxRequestsPerCrawl: 1,
+        // Minimal request handler
+        async requestHandler({ page, log }) {
+          log.info('Playwright dependencies are working correctly');
+          // Just load the blank page and exit
+          await page.goto('about:blank');
+        },
+        // Handle failures
+        failedRequestHandler({ log }) {
+          log.error('Playwright dependency test failed');
+        }
+      });
+      
+      // Test with a simple blank page request
+      await testCrawler.addRequests(['about:blank']);
+      // Run the crawler but stop after the first request
+      await testCrawler.run();
+      
+      console.log('[WebCrawler] Playwright dependencies are properly installed');
+      WebCrawler.playwrightCheckCompleted = true;
+    } catch (error) {
+      console.error('[WebCrawler] Playwright dependency check failed:', error);
+      console.log('[WebCrawler] Attempting to install Playwright dependencies...');
+      
+      try {
+        console.log('[WebCrawler] Running: npx playwright install --with-deps');
+        const { stdout, stderr } = await execAsync('npx playwright install --with-deps');
+        console.log('[WebCrawler] Playwright install output:', stdout);
+        if (stderr) {
+          console.error('[WebCrawler] Playwright install stderr:', stderr);
+        }
+        console.log('[WebCrawler] Playwright dependencies installed successfully');
+        WebCrawler.playwrightCheckCompleted = true;
+      } catch (installError) {
+        console.error('[WebCrawler] Failed to install Playwright dependencies:', installError);
+        throw new Error('Failed to install Playwright dependencies. Please run `npx playwright install --with-deps` manually.');
+      }
+    }
   }
   
   /**
@@ -89,6 +154,17 @@ export class WebCrawler {
     
     console.log(`[WebCrawler] Starting crawl of ${url} with keywords: ${keywords || 'none'}`);
     
+    // Check and install Playwright dependencies if needed
+    try {
+      await this.checkPlaywrightDependencies();
+    } catch (error) {
+      console.error(`[WebCrawler] Playwright dependency check failed:`, error);
+      if (onError) {
+        await onError(error as Error, url);
+      }
+      throw error;
+    }
+    
     // If there's an existing crawler for this source, stop it first
     if (sourceId && this.activeCrawlers.has(sourceId)) {
       console.log(`[WebCrawler] Found existing crawler for source ${sourceId}, stopping it first`);
@@ -113,8 +189,12 @@ export class WebCrawler {
       headless: true,
       // Limit concurrent requests
       maxConcurrency: 2,
-      // More time for pages to load
-      navigationTimeoutSecs: 90,
+      // More time for pages to load (3 minutes)
+      navigationTimeoutSecs: 180,
+      // Increase request handler timeout to allow for longer processing (5 minutes)
+      requestHandlerTimeoutSecs: 300,
+      // Start with a higher max request limit for job boards
+      maxRequestsPerCrawl: 200,
       // Handle failures
       failedRequestHandler: async ({ request, error }) => {
         console.error(`[WebCrawler] Request ${request.url} failed:`, error);
@@ -142,32 +222,72 @@ export class WebCrawler {
           // Get page data
           const { content, title, description } = await this.extractPageData(page);
           
+          // First find and enqueue links to ensure we don't miss job detail pages
+          // This is critical for job boards that list job titles on the main page but details on separate pages
+          console.log(`[WebCrawler] Finding and enqueueing links from ${request.url} before processing page content`);
+          const jobLinks = await this.findAndEnqueueLinks(page, enqueueLinks, request.url, url);
+          
           // Parse jobs data
           console.log(`[WebCrawler] Parsing job data from ${request.url}`);
-          const jobData = await this.parser.parseJobsFromPage({
-            url: request.url,
-            content,
-            title,
-            description,
-            keywords
-          });
+          console.log(`[WebCrawler] Page title: "${title}"`);
           
-          console.log(`[WebCrawler] Found ${jobData.length} jobs on ${request.url}`);
+          // Check if this URL looks like it could be a job page
+          const jobUrlPatterns = [
+            /job/i, /position/i, /career/i, /opening/i, /vacancy/i, /apply/i
+          ];
+          const isLikelyJobUrl = jobUrlPatterns.some(pattern => pattern.test(request.url));
+          console.log(`[WebCrawler] URL analysis: ${isLikelyJobUrl ? 'Likely' : 'Possibly not'} a job page`);
           
-          // Process found jobs
-          if (jobData.length > 0) {
-            await this.processJobData(jobData, results, maxJobs, onJobFound);
+          // Special processing for job listing pages vs. job detail pages
+          // If the URL has "jobs" but not a specific job ID, it's likely a listing page
+          const isJobListingPage = /jobs?\/?$/i.test(request.url);
+          const isJobDetailPage = /\/job(s)?\/[^\/]+$/i.test(request.url) || /\/careers?\/[^\/]+$/i.test(request.url);
+          
+          if (isJobListingPage && jobLinks.length > 0) {
+            console.log(`[WebCrawler] This appears to be a job listing page with ${jobLinks.length} job links`);
+            console.log(`[WebCrawler] The crawler can handle up to 200 job links`);
             
-            // Stop if we've reached the job limit
-            if (results.length >= maxJobs) {
-              console.log(`[WebCrawler] Reached maximum jobs limit (${maxJobs})`);
-              await crawler.stop();
-              return;
-            }
+            // Skip further processing since we're on a listing page - we only want to follow links
+            console.log(`[WebCrawler] Skipping job parsing on listing page - we'll extract details from individual job pages instead`);
+            return;
           }
           
-          // Find and enqueue more links
-          await this.findAndEnqueueLinks(page, enqueueLinks, request.url, url);
+          // Only parse job details on detail pages or pages that don't look like listing pages
+          if (isJobDetailPage || !isJobListingPage) {
+            console.log(`[WebCrawler] This appears to be a job detail page or standalone page - extracting job data`);
+            
+            const jobData = await this.parser.parseJobsFromPage({
+              url: request.url,
+              content,
+              title,
+              description,
+              keywords
+            });
+            
+            if (jobData.length === 0) {
+              console.log(`[WebCrawler] No jobs found on ${request.url} - ${isLikelyJobUrl ? 'This is suspicious as URL looks like a job page' : 'URL doesn\'t look like a job page anyway'}`);
+            } else {
+              console.log(`[WebCrawler] Found ${jobData.length} jobs on ${request.url}`);
+              // Log a summary of each job
+              jobData.forEach((job, index) => {
+                console.log(`[WebCrawler] Job #${index+1}: "${job.title}" at ${job.organization}, description length: ${job.description.length} chars`);
+              });
+            }
+            
+            // Process found jobs
+            if (jobData.length > 0) {
+              await this.processJobData(jobData, results, maxJobs, onJobFound);
+              
+              // Stop if we've reached the job limit
+              if (results.length >= maxJobs) {
+                console.log(`[WebCrawler] Reached maximum jobs limit (${maxJobs})`);
+                await crawler.stop();
+                return;
+              }
+            }
+          } else {
+            console.log(`[WebCrawler] Skipping job parsing on this page - not a job detail page`);
+          }
           
         } catch (error) {
           console.error(`[WebCrawler] Error processing page ${request.url}:`, error);
@@ -281,6 +401,7 @@ export class WebCrawler {
     for (const job of jobData) {
       // Skip if we've already found enough jobs
       if (results.length >= maxJobs) {
+        console.log(`[WebCrawler] Max jobs limit (${maxJobs}) reached, skipping remaining jobs`);
         break;
       }
       
@@ -292,93 +413,152 @@ export class WebCrawler {
       if (!isDuplicate) {
         // Add to results
         results.push(job);
-        console.log(`[WebCrawler] Added job to results: ${job.title}`);
+        console.log(`[WebCrawler] Added job to results: "${job.title}" at ${job.organization}`);
+        console.log(`[WebCrawler] Job details: URL=${job.url}, desc_length=${job.description.length}`);
         
         // Call onJobFound callback if provided
         if (onJobFound) {
-          await onJobFound(job);
+          try {
+            console.log(`[WebCrawler] Calling onJobFound handler for job: "${job.title}"`);
+            await onJobFound(job);
+            console.log(`[WebCrawler] Successfully processed job: "${job.title}"`);
+          } catch (error) {
+            console.error(`[WebCrawler] Error in onJobFound callback for job "${job.title}":`, error);
+            // Continue processing other jobs even if one fails
+          }
         }
       } else {
-        console.log(`[WebCrawler] Skipping duplicate job: ${job.title}`);
+        console.log(`[WebCrawler] Skipping duplicate job: "${job.title}" at ${job.organization}`);
       }
     }
   }
   
   /**
    * Find and enqueue additional links for crawling
+   * @returns Array of job-related links that were found and enqueued
    */
   private async findAndEnqueueLinks(
     page: any, 
     enqueueLinks: any, 
     currentUrl: string,
     baseUrl: string
-  ): Promise<void> {
-    // First handle pagination links
-    const paginationLinks = await page.evaluate(() => {
-      const links = Array.from(document.querySelectorAll(
-        'a[href*="page="], .pagination a, [aria-label*="Next"], [aria-label*="Page"]'
-      ));
-      
-      return links.map(a => ({
-        href: (a as HTMLAnchorElement).href,
-        text: a.textContent?.trim() || '',
-        isPagination: true
-      }));
-    });
-    
-    if (paginationLinks.length > 0) {
-      console.log(`[WebCrawler] Found ${paginationLinks.length} pagination links`);
-      
-      // Enqueue pagination links with high priority
-      await enqueueLinks({
-        urls: paginationLinks.map((link: { href: string }) => link.href),
-        transformRequestFunction: (req: any) => {
-          req.userData = { ...(req.userData || {}), isPagination: true, priority: 3 };
-          return req;
-        }
-      });
-    }
-    
-    // Get all links on the page
-    const links = await page.evaluate(() => {
-      const allLinks = Array.from(document.querySelectorAll('a'));
-      
-      return allLinks.map(a => {
-        return {
+  ): Promise<string[]> {
+    try {
+      // First handle pagination links
+      const paginationLinks = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll(
+          'a[href*="page="], .pagination a, [aria-label*="Next"], [aria-label*="Page"]'
+        ));
+        
+        return links.map(a => ({
           href: (a as HTMLAnchorElement).href,
           text: a.textContent?.trim() || '',
-          title: a.getAttribute('title') || '',
-          aria: a.getAttribute('aria-label') || ''
-        };
-      }).filter(link => 
-        link.href && 
-        (link.href.startsWith('http://') || link.href.startsWith('https://'))
-      );
-    });
-    // Filter out invalid or non-HTTP links
-    const validLinks = links.filter((link: { href: string }) => 
-      link.href !== currentUrl && // Skip self-links
-      !this.isRecentlyVisited(link.href) && // Skip recently visited links
-      !this.shouldSkipLink(link.href) // Skip links matching patterns to ignore
-    );
-    
-    // Analyze remaining links to prioritize those that likely contain job listings
-    const jobLinks = await this.parser.analyzeLinks({
-      sourceUrl: baseUrl,
-      pageTitle: await page.title(),
-      links: validLinks
-    });
-    
-    if (jobLinks.length > 0) {
-      console.log(`[WebCrawler] Enqueueing ${jobLinks.length} job-related links`);
-      
-      await enqueueLinks({
-        urls: jobLinks,
-        transformRequestFunction: (req: any) => {
-          req.userData = { ...req.userData, isJobLink: true, priority: 2 };
-          return req;
-        }
+          isPagination: true
+        }));
       });
+      
+      if (paginationLinks.length > 0) {
+        console.log(`[WebCrawler] Found ${paginationLinks.length} pagination links`);
+        
+        // Enqueue pagination links with high priority
+        await enqueueLinks({
+          urls: paginationLinks.map((link: { href: string }) => link.href),
+          transformRequestFunction: (req: any) => {
+            req.userData = { ...(req.userData || {}), isPagination: true, priority: 3 };
+            return req;
+          }
+        });
+      }
+      
+      // Get all links on the page
+      const links = await page.evaluate(() => {
+        const allLinks = Array.from(document.querySelectorAll('a'));
+        
+        return allLinks.map(a => {
+          return {
+            href: (a as HTMLAnchorElement).href,
+            text: a.textContent?.trim() || '',
+            title: a.getAttribute('title') || '',
+            aria: a.getAttribute('aria-label') || ''
+          };
+        }).filter(link => 
+          link.href && 
+          (link.href.startsWith('http://') || link.href.startsWith('https://'))
+        );
+      });
+      
+      // Debug: Log all links we found on the page
+      console.log(`[WebCrawler] Found ${links.length} total links on the page`);
+      if (links.length > 0 && links.length <= 20) {
+        // Log all links if there are 20 or fewer
+        links.forEach((link: any, i: number) => {
+          console.log(`[WebCrawler] Link #${i+1}: ${link.text} → ${link.href}`);
+        });
+      } else if (links.length > 20) {
+        // Log sample of links if there are more than 20
+        console.log(`[WebCrawler] Link sample (first 10):`);
+        links.slice(0, 10).forEach((link: any, i: number) => {
+          console.log(`[WebCrawler] Link #${i+1}: ${link.text} → ${link.href}`);
+        });
+      }
+      
+      // Filter out invalid or non-HTTP links
+      const validLinks = links.filter((link: { href: string }) => 
+        link.href !== currentUrl && // Skip self-links
+        !this.isRecentlyVisited(link.href) && // Skip recently visited links
+        !this.shouldSkipLink(link.href) // Skip links matching patterns to ignore
+      );
+      
+      console.log(`[WebCrawler] ${validLinks.length} links remain after filtering`);
+      
+      // Look for "Apply" links directly on the page - these are high priority job detail links
+      const applyLinks = validLinks.filter((link: any) => {
+        const hasApplyText = /apply|application|job details/i.test(link.text);
+        const hasApplyAttr = /apply|application|job details/i.test(link.title) || 
+                             /apply|application|job details/i.test(link.aria);
+        return hasApplyText || hasApplyAttr;
+      });
+      
+      if (applyLinks.length > 0) {
+        console.log(`[WebCrawler] Found ${applyLinks.length} direct "Apply" links - these are likely job detail pages`);
+        await enqueueLinks({
+          urls: applyLinks.map((link: any) => link.href),
+          transformRequestFunction: (req: any) => {
+            req.userData = { ...req.userData, isApplyLink: true, priority: 4 };
+            return req;
+          }
+        });
+      }
+      
+      // Analyze remaining links to prioritize those that likely contain job listings
+      const jobLinks = await this.parser.analyzeLinks({
+        sourceUrl: baseUrl,
+        pageTitle: await page.title(),
+        links: validLinks
+      });
+      
+      if (jobLinks.length > 0) {
+        console.log(`[WebCrawler] Enqueueing ${jobLinks.length} job-related links`);
+        
+        // Debug output for job links
+        jobLinks.forEach((link, i) => {
+          console.log(`[WebCrawler] Job link #${i+1}: ${link}`);
+        });
+        
+        await enqueueLinks({
+          urls: jobLinks,
+          transformRequestFunction: (req: any) => {
+            req.userData = { ...req.userData, isJobLink: true, priority: 2 };
+            return req;
+          }
+        });
+      }
+      
+      // Return a combined set of all job-related links
+      return [...(applyLinks || []).map((l: any) => l.href), ...jobLinks];
+    } catch (error) {
+      console.error(`[WebCrawler] Error finding links:`, error);
+      return [];
     }
   }
   

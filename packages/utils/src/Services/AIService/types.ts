@@ -13,6 +13,7 @@ export interface AIModel {
   id: string;
   name: string;
   provider: AIProvider;
+  supportsStructuredOutput?: boolean;
 }
 
 /**
@@ -57,4 +58,39 @@ export interface ToolUseBlock {
   input: Record<string, any>;
 }
 
-export type ContentBlock = TextBlock | ToolUseBlock;
+export interface ToolResultBlock {
+  type: 'tool_result';
+  tool_use_id: string;
+  content: string | ContentBlock[];
+  is_error?: boolean;
+}
+
+export type ContentBlock = TextBlock | ToolUseBlock | ToolResultBlock;
+
+/**
+ * Tool definition for Anthropic structured outputs
+ */
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  input_schema: {
+    type: 'object';
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
+/**
+ * Structured output options for OpenAI
+ */
+export interface StructuredOutputOptions {
+  schema: object;
+}
+
+/**
+ * Structured output result
+ */
+export interface StructuredOutputResult<T = any> {
+  data: T;
+  rawResponse: string;
+}

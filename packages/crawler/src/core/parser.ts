@@ -1,7 +1,7 @@
 // File path: packages/crawler/src/core/parser.ts
 import { load } from 'cheerio';
 import { AnalyzeLinksInput, JobPostingData, ParsePageInput } from '../types';
-import { AIService } from '@fedjobs/utils';
+import { AIService, ParsedJobPosting, extractMultipleJobPostings } from '@fedjobs/utils';
 
 export class JobParserService {
   private aiService: AIService;
@@ -47,58 +47,173 @@ export class JobParserService {
         domain = sourceUrl.split('/')[2] || '';
       }
       
-      // Prepare prompt for AI
+      // Define schema for structured output
+      const linkAnalysisSchema = {
+        jobLinks: {
+          type: 'array',
+          items: { 
+            type: 'string',
+            description: 'URL of a direct job posting page'
+          },
+          description: 'Array of URLs that lead directly to specific job postings'
+        }
+      };
+      
+      // Prepare prompt for AI - make it simpler and more direct
       const prompt = `
-        You are a job posting identification expert. Analyze the following list of links from the page "${pageTitle}" on ${domain} (${sourceUrl}).
+        Analyze these links from "${pageTitle}" on ${domain}.
         
-        Your task is to identify which links point to actual job listings or job description pages, not general career pages, job category pages, or non-job content.
+        Identify which URLs point to specific job listing pages, not career overview pages.
         
-        LINKS TO ANALYZE:
+        LINKS:
         ${linksFormatted}
         
-        For each link, consider:
-        1. Does the URL path contain job-specific keywords or patterns (like job IDs, position titles, etc.)?
-        2. Does the link text describe a specific job position (e.g., "Senior Software Engineer" rather than "View All Jobs")?
-        3. Is this likely a direct link to a specific job posting, not a category/filter/search page? WE DO NOT WANT CATEGORY/FILTER/SEARCH pages.
+        Evaluate each link:
+        1. Does the URL or text contain job titles or IDs?
+        2. Is it likely a direct job posting rather than a category page?
 
-        Return ONLY the URL values for links that you are confident lead directly to specific job postings. 
-        Return your answer as a JSON array of strings containing only the full URLs. Example format: ["https://example.com/jobs/12345", "https://example.com/careers/senior-developer"]
-        
-        If none of the links appear to be direct job postings, return an empty array: []
+        Return ONLY the complete URLs for links that lead directly to specific job postings.
       `;
       
-      // Call AI service to analyze links
-      const response = await this.aiService.generateText({
-        prompt,
-        model: "gpt-4o",
-        temperature: 0.1,
-        maxTokens: 2000
-      });
-      
-      // Parse AI response as JSON array
+      // Try multiple models and approaches if the first one fails
+      let jobLinks: string[] = [];
       try {
-        // Find JSON array in the response
-        const match = response.match(/\[.*?\]/s);
-        if (match) {
-          const jsonResponse = JSON.parse(match[0]);
+        // Try with Claude model first (seems to handle URL analysis better)
+        console.log(`[JobParser] Analyzing ${links.length} links using structured output (Claude)`);
+        const result = await this.aiService.generateStructuredOutput<{jobLinks: string[]}>({
+          prompt,
+          model: "claude-3-7-sonnet-20250219",
+          schema: linkAnalysisSchema,
+          temperature: 0.1,
+          maxTokens: 2000,
+          toolName: 'analyze_job_links',
+          toolDescription: 'Identify links that point to direct job posting pages'
+        });
+        
+        jobLinks = result.data.jobLinks || [];
+      } catch (error) {
+        console.log(`[JobParser] Claude model failed for link analysis, trying GPT-4o: ${error}`);
+        
+        try {
+          // Try with GPT-4o as fallback
+          const result = await this.aiService.generateStructuredOutput<{jobLinks: string[]}>({
+            prompt,
+            model: "gpt-4o",
+            schema: linkAnalysisSchema,
+            temperature: 0.1,
+            maxTokens: 2000,
+            toolName: 'analyze_job_links',
+            toolDescription: 'Identify links that point to direct job posting pages'
+          });
           
-          // Validate each URL
-          const validUrls = jsonResponse.filter((url: any) => 
-            typeof url === 'string' && 
-            (url.startsWith('http://') || url.startsWith('https://'))
-          );
+          jobLinks = result.data.jobLinks || [];
+        } catch (gptError) {
+          console.log(`[JobParser] GPT-4o also failed for link analysis: ${gptError}`);
           
-          return validUrls;
+          // Fallback to simple regex-based heuristic analysis
+          console.log(`[JobParser] Using fallback heuristic analysis for link detection`);
+          jobLinks = this.heuristicLinkAnalysis(links);
         }
-        return [];
-      } catch (err) {
-        console.error('[JobParser] Error parsing AI response for link analysis:', err);
-        return [];
       }
+      
+      // Validate each URL
+      const validUrls = jobLinks.filter(url => 
+        typeof url === 'string' && 
+        (url.startsWith('http://') || url.startsWith('https://'))
+      );
+      
+      console.log(`[JobParser] Found ${validUrls.length} valid job posting links`);
+      return validUrls;
     } catch (error) {
       console.error('[JobParser] Error in analyzeLinks:', error);
       return [];
     }
+  }
+  
+  /**
+   * Fallback method for link analysis using regex patterns
+   * Used when AI service fails
+   */
+  private heuristicLinkAnalysis(links: Array<{href: string; text: string; title: string; aria: string}>): string[] {
+    // Common job posting URL patterns
+    const jobUrlPatterns = [
+      /\/jobs?\/[^\/]+$/i,
+      /\/careers?\/[^\/]+$/i,
+      /\/positions?\/[^\/]+$/i,
+      /\/vacancies?\/[^\/]+$/i,
+      /\/openings?\/[^\/]+$/i,
+      /\/apply\/[^\/]+$/i,
+      /jobs?id=/i,
+      /positionid=/i,
+      /jobdetails?/i,
+      /job-id=/i,
+      /jobcode=/i,
+      /posting=/i,
+      /opportunity/i,
+      /requisition/i,
+    ];
+    
+    // Common job title patterns in link text
+    const jobTitlePatterns = [
+      /engineer/i,
+      /developer/i,
+      /designer/i,
+      /manager/i,
+      /director/i,
+      /specialist/i,
+      /analyst/i,
+      /assistant/i,
+      /associate/i,
+      /coordinator/i,
+      /consultant/i,
+      /lead/i,
+      /head of/i,
+      /architect/i,
+      /scientist/i,
+      /researcher/i,
+      /executive/i,
+      /ops/i,
+      /operations/i,
+      /administrator/i,
+      /officer/i,
+      /technician/i,
+    ];
+    
+    // Common job action words
+    const jobActionPatterns = [
+      /apply/i,
+      /view job/i,
+      /see details/i,
+      /more info/i,
+      /learn more/i,
+      /job details/i,
+      /view details/i,
+    ];
+    
+    // Filter links based on patterns
+    return links
+      .filter(link => {
+        // Check URL patterns
+        const urlMatch = jobUrlPatterns.some(pattern => pattern.test(link.href));
+        
+        // Check text patterns if URL doesn't match
+        const textMatch = 
+          jobTitlePatterns.some(pattern => 
+            (link.text && pattern.test(link.text)) || 
+            (link.title && pattern.test(link.title))
+          );
+        
+        // Check for action words in link text
+        const actionMatch =
+          jobActionPatterns.some(pattern => 
+            (link.text && pattern.test(link.text)) || 
+            (link.title && pattern.test(link.title)) ||
+            (link.aria && pattern.test(link.aria))
+          );
+        
+        return urlMatch || textMatch || actionMatch;
+      })
+      .map(link => link.href);
   }
   
   /**
@@ -108,6 +223,12 @@ export class JobParserService {
     try {
       // Load HTML into cheerio
       const $ = load(html);
+      
+      // Log the page structure for debugging
+      console.log(`[JobParser] Page structure analysis:`);
+      console.log(`  - Document title: ${$('title').text()}`);
+      console.log(`  - Meta description: ${$('meta[name="description"]').attr('content') || 'none'}`);
+      console.log(`  - Has main content areas: main=${$('main').length}, article=${$('article').length}, #content=${$('#content').length}`);
       
       // Remove scripts, styles, and other non-content elements
       $('script, style, svg, img, iframe, noscript, head, link, meta').remove();
@@ -119,6 +240,7 @@ export class JobParserService {
       const mainContentSelectors = ['main', 'article', '#content', '#main', '.content', '.main-content'];
       
       let mainContent = '';
+      let mainSelector = '';
       
       // Try to find main content using common selectors
       for (const selector of mainContentSelectors) {
@@ -126,28 +248,38 @@ export class JobParserService {
           const text = $(selector).text().trim();
           if (text.length > mainContent.length) {
             mainContent = text;
+            mainSelector = selector;
           }
         }
       }
       
       // If none of the selectors found substantial content, fall back to body
       if (mainContent.length < 100) {
+        console.log('[JobParser] No main content found from standard selectors, falling back to body text');
         mainContent = $('body').text();
+        mainSelector = 'body';
       }
       
       // Clean up whitespace
       const cleaned = mainContent.replace(/\s+/g, ' ').trim();
       
+      console.log(`[JobParser] Content extraction info: used selector "${mainSelector}", extracted ${cleaned.length} chars`);
+      
       // Check if we have actual content
       if (cleaned.length < 50) {
         console.log('[JobParser] Warning: cleanHtml produced very little content, falling back to partial HTML');
+        console.log('[JobParser] Original HTML preview (first 300 chars):');
+        console.log(html.substring(0, 300).replace(/\n/g, ' ') + '...');
         
         // As a fallback, get visible text from paragraphs, lists, headings, etc.
         const visibleElements = $('h1, h2, h3, h4, h5, h6, p, li, div > *:not(script):not(style)').map((index, element) => {
           return $(element).text().trim();
         }).get().join(' ');
         
-        return visibleElements.replace(/\s+/g, ' ').trim();
+        const fallbackCleaned = visibleElements.replace(/\s+/g, ' ').trim();
+        console.log(`[JobParser] Fallback extraction yielded ${fallbackCleaned.length} chars`);
+        
+        return fallbackCleaned;
       }
       
       return cleaned;
@@ -182,6 +314,23 @@ export class JobParserService {
       console.log(`[JobParser] Parsing page: ${url}`);
       console.log(`[JobParser] Page title: ${title}`);
       console.log(`[JobParser] Content length: ${cleanedContent.length}`);
+      console.log(`[JobParser] Content preview: "${cleanedContent.substring(0, 200)}..."`);
+      
+      // Log first 100 characters of raw HTML for debugging 
+      console.log(`[JobParser] Raw HTML preview: "${content.substring(0, 100).replace(/\n/g, ' ')}..."`);
+      
+      // Check for job indicators in content
+      const jobContentIndicators = [
+        'apply', 'application', 'applicant', 'experience', 'skills', 'qualification', 
+        'responsibilities', 'requirements', 'job description', 'position', 'employment'
+      ];
+      
+      const foundIndicators = jobContentIndicators.filter(indicator => 
+        cleanedContent.toLowerCase().includes(indicator.toLowerCase())
+      );
+      
+      console.log(`[JobParser] Job indicators found: ${foundIndicators.join(', ') || 'none'}`);
+      
       
       // If content is too short, likely not a job page
       if (cleanedContent.length < 100) {
@@ -207,142 +356,118 @@ export class JobParserService {
         domain = url.split('/')[2] || '';
       }
       
-      // Try to extract job links from the page
-      let jobLinks = '';
+      console.log(`[JobParser] Using structured output parser for ${url}`);
+      
+      // Convert keywords string to array if provided
+      const keywordsArray = keywords ? keywords.split(',').map(k => k.trim()) : [];
+      
+      // Try multiple models if first one fails
+      let parsedJobs: ParsedJobPosting[] = [];
+      let parseError = null;
+      
+      // Try with GPT-4o first (best quality)
       try {
-        // Extract links that might be job listings
-        const $ = load(content);
-        const links = $('a')
-          .map(function(this: any) {
-            const href = $(this).attr('href');
-            const text = $(this).text().trim();
-            if (href && text && (
-              /job|career|position|vacancy|apply|posting/i.test(href) || 
-              /job|career|position|vacancy|apply|posting/i.test(text)
-            )) {
-              return `- "${text}": ${href}`;
-            }
-            return null;
-          })
-          .get()
-          .filter(Boolean)
-          .slice(0, 20) // Limit to 20 most relevant links
-          .join('\n');
-        
-        if (links.length > 0) {
-          jobLinks = `\nPotential job-related links found on the page:\n${links}\n\nUse these links when possible as the 'url' field for each job.`;
-        }
-      } catch (e) {
-        console.log('[JobParser] Error extracting links:', e);
-      }
-      
-      // Prepare prompt for the AI
-      let prompt = `
-        Extract job listings from the following webpage content. The page is from ${url} with title "${title}" on the domain "${domain}".
-        
-        ${isLikelyJobPage ? 'This appears to be a job-related page based on its URL or title.' : ''}
-        ${jobLinks}
-        
-        For each job posting you can identify, extract the following information in a structured format:
-        - title: The job title
-        - organization: The company or organization name (if not explicitly stated, use "${domain}" as a fallback)
-        - location: The job location (if available)
-        - description: A brief description of the job
-        - salary: Salary information (if available)
-        - requirements: Job requirements (if available)
-        - url: The direct URL to the specific job posting (very important - if a specific job link exists, use that exact URL; if you can't find a specific URL, use the current page URL "${url}")
-        - employmentType: The type of employment (use one of these values: FULL_TIME, PART_TIME, CONTRACT, TEMPORARY, INTERNSHIP, REMOTE, HYBRID, or OTHER)
-        
-        If this appears to be a single job posting page (not a list of jobs), extract the information for that single job.
-        
-        If this page contains multiple job listings, extract information for each distinct job.
-        
-        Return the data as a JSON array of job objects. If no job listings are found, return an empty array.
-        
-        Webpage Content:
-        ${cleanedContent.slice(0, 12000)}
-      `;
-      
-      if (keywords) {
-        prompt += `\n\nFocus on jobs related to these keywords: ${keywords}`;
-      }
-      
-      // Call AI service to extract job data
-      const response = await this.aiService.generateText({
-        prompt,
-        model: "gpt-4o",
-        temperature: 0.2,
-        maxTokens: 4000
-      });
-      
-      // Try to parse the response as JSON
-      try {
-        // Check for brackets to ensure it's JSON
-        const jsonStart = response.indexOf('[');
-        const jsonEnd = response.lastIndexOf(']');
-        let jsonResponse = response;
-        
-        if (jsonStart > -1 && jsonEnd > -1) {
-          jsonResponse = response.substring(jsonStart, jsonEnd + 1);
-        }
-        
-        // Try to parse the response as JSON
-        let responseObj;
-        try {
-          responseObj = JSON.parse(jsonResponse);
-        } catch (e) {
-          // If direct parsing fails, try to extract JSON from text
-          const jsonMatch = jsonResponse.match(/\[[\s\S]*\]/);
-          if (jsonMatch) {
-            responseObj = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error("Could not parse JSON from response");
-          }
-        }
-        
-        const jobs: JobPostingData[] = Array.isArray(responseObj) 
-          ? responseObj 
-          : (responseObj?.jobs || responseObj?.jobListings || []);
-        
-        // Process each job to ensure it has proper URLs and metadata
-        return jobs.map(job => {
-          // For job URL handling
-          let jobUrl = job.url;
-          
-          if (!jobUrl || jobUrl === '' || jobUrl === url) {
-            // No specific URL was provided, use the current page URL
-            jobUrl = url;
-          } else if (!/^https?:\/\//i.test(jobUrl)) {
-            // The URL is relative, make it absolute
-            try {
-              const baseUrl = new URL(url);
-              if (jobUrl.startsWith('/')) {
-                // Absolute path
-                jobUrl = `${baseUrl.protocol}//${baseUrl.host}${jobUrl}`;
-              } else {
-                // Relative path
-                const pathParts = baseUrl.pathname.split('/');
-                pathParts.pop(); // Remove last segment
-                const basePath = pathParts.join('/');
-                jobUrl = `${baseUrl.protocol}//${baseUrl.host}${basePath}/${jobUrl}`;
-              }
-            } catch (e) {
-              // If URL parsing fails, fall back to the source URL
-              jobUrl = url;
-            }
-          }
-          
-          return {
-            ...job,
-            url: jobUrl,
-            dateScraped: new Date(),
-            organization: job.organization || domain
-          };
+        parsedJobs = await extractMultipleJobPostings(cleanedContent, {
+          url,
+          model: "gpt-4o",
+          temperature: 0.2,
+          keywords: keywordsArray
         });
-      } catch (err) {
-        console.error('[JobParser] Error parsing AI response:', err);
-        return [];
+      } catch (error) {
+        console.log(`[JobParser] Error with GPT-4o model, trying Claude model: ${error}`);
+        parseError = error;
+        
+        // If that fails, try with Claude model
+        try {
+          parsedJobs = await extractMultipleJobPostings(cleanedContent, {
+            url,
+            model: "claude-3-7-sonnet-20250219",
+            temperature: 0.2, 
+            keywords: keywordsArray
+          });
+          parseError = null;
+        } catch (claudeError) {
+          console.log(`[JobParser] Error with Claude model too: ${claudeError}`);
+          
+          // If both models fail, try with traditional method as fallback
+          try {
+            // This is a minimal fallback approach based on content analysis
+            // Extract at least a job title and description from page
+            const jobTitle = title.replace(/\s*[|]\s*.+$/, '').trim();
+            
+            if (isLikelyJobPage) {
+              console.log(`[JobParser] Using fallback extraction method for ${url}`);
+              
+              // Create a minimal job object for the page
+              parsedJobs = [{
+                title: jobTitle,
+                organization: domain,
+                description: cleanedContent.slice(0, 2000), // Take first 2000 chars as description
+                url: url,
+                // Add other required fields with default values
+                type: 'FULL_TIME',
+                skills: []
+              }];
+              
+              parseError = null;
+            }
+          } catch (fallbackError) {
+            console.error(`[JobParser] Fallback extraction also failed: ${fallbackError}`);
+            // If even the fallback fails, re-throw the original error
+            throw parseError;
+          }
+        }
       }
+      
+      console.log(`[JobParser] Extracted ${parsedJobs.length} jobs using structured output parser`);
+      
+      // Convert ParsedJobPosting to JobPostingData format
+      return parsedJobs.map(job => {
+        // For job URL handling
+        let jobUrl = job.url;
+        
+        if (!jobUrl || jobUrl === '' || jobUrl === url) {
+          // No specific URL was provided, use the current page URL
+          jobUrl = url;
+        } else if (!/^https?:\/\//i.test(jobUrl)) {
+          // The URL is relative, make it absolute
+          try {
+            const baseUrl = new URL(url);
+            if (jobUrl.startsWith('/')) {
+              // Absolute path
+              jobUrl = `${baseUrl.protocol}//${baseUrl.host}${jobUrl}`;
+            } else {
+              // Relative path
+              const pathParts = baseUrl.pathname.split('/');
+              pathParts.pop(); // Remove last segment
+              const basePath = pathParts.join('/');
+              jobUrl = `${baseUrl.protocol}//${baseUrl.host}${basePath}/${jobUrl}`;
+            }
+          } catch (e) {
+            // If URL parsing fails, fall back to the source URL
+            jobUrl = url;
+          }
+        }
+        
+        // Ensure all required fields are present
+        return {
+          title: job.title || 'Untitled Position',
+          organization: job.organization || domain,
+          location: job.location || undefined,
+          description: job.description || cleanedContent.slice(0, 500),
+          salary: job.salary || undefined,
+          requirements: job.requirements || undefined,
+          url: jobUrl,
+          employmentType: job.type || 'FULL_TIME',
+          experience: job.experience || undefined,
+          benefits: job.benefits || undefined,
+          organizationType: job.organizationType || undefined,
+          skills: job.skills || [],
+          dateScraped: new Date(),
+          datePosted: job.postedDate ? new Date(job.postedDate) : undefined,
+          structuredData: job.structuredData || {}
+        };
+      });
     } catch (error) {
       console.error('[JobParser] Error in parseJobsFromPage:', error);
       return [];
@@ -356,6 +481,33 @@ export class JobParserService {
    */
   async enrichJobData(job: JobPostingData): Promise<JobPostingData> {
     try {
+      // Define schema for job enrichment
+      const enrichmentSchema = {
+        skills: { 
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Key skills required for this job'
+        },
+        experienceLevel: { 
+          type: 'string',
+          description: 'Experience level (Junior, Mid-level, Senior, or Executive)'
+        },
+        benefits: { 
+          type: 'string',
+          description: 'Benefits offered with the position'
+        },
+        organizationType: { 
+          type: 'string',
+          enum: ['GOVERNMENT', 'NONPROFIT', 'PRIVATE', 'PUBLIC', 'ACADEMIC', 'STARTUP', 'OTHER'],
+          description: 'Type of organization'
+        },
+        keyResponsibilities: { 
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Main job responsibilities'
+        }
+      };
+
       // Prepare prompt for the AI
       const prompt = `
         Analyze this job posting and extract additional structured information:
@@ -365,44 +517,37 @@ export class JobParserService {
         Location: ${job.location || 'Not specified'}
         Description: ${job.description}
         
-        Extract and return the following in JSON format:
-        1. skills: An array of key skills required for this job
-        2. experienceLevel: Junior, Mid-level, Senior, or Executive
-        3. benefits: Any mentioned benefits
-        4. organizationType: Type of organization (use one of these values: GOVERNMENT, NONPROFIT, PRIVATE, PUBLIC, ACADEMIC, STARTUP, or OTHER)
-        5. keyResponsibilities: Main job responsibilities
-        
-        Return only the JSON object with these fields.
+        Extract key information about this job posting.
       `;
       
-      // Call AI service to enrich job data
-      const response = await this.aiService.generateText({
+      // Call AI service to enrich job data with structured output
+      const result = await this.aiService.generateStructuredOutput({
         prompt,
         model: "gpt-4o",
+        schema: enrichmentSchema,
         temperature: 0.2,
-        maxTokens: 1000
+        maxTokens: 1000,
+        toolName: 'enrich_job_data',
+        toolDescription: 'Extract additional structured information from a job posting'
       });
       
-      // Parse AI response
-      try {
-        const enrichment = JSON.parse(response);
-        return {
-          ...job,
-          skills: enrichment.skills || [],
-          experience: enrichment.experienceLevel,
-          benefits: enrichment.benefits,
-          organizationType: enrichment.organizationType,
-          structuredData: {
-            ...(job.structuredData || {}),
-            keyResponsibilities: enrichment.keyResponsibilities
-          }
-        };
-      } catch (err) {
-        console.error('[JobParser] Error parsing enrichment response:', err);
-        return job;
-      }
+      const enrichment = result.data;
+      console.log(`[JobParser] Successfully enriched job data for "${job.title}" using structured output`);
+      
+      return {
+        ...job,
+        skills: enrichment.skills || job.skills || [],
+        experience: enrichment.experienceLevel || job.experience,
+        benefits: enrichment.benefits || job.benefits,
+        organizationType: enrichment.organizationType || job.organizationType,
+        structuredData: {
+          ...(job.structuredData || {}),
+          keyResponsibilities: enrichment.keyResponsibilities || []
+        }
+      };
     } catch (error: any) {
       console.error('[JobParser] Error in enrichJobData:', error);
+      // Return the original job data if enrichment fails
       return job;
     }
   }
