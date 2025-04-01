@@ -43,7 +43,7 @@
     "app/(routes)/api/ai/vectorize/[docName]",
     "app/(routes)/api/ai/parse/[id]",
     "src/api/ai/generate/(utils)/types.d.ts"
-  ],
+, "../../packages/utils/src/dateUtils.ts"  ],
   "references": [
     {
       "path": "../../packages/types"

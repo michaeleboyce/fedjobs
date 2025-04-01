@@ -3,8 +3,7 @@
 // Refactored to use DocumentRepository for saving generated documents.
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { DocumentType, GenerationSelection, StreamingTextArray } from "@fedjobs/types";
-import { formatDateMMDDYYYY } from "@/app/shared/utils/dateUtils";
-import { uploadFile, generateKeyFromFileName } from "@fedjobs/utils";
+import { uploadFile, generateKeyFromFileName, formatDateMMDDYYYY } from "@fedjobs/utils";
 import { DocumentRepository } from "@fedjobs/database";
 import { OpenAI } from 'openai';
 

@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { toInputFormat, fromInputFormat } from '@/app/shared/utils/dateUtils';
+import { toInputFormat, fromInputFormat } from '@fedjobs/utils';
 
 const buttonBase = "inline-flex items-center gap-1 text-sm px-2 py-1 rounded";
 const buttonClasses = {
