@@ -53,7 +53,7 @@ COPY . .
 # Fix circular reference in API package build script
 RUN sed -i 's/"build": "pnpm turbo run build --filter=@fedjobs\/api..."/"build": "tsc"/' apps/api/package.json
 
-# Build packages in sequence - no cache for reliability
+# Build packages in sequence
 RUN pnpm turbo run build --filter=@fedjobs/types && \
     pnpm turbo run build --filter=@fedjobs/database && \
     pnpm turbo run build --filter=@fedjobs/utils && \
@@ -90,16 +90,27 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 WORKDIR /app
 
-# Copy production node_modules
-COPY --from=builder /app/node_modules /app/node_modules
+# Install pnpm
+RUN corepack disable pnpm
+RUN npm install -g pnpm@9.10.0
+
+# Copy monorepo configuration
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/packages/database/package.json ./packages/database/
+COPY --from=builder /app/packages/types/package.json ./packages/types/
+COPY --from=builder /app/packages/utils/package.json ./packages/utils/
+COPY --from=builder /app/packages/crawler/package.json ./packages/crawler/
 
 # Copy built code
-COPY --from=builder /app/apps/api/package.json /app/apps/api/package.json
-COPY --from=builder /app/apps/api/dist /app/apps/api/dist
-COPY --from=builder /app/packages/database/dist /app/packages/database/dist  
-COPY --from=builder /app/packages/types/dist /app/packages/types/dist
-COPY --from=builder /app/packages/utils/dist /app/packages/utils/dist
-COPY --from=builder /app/packages/crawler/dist /app/packages/crawler/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/packages/database/dist ./packages/database/dist
+COPY --from=builder /app/packages/types/dist ./packages/types/dist
+COPY --from=builder /app/packages/utils/dist ./packages/utils/dist
+COPY --from=builder /app/packages/crawler/dist ./packages/crawler/dist
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
 
 # Set working directory and expose port
 WORKDIR /app/apps/api
