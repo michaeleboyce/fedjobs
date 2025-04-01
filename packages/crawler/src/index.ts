@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 
 // Export core functionality
-export { WebCrawler } from './core/crawler';
+export { WebCrawler } from './core/PlaywrightCrawler';
 export { JobParserService } from './core/parser';
 
 // Export services
