@@ -4,74 +4,106 @@ FROM node:20-slim AS builder
 # Set environment variables
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-ENV COREPACK_IGNORE_SIGNATURES=1 # Skip signature checks just in case
+ENV COREPACK_IGNORE_SIGNATURES=1 
+
+# Install Playwright dependencies
+RUN apt-get update && apt-get install -y \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxi6 \
+    libxtst6 \
+    libnss3 \
+    libcups2 \
+    libxss1 \
+    libxrandr2 \
+    libasound2 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0 \
+    libgbm1 \
+    fonts-noto-color-emoji \
+    fonts-freefont-ttf \
+    fonts-liberation \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install pnpm globally using npm (reliable method)
+# Install pnpm
 RUN corepack disable pnpm
-RUN npm install -g pnpm@9.10.0 # Use your specific packageManager version
+RUN npm install -g pnpm@9.10.0
 
-# Copy package manifests for the whole monorepo
+# Copy package manifests for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
-# Copy package.json files for each workspace package
-# This allows pnpm to understand the workspace structure during install
 COPY apps/api/package.json ./apps/api/
 COPY packages/database/package.json ./packages/database/
 COPY packages/types/package.json ./packages/types/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/crawler/package.json ./packages/crawler/
-# Add any other packages if they exist
 
-# Install ALL dependencies (including devDependencies needed for build)
-# Using --frozen-lockfile is best practice for CI/CD
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy the entire monorepo source code
-# This is simpler than copying individual files/dirs for the build stage
+# Copy source code
 COPY . .
 
-# Build the target application (@fedjobs/api) and its dependencies using Turbo
-# Turbo will figure out what needs building based on the filter
-RUN pnpm turbo run build --filter=@fedjobs/api...
+# Fix circular reference in API package build script
+RUN sed -i 's/"build": "pnpm turbo run build --filter=@fedjobs\/api..."/"build": "tsc"/' apps/api/package.json
 
-# --- Optional: Prune dev dependencies ---
-# If you want a smaller final image, remove dev dependencies AFTER building
-# RUN pnpm prune --prod
+# Build packages in sequence - no cache for reliability
+RUN pnpm turbo run build --filter=@fedjobs/types && \
+    pnpm turbo run build --filter=@fedjobs/database && \
+    pnpm turbo run build --filter=@fedjobs/utils && \
+    pnpm turbo run build --filter=@fedjobs/crawler && \
+    pnpm turbo run build --filter=@fedjobs/api
 
-# Stage 2: Runner - Creates the final production image
+# Stage 2: Runner - Production image
 FROM node:20-slim AS runner
 
-# Set environment variables for production
+# Install Playwright runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxi6 \
+    libxtst6 \
+    libnss3 \
+    libcups2 \
+    libxss1 \
+    libxrandr2 \
+    libasound2 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0 \
+    libgbm1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
 ENV NODE_ENV=production
-ENV PNPM_HOME="/pnpm" # May not be strictly needed if not using pnpm in CMD
-ENV PATH="$PNPM_HOME:$PATH" # May not be strictly needed
+ENV PNPM_HOME="/pnpm" 
+ENV PATH="$PNPM_HOME:$PATH" 
 
 WORKDIR /app
 
-# Copy ONLY the necessary production node_modules from the builder stage
-# If you ran `pnpm prune --prod` above, this copies the pruned modules
+# Copy production node_modules
 COPY --from=builder /app/node_modules /app/node_modules
 
-# Copy the built API application code
-COPY --from=builder /app/apps/api/dist /app/apps/api/dist
-# Copy the API's package.json (needed for Node to find the main script)
+# Copy built code
 COPY --from=builder /app/apps/api/package.json /app/apps/api/package.json
-
-# Copy the built shared packages (dist folders) from the builder stage
-# These contain the compiled JS needed by the running API
-COPY --from=builder /app/packages/database/dist /app/packages/database/dist
+COPY --from=builder /app/apps/api/dist /app/apps/api/dist
+COPY --from=builder /app/packages/database/dist /app/packages/database/dist  
 COPY --from=builder /app/packages/types/dist /app/packages/types/dist
 COPY --from=builder /app/packages/utils/dist /app/packages/utils/dist
 COPY --from=builder /app/packages/crawler/dist /app/packages/crawler/dist
-# Add other built packages if needed
 
-# Set the final working directory to the API app's folder
+# Set working directory and expose port
 WORKDIR /app/apps/api
-
-# Expose the port the API listens on (adjust if different)
 EXPOSE 3001
 
-# Command to run the application
+# Start application
 CMD ["node", "dist/index.js"]

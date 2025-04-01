@@ -6,8 +6,9 @@
     "noEmit": false,
     "composite": true,
     "declaration": true,
+    "declarationMap": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "nodenext"
   },
   "include": ["src/**/*"]
 }

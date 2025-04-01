@@ -2,7 +2,7 @@
 import { serial, boolean, text, integer, json, varchar, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
 import { DOCUMENT_TYPES } from '@fedjobs/types';
 
-export const documentType = pgEnum("document_type", DOCUMENT_TYPES)
+export const documentType = pgEnum("document_type", DOCUMENT_TYPES as unknown as [string, ...string[]])
 export const documentSource = pgEnum("document_source", ["USER_UPLOADED", "APPLICATION_GENERATED"]);
 
 export const documents = pgTable("documents", {

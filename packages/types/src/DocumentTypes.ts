@@ -1,11 +1,11 @@
-// File path: packages/types/src/DocumentTypes.ts
+// In packages/types/src/DocumentTypes.ts
+// Use a tuple type assertion rather than string[]
+export const DOCUMENT_TYPES = ["cover_letter", "ecq", "resume", "tcq", "other"] as [string, ...string[]];
+export const GENERATION_TYPES = ["cover_letter", "ecq", "paragraph", "resume", "tcq", "other"] as [string, ...string[]];
+
+// Keep your type definitions as is
 export type DocumentType = "cover_letter" | "ecq" | "resume" | "tcq" | "other";
 export type GenerationType = DocumentType | "paragraph";
-
-// Define constants to be used in both frontend and database schemas
-export const DOCUMENT_TYPES: [DocumentType, ...DocumentType[]] = ["cover_letter", "ecq", "resume", "tcq", "other"];
-export const GENERATION_TYPES: [GenerationType, ...GenerationType[]] = ["cover_letter", "ecq", "paragraph", "resume", "tcq", "other"];
-
 // Helper functions to check types
 export const isDocumentType = (type: string): type is DocumentType => {
     return DOCUMENT_TYPES.includes(type as DocumentType);

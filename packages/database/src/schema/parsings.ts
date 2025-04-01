@@ -2,7 +2,7 @@
 import { serial, boolean, text, integer, json, varchar, decimal, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
 import { DOCUMENT_TYPES } from '@fedjobs/types';
 import { documents as documentsTable } from './documents';
-export const parsingType = pgEnum("parsing_type", DOCUMENT_TYPES)
+export const parsingType = pgEnum("parsing_type", DOCUMENT_TYPES as unknown as [string, ...string[]])
 
 export const parsings = pgTable("parsings", {
   id: serial("id").primaryKey(),

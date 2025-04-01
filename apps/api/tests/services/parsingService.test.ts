@@ -1,7 +1,7 @@
 // File path: apps/api/tests/services/parsingService.test.ts
 import { Anthropic } from '@anthropic-ai/sdk';
 import { db } from '@fedjobs/database';
-import { parsings as parsingsTable, type NewParsingRecord } from '@fedjobs/database/src/schema/parsings';
+import { parsings as parsingsTable, type NewParsingRecord } from '@fedjobs/database';
 import { parseResumeText } from '@fedjobs/utils';
 import { eq } from '@fedjobs/database';
 import type { ParseRequest } from '@fedjobs/types';

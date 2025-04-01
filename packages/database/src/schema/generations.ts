@@ -2,7 +2,7 @@
 import { serial, boolean, text, integer, json, varchar, decimal, pgTable, pgEnum, timestamp } from "drizzle-orm/pg-core"
 import { DOCUMENT_TYPES } from '@fedjobs/types';
 
-export const generationType = pgEnum("generation_type", DOCUMENT_TYPES)
+export const generationType = pgEnum("generation_type", DOCUMENT_TYPES as unknown as [string, ...string[]])
 
 export const generations = pgTable("generations", {
   id: serial("id").primaryKey(),
