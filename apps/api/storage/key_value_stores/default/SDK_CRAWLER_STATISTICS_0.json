@@ -1,40 +1,29 @@
 {
   "requestsFinished": 1,
   "requestsFailed": 0,
-  "requestsRetries": 1,
+  "requestsRetries": 0,
   "requestsFailedPerMinute": 0,
   "requestsFinishedPerMinute": 1,
-  "requestMinDurationMillis": 727,
-  "requestMaxDurationMillis": 727,
+  "requestMinDurationMillis": 42805,
+  "requestMaxDurationMillis": 42805,
   "requestTotalFailedDurationMillis": 0,
-  "requestTotalFinishedDurationMillis": 727,
-  "crawlerStartedAt": "2025-03-31T04:51:23.983Z",
-  "crawlerFinishedAt": "2025-03-31T04:52:26.349Z",
-  "statsPersistedAt": "2025-03-31T04:52:26.349Z",
-  "crawlerRuntimeMillis": 62508,
-  "crawlerLastStartTimestamp": 1743396683841,
+  "requestTotalFinishedDurationMillis": 42805,
+  "crawlerStartedAt": "2025-04-01T05:33:19.384Z",
+  "crawlerFinishedAt": "2025-04-01T05:34:02.286Z",
+  "statsPersistedAt": "2025-04-01T05:34:02.286Z",
+  "crawlerRuntimeMillis": 43039,
+  "crawlerLastStartTimestamp": 1743485599247,
   "requestRetryHistogram": [
-    null,
     1
   ],
   "statsId": 0,
   "requestAvgFailedDurationMillis": null,
-  "requestAvgFinishedDurationMillis": 727,
-  "requestTotalDurationMillis": 727,
+  "requestAvgFinishedDurationMillis": 42805,
+  "requestTotalDurationMillis": 42805,
   "requestsTotal": 1,
   "requestsWithStatusCode": {
-    "200": 2
+    "200": 1
   },
   "errors": {},
-  "retryErrors": {
-    "/Users/michaelboyce/Documents/Programming/ai-ml/fedjobs-monorepo/node_modules/.pnpm/@apify+timeout@0.3.1/node_modules/@apify/src/index.ts:88:74": {
-      "missing error code": {
-        "Error": {
-          "requestHandler timed out after 60 seconds.": {
-            "count": 1
-          }
-        }
-      }
-    }
-  }
+  "retryErrors": {}
 }
