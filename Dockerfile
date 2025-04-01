@@ -47,6 +47,9 @@ COPY packages/crawler/package.json ./packages/crawler/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
+# Install Playwright browsers using pnpm dlx
+RUN pnpm dlx playwright install chromium
+
 # Copy source code
 COPY . .
 
@@ -108,6 +111,9 @@ COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/types/dist ./packages/types/dist
 COPY --from=builder /app/packages/utils/dist ./packages/utils/dist
 COPY --from=builder /app/packages/crawler/dist ./packages/crawler/dist
+
+# Copy Playwright browsers from builder
+COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 # Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
