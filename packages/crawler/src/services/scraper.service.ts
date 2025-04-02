@@ -1,108 +1,117 @@
-// File path: packages/crawler/src/services/scraper.service.ts
-import { WebCrawler } from '../core/crawler';
-import { JobParserService } from '../core/parser';
-import { CacheService } from './cache.service';
-import { CrawlJobOptions, JobCrawlerResult, JobPostingData } from '../types';
+// src/services/scraper.service.ts
+import { ICrawler } from '../interfaces/ICrawler';
+import { IParser } from '../interfaces/IParser';
+import { ICacheService } from '../interfaces/ICacheService';
+import { ILogger } from '../interfaces/ILogger';
+import { CrawlJobOptions, JobCrawlerResult, JobPostingData, UrlNormalizer } from '../types';
+import { CrawlerError, ErrorCode } from '../utils/errors';
 import { 
   JobPostingRepository, 
   JobSourceRepository,
+  JobSourceRecord,
   employmentType,
-  organizationType,
-  JobPostingRecord,
-  JobSourceRecord
+  organizationType
 } from '@fedjobs/database';
-import { UrlNormalizationService } from '@fedjobs/utils';
 
-/**
- * Normalizes employment type strings to match database enum values
- */
-function normalizeEmploymentType(type?: string): (typeof employmentType.enumValues)[number] | undefined {
-  if (!type) return undefined;
-  
-  // Convert to uppercase for comparison
-  const normalized = type.toUpperCase();
-  
-  // Map common variations to database enum values
-  const typeMap: Record<string, (typeof employmentType.enumValues)[number]> = {
-    'INTERN': 'INTERNSHIP',
-    'INTERNSHIP': 'INTERNSHIP',
-    'FULL TIME': 'FULL_TIME',
-    'FULLTIME': 'FULL_TIME',
-    'FULL-TIME': 'FULL_TIME',
-    'FULL_TIME': 'FULL_TIME',
-    'PART TIME': 'PART_TIME', 
-    'PARTTIME': 'PART_TIME',
-    'PART-TIME': 'PART_TIME',
-    'PART_TIME': 'PART_TIME',
-    'CONTRACT': 'CONTRACT',
-    'CONTRACTOR': 'CONTRACT',
-    'TEMPORARY': 'TEMPORARY',
-    'TEMP': 'TEMPORARY',
-    'REMOTE': 'REMOTE',
-    'HYBRID': 'HYBRID',
-    'FREELANCE': 'CONTRACT',
-  };
-  
-  return typeMap[normalized] || 'OTHER';
-}
-
-/**
- * Normalizes organization type strings to match database enum values
- */
-function normalizeOrganizationType(type?: string): (typeof organizationType.enumValues)[number] | undefined {
-  if (!type) return undefined;
-  
-  // Convert to uppercase for comparison
-  const normalized = type.toUpperCase();
-  
-  // Map common variations to database enum values
-  const typeMap: Record<string, (typeof organizationType.enumValues)[number]> = {
-    'GOVERNMENT': 'GOVERNMENT',
-    'FEDERAL': 'GOVERNMENT',
-    'STATE': 'GOVERNMENT',
-    'LOCAL': 'GOVERNMENT',
-    'GOV': 'GOVERNMENT',
-    'NONPROFIT': 'NONPROFIT',
-    'NON-PROFIT': 'NONPROFIT',
-    'NON PROFIT': 'NONPROFIT',
-    'NOT FOR PROFIT': 'NONPROFIT',
-    'PRIVATE': 'PRIVATE',
-    'PRIVATE SECTOR': 'PRIVATE',
-    'CORPORATION': 'PRIVATE',
-    'PUBLIC': 'PUBLIC',
-    'PUBLICLY TRADED': 'PUBLIC',
-    'PUBLIC COMPANY': 'PUBLIC',
-    'ACADEMIC': 'ACADEMIC',
-    'EDUCATION': 'ACADEMIC',
-    'UNIVERSITY': 'ACADEMIC',
-    'COLLEGE': 'ACADEMIC',
-    'SCHOOL': 'ACADEMIC',
-    'STARTUP': 'STARTUP',
-    'START-UP': 'STARTUP',
-    'START UP': 'STARTUP',
-  };
-  
-  return typeMap[normalized] || 'OTHER';
-}
-
-/**
- * Service to manage job scraping operations with improved architecture
- */
 export class ScraperService {
-  private crawler: WebCrawler;
-  private parser: JobParserService;
-  private cacheService: CacheService;
+  private crawler: ICrawler;
+  private parser: IParser;
+  private cacheService: ICacheService;
+  private logger: ILogger;
   private jobPostingRepo: JobPostingRepository;
   private jobSourceRepo: JobSourceRepository;
-  private urlNormalizer: UrlNormalizationService;
+  private urlNormalizer: UrlNormalizer;
   
-  constructor() {
-    this.parser = new JobParserService();
-    this.crawler = new WebCrawler(this.parser);
-    this.cacheService = new CacheService();
-    this.jobPostingRepo = new JobPostingRepository();
-    this.jobSourceRepo = new JobSourceRepository();
-    this.urlNormalizer = new UrlNormalizationService();
+  constructor(
+    crawler: ICrawler,
+    parser: IParser,
+    cacheService: ICacheService,
+    logger: ILogger,
+    urlNormalizer: UrlNormalizer,
+    jobPostingRepo: JobPostingRepository = new JobPostingRepository(),
+    jobSourceRepo: JobSourceRepository = new JobSourceRepository()
+  ) {
+    this.crawler = crawler;
+    this.parser = parser;
+    this.cacheService = cacheService;
+    this.logger = logger;
+    this.urlNormalizer = urlNormalizer;
+    this.jobPostingRepo = jobPostingRepo;
+    this.jobSourceRepo = jobSourceRepo;
+    
+    this.logger.info('ScraperService initialized');
+  }
+  
+  /**
+   * Normalizes employment type strings to match database enum values
+   */
+  private normalizeEmploymentType(type?: string): (typeof employmentType.enumValues)[number] | undefined {
+    if (!type) return undefined;
+    
+    // Convert to uppercase for comparison
+    const normalized = type.toUpperCase();
+    
+    // Map common variations to database enum values
+    const typeMap: Record<string, (typeof employmentType.enumValues)[number]> = {
+      'INTERN': 'INTERNSHIP',
+      'INTERNSHIP': 'INTERNSHIP',
+      'FULL TIME': 'FULL_TIME',
+      'FULLTIME': 'FULL_TIME',
+      'FULL-TIME': 'FULL_TIME',
+      'FULL_TIME': 'FULL_TIME',
+      'PART TIME': 'PART_TIME', 
+      'PARTTIME': 'PART_TIME',
+      'PART-TIME': 'PART_TIME',
+      'PART_TIME': 'PART_TIME',
+      'CONTRACT': 'CONTRACT',
+      'CONTRACTOR': 'CONTRACT',
+      'TEMPORARY': 'TEMPORARY',
+      'TEMP': 'TEMPORARY',
+      'REMOTE': 'REMOTE',
+      'HYBRID': 'HYBRID',
+      'FREELANCE': 'CONTRACT',
+    };
+    
+    return typeMap[normalized] || 'OTHER';
+  }
+  
+  /**
+   * Normalizes organization type strings to match database enum values
+   */
+  private normalizeOrganizationType(type?: string): (typeof organizationType.enumValues)[number] | undefined {
+    if (!type) return undefined;
+    
+    // Convert to uppercase for comparison
+    const normalized = type.toUpperCase();
+    
+    // Map common variations to database enum values
+    const typeMap: Record<string, (typeof organizationType.enumValues)[number]> = {
+      'GOVERNMENT': 'GOVERNMENT',
+      'FEDERAL': 'GOVERNMENT',
+      'STATE': 'GOVERNMENT',
+      'LOCAL': 'GOVERNMENT',
+      'GOV': 'GOVERNMENT',
+      'NONPROFIT': 'NONPROFIT',
+      'NON-PROFIT': 'NONPROFIT',
+      'NON PROFIT': 'NONPROFIT',
+      'NOT FOR PROFIT': 'NONPROFIT',
+      'PRIVATE': 'PRIVATE',
+      'PRIVATE SECTOR': 'PRIVATE',
+      'CORPORATION': 'PRIVATE',
+      'PUBLIC': 'PUBLIC',
+      'PUBLICLY TRADED': 'PUBLIC',
+      'PUBLIC COMPANY': 'PUBLIC',
+      'ACADEMIC': 'ACADEMIC',
+      'EDUCATION': 'ACADEMIC',
+      'UNIVERSITY': 'ACADEMIC',
+      'COLLEGE': 'ACADEMIC',
+      'SCHOOL': 'ACADEMIC',
+      'STARTUP': 'STARTUP',
+      'START-UP': 'STARTUP',
+      'START UP': 'STARTUP',
+    };
+    
+    return typeMap[normalized] || 'OTHER';
   }
   
   /**
@@ -118,9 +127,9 @@ export class ScraperService {
           isValid: false, 
           reasons: [
             'Missing required fields',
-            !jobData.title ? 'No job title' : null,
-            !jobData.organization ? 'No organization' : null,
-            !jobData.description ? 'No job description' : null
+            !jobData.title ? 'No job title' : '',
+            !jobData.organization ? 'No organization' : '',
+            !jobData.description ? 'No job description' : ''
           ].filter(Boolean) as string[]
         };
       }
@@ -172,39 +181,41 @@ export class ScraperService {
         }
       `;
       
-      const aiResponse = await this.parser.getAIService().generateText({
-        prompt,
-        model: "gpt-4o",
-        temperature: 0.1,
-        maxTokens: 1000
-      });
-      
-      // Parse the AI response
       try {
-        // This regex matches any JSON object in the text:
-        // \{ matches an opening curly brace
-        // [\s\S]* matches any characters including newlines (non-greedy)
-        // \} matches a closing curly brace
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const validation = JSON.parse(jsonMatch[0]);
-          
-          if (!validation.isLegitimateJob && validation.confidence > 0.7) {
-            console.log(`[ScraperService] AI determined content is not a legitimate job (${(validation.confidence*100).toFixed(1)}% confident)`);
-            return { 
-              isValid: false, 
-              reasons: validation.reasons || ['AI determined this is not a legitimate job posting'] 
-            };
+        const aiResponse = await this.parser.getAIService().generateText({
+          prompt,
+          model: "gpt-4o",
+          temperature: 0.1,
+          maxTokens: 1000
+        });
+        
+        // Parse the AI response
+        try {
+          // This regex matches any JSON object in the text
+          const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const validation = JSON.parse(jsonMatch[0]);
+            
+            if (!validation.isLegitimateJob && validation.confidence > 0.7) {
+              this.logger.info(`AI determined content is not a legitimate job (${(validation.confidence*100).toFixed(1)}% confident)`);
+              return { 
+                isValid: false, 
+                reasons: validation.reasons || ['AI determined this is not a legitimate job posting'] 
+              };
+            }
           }
+        } catch (e) {
+          this.logger.error('Error parsing AI validation response:', { error: e });
+          // Continue with basic validation if AI parsing fails
         }
-      } catch (e) {
-        console.error('[ScraperService] Error parsing AI validation response:', e);
-        // Continue with basic validation if AI parsing fails
+      } catch (error) {
+        this.logger.error('Error in AI job validation:', { error });
+        // Continue with basic validation if AI call fails
       }
       
       return { isValid: true };
     } catch (error) {
-      console.error('[ScraperService] Error validating job posting:', error);
+      this.logger.error('Error validating job posting:', { error });
       // Default to valid if validation fails to prevent blocking legitimate jobs
       return { isValid: true };
     }
@@ -221,7 +232,7 @@ export class ScraperService {
       // First check for exact URL match within this source
       const existingByUrl = await this.jobPostingRepo.findByUrlAndSourceId(jobData.url, sourceId);
       if (existingByUrl) {
-        console.log(`[ScraperService] Found existing job with matching URL: ${existingByUrl.id}`);
+        this.logger.info(`Found existing job with matching URL: ${existingByUrl.id}`);
         return existingByUrl.id;
       }
       
@@ -233,14 +244,14 @@ export class ScraperService {
       );
       
       if (existingByTitleOrg) {
-        console.log(`[ScraperService] Found existing job with matching title and organization: ${existingByTitleOrg.id}`);
+        this.logger.info(`Found existing job with matching title and organization: ${existingByTitleOrg.id}`);
         return existingByTitleOrg.id;
       }
       
       // No match found
       return null;
     } catch (error) {
-      console.error('[ScraperService] Error checking for existing job:', error);
+      this.logger.error('Error checking for existing job:', { error });
       return null;
     }
   }
@@ -253,12 +264,12 @@ export class ScraperService {
    */
   private async storeJobPosting(sourceId: number, jobData: JobPostingData): Promise<number> {
     try {
-      console.log(`[ScraperService] Processing job: "${jobData.title}" at ${jobData.organization}`);
+      this.logger.info(`Processing job: "${jobData.title}" at ${jobData.organization}`);
       
       // Step 1: Validate the job posting
       const validation = await this.validateJobPosting(jobData);
       if (!validation.isValid) {
-        console.log(`[ScraperService] Skipping invalid job posting: ${validation.reasons?.join(', ')}`);
+        this.logger.info(`Skipping invalid job posting: ${validation.reasons?.join(', ')}`);
         return -1; // Invalid job
       }
       
@@ -268,7 +279,7 @@ export class ScraperService {
       // Step 3: Either update existing or create new job
       if (existingJobId) {
         // Update existing job
-        console.log(`[ScraperService] Updating existing job with ID: ${existingJobId}`);
+        this.logger.info(`Updating existing job with ID: ${existingJobId}`);
         
         await this.jobPostingRepo.update(existingJobId, {
           title: jobData.title,
@@ -278,9 +289,9 @@ export class ScraperService {
           salary: jobData.salary || null,
           requirements: jobData.requirements || null,
           url: jobData.url,
-          type: normalizeEmploymentType(jobData.employmentType) || null,
+          type: this.normalizeEmploymentType(jobData.employmentType) || null,
           externalId: jobData.externalId || null,
-          organizationType: normalizeOrganizationType(jobData.organizationType) || null,
+          organizationType: this.normalizeOrganizationType(jobData.organizationType) || null,
           dateScraped: new Date(), // Update scrape date
           isActive: true, // Mark as active
           structuredData: {
@@ -296,7 +307,7 @@ export class ScraperService {
         return existingJobId;
       } else {
         // Create new job
-        console.log(`[ScraperService] Creating new job entry for sourceId ${sourceId}`);
+        this.logger.info(`Creating new job entry for sourceId ${sourceId}`);
         
         const newJob = await this.jobPostingRepo.insert({
           sourceId,
@@ -307,9 +318,9 @@ export class ScraperService {
           salary: jobData.salary || null,
           requirements: jobData.requirements || null,
           url: jobData.url,
-          type: normalizeEmploymentType(jobData.employmentType) || null,
+          type: this.normalizeEmploymentType(jobData.employmentType) || null,
           externalId: jobData.externalId || null,
-          organizationType: normalizeOrganizationType(jobData.organizationType) || null,
+          organizationType: this.normalizeOrganizationType(jobData.organizationType) || null,
           datePosted: jobData.datePosted || new Date(),
           dateScraped: new Date(),
           structuredData: {
@@ -321,12 +332,17 @@ export class ScraperService {
           skills: jobData.skills || []
         });
         
-        console.log(`[ScraperService] Successfully stored new job with ID: ${newJob.id}`);
+        this.logger.info(`Successfully stored new job with ID: ${newJob.id}`);
         return newJob.id;
       }
     } catch (error) {
-      console.error('[ScraperService] Error storing job posting:', error);
-      throw error;
+      this.logger.error('Error storing job posting:', { error });
+      throw new CrawlerError(
+        'Failed to store job posting',
+        ErrorCode.UNEXPECTED_ERROR,
+        error instanceof Error ? error : undefined,
+        { sourceId, jobTitle: jobData.title }
+      );
     }
   }
   
@@ -337,12 +353,12 @@ export class ScraperService {
    */
   async cancelRefresh(sourceId: number): Promise<boolean> {
     try {
-      console.log(`[ScraperService] Cancelling refresh for source ${sourceId}`);
+      this.logger.info(`Cancelling refresh for source ${sourceId}`);
       
       // Get the source to ensure it exists
       const source = await this.jobSourceRepo.getById(sourceId);
       if (!source) {
-        console.error(`[ScraperService] Job source with ID ${sourceId} not found`);
+        this.logger.error(`Job source with ID ${sourceId} not found`);
         return false;
       }
       
@@ -354,8 +370,59 @@ export class ScraperService {
       
       return cancelled;
     } catch (error) {
-      console.error(`[ScraperService] Error cancelling refresh for source ${sourceId}:`, error);
+      this.logger.error(`Error cancelling refresh for source ${sourceId}:`, { error });
       return false;
+    }
+  }
+  
+  /**
+   * Schedule refresh of job sources based on frequency
+   * @param frequency The refresh frequency (DAILY, WEEKLY, etc)
+   * @returns A promise that resolves when the refresh scheduling is complete
+   */
+  async scheduleRefresh(frequency: string): Promise<void> {
+    try {
+      this.logger.info(`Scheduling refresh for ${frequency} frequency sources`);
+      
+      // Get sources with the specified refresh frequency
+      const sources = await this.jobSourceRepo.getSourcesForScheduledRefresh(frequency);
+      this.logger.info(`Found ${sources.length} sources with ${frequency} refresh frequency`);
+      
+      // Process each source
+      for (const source of sources) {
+        try {
+          this.logger.info(`Scheduling refresh for source ${source.id}: ${source.name || source.url}`);
+          
+          // Queue up the refresh operation
+          this.refreshJobSource(source.id, {
+            onComplete: async (jobs) => {
+              this.logger.info(`Scheduled refresh completed for source ${source.id} with ${jobs.length} jobs`);
+            },
+            onError: async (error) => {
+              this.logger.error(`Error in scheduled refresh for source ${source.id}:`, { error });
+            }
+          }, false).catch(error => {
+            this.logger.error(`Failed to refresh source ${source.id}:`, { error });
+          });
+          
+          // Small delay between sources to avoid overwhelming the system
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+        } catch (error) {
+          this.logger.error(`Error processing source ${source.id}:`, { error });
+          // Continue with next source
+        }
+      }
+      
+      this.logger.info(`Scheduled refresh initialized for ${sources.length} sources`);
+    } catch (error) {
+      this.logger.error(`Error in scheduleRefresh:`, { error });
+      throw new CrawlerError(
+        'Failed to schedule refresh',
+        ErrorCode.UNEXPECTED_ERROR,
+        error instanceof Error ? error : undefined,
+        { frequency }
+      );
     }
   }
   
@@ -366,52 +433,6 @@ export class ScraperService {
    * @param forceRefresh Whether to skip the cache and force a fresh crawl
    * @returns Crawl result information
    */
-  /**
-   * Schedule refresh of job sources based on frequency
-   * @param frequency The refresh frequency (DAILY, WEEKLY, etc)
-   * @returns A promise that resolves when the refresh scheduling is complete
-   */
-  async scheduleRefresh(frequency: string): Promise<void> {
-    try {
-      console.log(`[ScraperService] Scheduling refresh for ${frequency} frequency sources`);
-      
-      // Get sources with the specified refresh frequency
-      const sources = await this.jobSourceRepo.getSourcesForScheduledRefresh(frequency);
-      console.log(`[ScraperService] Found ${sources.length} sources with ${frequency} refresh frequency`);
-      
-      // Process each source
-      for (const source of sources) {
-        try {
-          console.log(`[ScraperService] Scheduling refresh for source ${source.id}: ${source.name || source.url}`);
-          
-          // Queue up the refresh operation
-          this.refreshJobSource(source.id, {
-            onComplete: async (jobs) => {
-              console.log(`[ScraperService] Scheduled refresh completed for source ${source.id} with ${jobs.length} jobs`);
-            },
-            onError: async (error) => {
-              console.error(`[ScraperService] Error in scheduled refresh for source ${source.id}:`, error);
-            }
-          }, false).catch(error => {
-            console.error(`[ScraperService] Failed to refresh source ${source.id}:`, error);
-          });
-          
-          // Small delay between sources to avoid overwhelming the system
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-        } catch (error) {
-          console.error(`[ScraperService] Error processing source ${source.id}:`, error);
-          // Continue with next source
-        }
-      }
-      
-      console.log(`[ScraperService] Scheduled refresh initialized for ${sources.length} sources`);
-    } catch (error) {
-      console.error(`[ScraperService] Error in scheduleRefresh:`, error);
-      throw error;
-    }
-  }
-  
   async refreshJobSource(
     sourceId: number,
     callbacks?: {
@@ -421,12 +442,15 @@ export class ScraperService {
     },
     forceRefresh: boolean = false
   ): Promise<JobCrawlerResult> {
-    console.log(`[ScraperService] Starting refresh for job source ${sourceId}, forceRefresh: ${forceRefresh}`);
+    this.logger.info(`Starting refresh for job source ${sourceId}, forceRefresh: ${forceRefresh}`);
     try {
       // Get source data
       const source = await this.jobSourceRepo.getById(sourceId);
       if (!source) {
-        throw new Error(`Job source with ID ${sourceId} not found`);
+        throw new CrawlerError(
+          `Job source with ID ${sourceId} not found`,
+          ErrorCode.INVALID_ARGUMENTS
+        );
       }
       
       // Update source status to PENDING
@@ -434,27 +458,27 @@ export class ScraperService {
       
       // Check if we can use a cached version (unless forceRefresh is true)
       if (!forceRefresh && !source.globalCacheId) {
-        console.log(`[ScraperService] Checking cache for URL: ${source.url}`);
+        this.logger.info(`Checking cache for URL: ${source.url}`);
         
         // Check if there's a fresh cache entry for this URL
         const cacheEntry = await this.cacheService.checkCache(source.url);
         
         if (cacheEntry) {
-          console.log(`[ScraperService] Using cached data for source ${sourceId} from global cache ${cacheEntry.id}`);
+          this.logger.info(`Using cached data for source ${sourceId} from global cache ${cacheEntry.id}`);
           
           // Mark existing jobs from this source as inactive
-          console.log(`[ScraperService] Deactivating existing jobs for source ${sourceId}`);
+          this.logger.info(`Deactivating existing jobs for source ${sourceId}`);
           await this.jobPostingRepo.deactivateBySourceId(sourceId);
           
           // Copy jobs from cache to this source
-          console.log(`[ScraperService] Copying jobs from cache ${cacheEntry.id} to source ${sourceId}`);
+          this.logger.info(`Copying jobs from cache ${cacheEntry.id} to source ${sourceId}`);
           const jobCount = await this.cacheService.copyJobsFromCache(sourceId, cacheEntry.id);
           
           // If callbacks are provided, get jobs and call the appropriate callbacks
           if (callbacks?.onComplete) {
             const jobs = await this.jobPostingRepo.getBySourceId(sourceId);
             // Convert database records to JobPostingData
-            const jobsData = jobs.map((job: JobPostingRecord) => ({
+            const jobsData = jobs.map((job: any) => ({
               title: job.title,
               organization: job.organization,
               location: job.location || undefined,
@@ -476,6 +500,15 @@ export class ScraperService {
             await callbacks.onComplete(jobsData);
           }
           
+          // Update the job source to reflect cache usage
+          await this.jobSourceRepo.update(sourceId, {
+            status: 'ACTIVE',
+            lastScraped: new Date(),
+            usedCache: true,
+            usedCacheForLastUpdate: true,
+            globalCacheId: cacheEntry.id
+          });
+          
           return {
             sourceId,
             url: source.url,
@@ -488,7 +521,7 @@ export class ScraperService {
       }
       
       // Need to perform a fresh crawl
-      console.log(`[ScraperService] Performing fresh crawl for source ${sourceId}, URL: ${source.url}`);
+      this.logger.info(`Performing fresh crawl for source ${sourceId}, URL: ${source.url}`);
       
       // Mark existing jobs from this source as inactive
       await this.jobPostingRepo.deactivateBySourceId(sourceId);
@@ -503,7 +536,7 @@ export class ScraperService {
         maxJobs: 50,
         sourceId,
         onJobFound: async (job) => {
-          console.log(`[ScraperService] Found job: ${job.title} at ${job.organization}`);
+          this.logger.info(`Found job: ${job.title} at ${job.organization}`);
           
           // Store the job and get its ID
           const jobId = await this.storeJobPosting(sourceId, job);
@@ -519,11 +552,11 @@ export class ScraperService {
               await callbacks.onJobFound(job);
             }
           } else {
-            console.log(`[ScraperService] Skipping invalid job: ${job.title}`);
+            this.logger.info(`Skipping invalid job: ${job.title}`);
           }
         },
         onError: async (error, url) => {
-          console.error(`[ScraperService] Error crawling ${url}:`, error);
+          this.logger.error(`Error crawling ${url}:`, { error });
           
           if (callbacks?.onError) {
             await callbacks.onError(error, url);
@@ -538,7 +571,8 @@ export class ScraperService {
       await this.jobSourceRepo.update(sourceId, {
         status: 'ACTIVE',
         lastScraped: new Date(),
-        usedCache: false
+        usedCache: false,
+        usedCacheForLastUpdate: false
       });
       
       // Create or update global cache entry
@@ -547,7 +581,7 @@ export class ScraperService {
         
         if (!globalCacheId) {
           // Get or create a cache entry
-          const cacheEntry = await this.cacheService.getOrCreateCacheEntry(source.url, jobsFound.length);
+          const cacheEntry = await this.cacheService.createCacheEntry(source.url, jobsFound.length);
           globalCacheId = cacheEntry.id;
           
           // Link source to global cache
@@ -557,7 +591,7 @@ export class ScraperService {
           await this.cacheService.updateCacheEntry(globalCacheId, jobsFound.length);
         }
       } catch (error) {
-        console.error(`[ScraperService] Error updating cache for source ${sourceId}:`, error);
+        this.logger.error(`Error updating cache for source ${sourceId}:`, { error });
         // Continue despite cache error since we have the main job data
       }
       
@@ -575,7 +609,7 @@ export class ScraperService {
         dateCompleted: new Date()
       };
     } catch (error) {
-      console.error(`[ScraperService] Error refreshing job source ${sourceId}:`, error);
+      this.logger.error(`Error refreshing job source ${sourceId}:`, { error });
       
       // Update source status to ERROR
       await this.jobSourceRepo.updateStatus(
@@ -589,14 +623,22 @@ export class ScraperService {
         await callbacks.onError(error, '');
       }
       
+      // Create a properly structured error to return
+      const crawlerError = new CrawlerError(
+        `Failed to refresh job source ${sourceId}`,
+        ErrorCode.UNEXPECTED_ERROR,
+        error instanceof Error ? error : undefined,
+        { sourceId }
+      );
+      
       return {
         sourceId,
         url: '',
         jobsFound: 0,
         jobsStored: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: crawlerError.message,
         dateCompleted: new Date()
       };
     }
   }
-} 
+}

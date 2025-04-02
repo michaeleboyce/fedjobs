@@ -2,6 +2,11 @@
 // packages/crawler/src/types/index.ts
 
 /**
+ * URL normalizer function type
+ */
+export type UrlNormalizer = (url: string) => string;
+
+/**
  * Represents a job posting found during crawling
  */
 export interface JobPostingData {
@@ -110,4 +115,70 @@ export interface CrawlHistoryEntry {
   visitedAt: Date;
   sourceId: number;
   jobsFound: number;
+}
+
+/**
+ * Page type classification for crawler decision-making
+ */
+export enum PageType {
+  JOB_LISTING = 'JOB_LISTING', // Multiple jobs on the page
+  SINGLE_JOB = 'SINGLE_JOB',   // Single job detail page
+  UNKNOWN = 'UNKNOWN'          // Not a job-related page or can't determine
+}
+
+/**
+ * Result of page classification analysis
+ */
+export interface PageClassificationResult {
+  pageType: PageType;
+  confidence: number;          // Confidence score (0-1)
+  relevance: number;           // Overall relevance to job search (0-1)
+  metadata: {
+    estimatedJobCount?: number;  // For JOB_LISTING pages
+    jobIndicators?: string[];    // Key terms that influenced the classification
+    pageStructure?: string;      // Description of the page structure
+    [key: string]: any;          // Additional metadata
+  };
+}
+
+/**
+ * Priority score and metadata for a link
+ */
+export interface LinkPriority {
+  url: string;
+  score: number;            // Priority score (higher = more likely job-related)
+  reasons: string[];        // Reasons for the score
+  estimatedType?: PageType; // Predicted page type (if available)
+  visited?: boolean;        // Whether link has been visited
+  depth?: number;           // Crawl depth
+}
+
+/**
+ * Advanced crawl strategy configuration
+ */
+export interface CrawlStrategy {
+  maxDepth: number;               // Maximum crawl depth
+  maxPagesPerDomain: number;      // Maximum pages to crawl per domain
+  priorityThreshold: number;      // Minimum priority score to follow a link
+  includePatterns: RegExp[];      // URL patterns to include
+  excludePatterns: RegExp[];      // URL patterns to exclude
+  respectRobotsTxt: boolean;      // Whether to respect robots.txt
+  followRedirects: boolean;       // Whether to follow redirects
+  sameOriginOnly: boolean;        // Only follow links from the same origin
+}
+
+/**
+ * Detailed results from the crawler
+ */
+export interface DetailedCrawlResult extends JobCrawlerResult {
+  visitedUrls: string[];                  // All URLs visited
+  jobUrlsFound: string[];                 // URLs where jobs were found
+  failedUrls: Record<string, string>;     // URLs that failed with reasons
+  pageClassifications: Record<string, PageClassificationResult>; // Page classifications
+  performance: {
+    totalDuration: number;      // Total crawl time in ms
+    averagePageTime: number;    // Average time per page in ms
+    parseTime: number;          // Total time spent parsing in ms
+    networkTime: number;        // Total time spent on network in ms
+  };
 }
