@@ -1,6 +1,6 @@
 // File path: packages/crawler/src/services/scraper.service.ts
 import { WebCrawler } from '../core/crawler';
-import { JobParserService } from '../core/parser';
+import { JobParserService } from '../core/oldparser';
 import { CacheService } from './cache.service';
 import { CrawlJobOptions, JobCrawlerResult, JobPostingData } from '../types';
 import { 

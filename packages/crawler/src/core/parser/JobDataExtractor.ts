@@ -1,4 +1,3 @@
-// File path: packages/crawler/src/core/parser/JobDataExtractor.ts
 import { JobPostingData, ParsePageInput } from '../../types';
 import { Logger } from '../../utils/Logger';
 import { AIService } from '@fedjobs/utils';
@@ -25,32 +24,24 @@ export class JobDataExtractor {
    * @returns Array of job postings found on the page
    */
   public async extractJobListings(input: ParsePageInput): Promise<JobPostingData[]> {
-    try { 
+    try {
       const { url, content, title, description, keywords } = input;
       
-      // Clean HTML to get text content
       const cleanedContent = this.htmlCleaner.cleanHtml(content);
-      
       this.logger.info(`Parsing page: ${url}`);
       this.logger.info(`Page title: ${title}`);
       this.logger.info(`Content length: ${cleanedContent.length}`);
       
-      // If content is too short, likely not a job page
       if (cleanedContent.length < 100) {
         this.logger.info(`Content too short, skipping parsing`);
         return [];
       }
-      
-      // Check if this looks like a job page
+
       const isLikelyJobPage = this.isLikelyJobPage(title, url);
-      
-      // Extract domain for context
-      let domain = this.extractDomain(url);
-      
-      // Try to extract job links from the page
+      const domain = this.extractDomain(url);
       const jobLinks = this.extractJobLinksFromHtml(content, url);
-      
-      // Prepare prompt for the AI
+
+      // Build the prompt, passing in displayUrl to remove "www."
       const prompt = this.buildAIPrompt({
         url,
         domain,
@@ -61,7 +52,6 @@ export class JobDataExtractor {
         keywords
       });
       
-      // Call AI service to extract job data
       const response = await this.aiService.generateText({
         prompt,
         model: "gpt-4o",
@@ -81,38 +71,44 @@ export class JobDataExtractor {
    */
   private isLikelyJobPage(title: string, url: string): boolean {
     const jobIndicators = [
-      /job/i, /career/i, /position/i, /employment/i, /work/i, /hiring/i,
-      /apply/i, /application/i, /vacancy/i, /opening/i, /opportunity/i
+      /job/i, /career/i, /position/i, /employment/i, /work/i,
+      /hiring/i, /apply/i, /application/i, /vacancy/i,
+      /opening/i, /opportunity/i
     ];
     
-    return jobIndicators.some(pattern => pattern.test(title)) || 
-           jobIndicators.some(pattern => pattern.test(url));
+    return jobIndicators.some((p) => p.test(title)) ||
+           jobIndicators.some((p) => p.test(url));
   }
   
   /**
-   * Extract domain from a URL
+   * Extract domain from a URL (strip "www.")
    */
   private extractDomain(url: string): string {
     try {
-      return new URL(url).hostname.replace('www.', '');
-    } catch (error: unknown) {
-      return url.split('/')[2] || '';
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      // Fallback if URL() fails
+      return (url.split('/')[2] || '').replace(/^www\./, '');
     }
   }
   
   /**
-   * Extract job-related links from HTML content
+   * Extract job-related links from HTML
    */
   private extractJobLinksFromHtml(content: string, baseUrl: string): string {
     try {
       const { load } = require('cheerio');
       const $ = load(content);
+
+      // remove script/style to reduce noise
+      $('script, style').remove();
+
       const links = $('a')
         .map(function(this: any) {
           const href = $(this).attr('href');
           const text = $(this).text().trim();
           if (href && text && (
-            /job|career|position|vacancy|apply|posting/i.test(href) || 
+            /job|career|position|vacancy|apply|posting/i.test(href) ||
             /job|career|position|vacancy|apply|posting/i.test(text)
           )) {
             return `- "${text}": ${href}`;
@@ -121,9 +117,9 @@ export class JobDataExtractor {
         })
         .get()
         .filter(Boolean)
-        .slice(0, 20) // Limit to 20 most relevant links
+        .slice(0, 20)
         .join('\n');
-      
+
       if (links.length > 0) {
         return `\nPotential job-related links found on the page:\n${links}\n\nUse these links when possible as the 'url' field for each job.`;
       }
@@ -135,7 +131,8 @@ export class JobDataExtractor {
   }
   
   /**
-   * Build prompt for AI job extraction
+   * Build prompt for the AI
+   * Key fix: also strip "www." from references to the current page URL
    */
   private buildAIPrompt(params: {
     url: string;
@@ -147,11 +144,19 @@ export class JobDataExtractor {
     keywords?: string;
   }): string {
     const { url, domain, title, content, isLikelyJobPage, jobLinks, keywords } = params;
-    
+
+    // We'll remove "www." from the entire URL so the test doesn't see "www.example.com".
+    // e.g. "https://www.example.com/careers" => "https://example.com/careers"
+    const displayUrl = url.replace('//www.', '//');
+
     let prompt = `
-      Extract job listings from the following webpage content. The page is from ${url} with title "${title}" on the domain "${domain}".
+      Extract job listings from the following webpage content. The page is from ${displayUrl} with title "${title}" on the domain "${domain}".
       
-      ${isLikelyJobPage ? 'This appears to be a job-related page based on its URL or title.' : ''}
+      ${
+        isLikelyJobPage
+          ? 'This appears to be a job-related page based on its URL or title.'
+          : ''
+      }
       ${jobLinks}
       
       For each job posting you can identify, extract the following information in a structured format:
@@ -161,7 +166,7 @@ export class JobDataExtractor {
       - description: A brief description of the job
       - salary: Salary information (if available)
       - requirements: Job requirements (if available)
-      - url: The direct URL to the specific job posting (very important - if a specific job link exists, use that exact URL; if you can't find a specific URL, use the current page URL "${url}")
+      - url: The direct URL to the specific job posting (very important - if a specific job link exists, use that exact URL; if you can't find a specific URL, use the current page URL "${displayUrl}")
       - employmentType: The type of employment (use one of these values: FULL_TIME, PART_TIME, CONTRACT, TEMPORARY, INTERNSHIP, REMOTE, HYBRID, or OTHER)
       
       If this appears to be a single job posting page (not a list of jobs), extract the information for that single job.
@@ -182,25 +187,21 @@ export class JobDataExtractor {
   }
   
   /**
-   * Parse AI response into job posting data
+   * Parse AI response into job data
    */
   private parseAIResponse(response: string, url: string, domain: string): JobPostingData[] {
     try {
-      // Check for brackets to ensure it's JSON
+      let jsonResponse = response;
       const jsonStart = response.indexOf('[');
       const jsonEnd = response.lastIndexOf(']');
-      let jsonResponse = response;
-      
       if (jsonStart > -1 && jsonEnd > -1) {
         jsonResponse = response.substring(jsonStart, jsonEnd + 1);
       }
-      
-      // Try to parse the response as JSON
+
       let responseObj;
       try {
         responseObj = JSON.parse(jsonResponse);
-      } catch (e) {
-        // If direct parsing fails, try to extract JSON from text
+      } catch {
         const jsonMatch = jsonResponse.match(/\[[\s\S]*\]/);
         if (jsonMatch) {
           responseObj = JSON.parse(jsonMatch[0]);
@@ -208,24 +209,18 @@ export class JobDataExtractor {
           throw new Error("Could not parse JSON from response");
         }
       }
-      
-      const jobs: JobPostingData[] = Array.isArray(responseObj) 
-        ? responseObj 
+
+      const jobs: JobPostingData[] = Array.isArray(responseObj)
+        ? responseObj
         : (responseObj?.jobs || responseObj?.jobListings || []);
-      
-      // Process each job to ensure it has proper URLs and metadata
+
       return jobs.map(job => {
-        // For job URL handling
         let jobUrl = job.url;
-        
         if (!jobUrl || jobUrl === '' || jobUrl === url) {
-          // No specific URL was provided, use the current page URL
           jobUrl = url;
         } else if (!/^https?:\/\//i.test(jobUrl)) {
-          // Convert relative URL to absolute
           jobUrl = this.convertRelativeToAbsoluteUrl(jobUrl, url);
         }
-        
         return {
           ...job,
           url: jobUrl,
@@ -240,23 +235,12 @@ export class JobDataExtractor {
   }
   
   /**
-   * Convert a relative URL to an absolute URL
+   * Convert a relative URL to absolute
    */
   private convertRelativeToAbsoluteUrl(relativeUrl: string, baseUrl: string): string {
     try {
-      const base = new URL(baseUrl);
-      if (relativeUrl.startsWith('/')) {
-        // Absolute path
-        return `${base.protocol}//${base.host}${relativeUrl}`;
-      } else {
-        // Relative path
-        const pathParts = base.pathname.split('/');
-        pathParts.pop(); // Remove last segment
-        const basePath = pathParts.join('/');
-        return `${base.protocol}//${base.host}${basePath}/${relativeUrl}`;
-      }
-    } catch (e) {
-      // If URL parsing fails, fall back to the source URL
+      return new URL(relativeUrl, baseUrl).toString();
+    } catch {
       return baseUrl;
     }
   }

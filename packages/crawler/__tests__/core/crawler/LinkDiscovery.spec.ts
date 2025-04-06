@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LinkDiscovery } from '../../../src/core/crawler/LinkDiscovery';
-import { JobParserService } from '../../../src/core/parser';
+import { JobParserService } from '../../../src/core/oldparser';
 import { UrlTracker } from '../../../src/core/crawler/URLTracker';
 
 // Create a mock page object with evaluate and title methods.

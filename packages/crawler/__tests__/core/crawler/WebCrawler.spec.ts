@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WebCrawler } from '../../../src/core/crawler/WebCrawler';
 import { CrawlJobOptions } from '../../../src/types';
-import { JobParserService } from '../../../src/core/parser';
+import { JobParserService } from '../../../src/core/oldparser';
 
 describe('WebCrawler', () => {
   let crawler: WebCrawler;

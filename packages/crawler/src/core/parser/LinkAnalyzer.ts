@@ -67,8 +67,9 @@ export class LinkAnalyzer {
    * Build the prompt for the AI service
    */
   private buildAIPrompt(pageTitle: string, domain: string, sourceUrl: string, linksFormatted: string): string {
+    const cleanedSourceUrl = sourceUrl.replace('www.', '');
     return `
-      You are a job posting identification expert. Analyze the following list of links from the page "${pageTitle}" on ${domain} (${sourceUrl}).
+      You are a job posting identification expert. Analyze the following list of links from the page "${pageTitle}" on ${domain} (${cleanedSourceUrl}).
       
       Your task is to identify which links point to actual job listings or job description pages, not general career pages, job category pages, or non-job content.
       
