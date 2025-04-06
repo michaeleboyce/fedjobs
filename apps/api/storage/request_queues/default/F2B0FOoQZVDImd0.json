@@ -1,9 +1,0 @@
-{
-	"id": "F2B0FOoQZVDImd0",
-	"json": "{\"id\":\"F2B0FOoQZVDImd0\",\"url\":\"https://www.anthropic.com/jobs\",\"loadedUrl\":\"https://www.anthropic.com/jobs\",\"uniqueKey\":\"https://www.anthropic.com/jobs\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-04-01T05:34:02.219Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.anthropic.com/jobs",
-	"url": "https://www.anthropic.com/jobs"
-}
