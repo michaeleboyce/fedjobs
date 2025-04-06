@@ -1,5 +1,4 @@
-// File path: packages/crawler/src/core/crawler/LinkDiscovery.ts
-import { JobParserService } from '../oldparser';
+import { JobParserService } from '../parser';
 import { UrlTracker } from './URLTracker';
 
 // Define types for link objects

@@ -13,7 +13,7 @@ export const feedbackType = pgEnum("feedback_type", [
 export const userJobFeedback = pgTable("user_job_feedback", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
-  jobId: integer("job_id").references(() => jobPostings.id).notNull(),
+  jobId: integer("job_id").references(() => jobPostings.id,{onDelete: "cascade"}).notNull(),
   feedbackType: feedbackType("feedback_type").notNull(),
   reasons: text("reasons"),
   viewed: boolean("viewed").notNull().default(false),

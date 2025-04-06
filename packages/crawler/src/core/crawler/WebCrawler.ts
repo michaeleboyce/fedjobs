@@ -2,7 +2,7 @@
 import { PlaywrightCrawler, LogLevel, log } from 'crawlee';
 import { URL } from 'url';
 import { CrawlJobOptions, JobPostingData } from '../../types';
-import { JobParserService } from '../oldparser';
+import { JobParserService } from '../parser';
 import { UrlTracker } from './URLTracker';
 import { PageHandler } from './PageHandler';
 import { LinkDiscovery } from './LinkDiscovery';

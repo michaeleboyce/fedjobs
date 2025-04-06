@@ -4,7 +4,7 @@ import 'reflect-metadata';
 
 // Export core functionality
 export { WebCrawler } from './core/crawler';
-export { JobParserService } from './core/oldparser';
+export { JobParserService } from './core/parser';
 
 // Export services
 export { ScraperService } from './services/scraper.service';

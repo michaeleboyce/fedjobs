@@ -1,6 +1,6 @@
-// File path: packages/crawler/src/services/scraper.service.ts
+
 import { WebCrawler } from '../core/crawler';
-import { JobParserService } from '../core/oldparser';
+import { JobParserService } from '../core/parser';
 import { CacheService } from './cache.service';
 import { CrawlJobOptions, JobCrawlerResult, JobPostingData } from '../types';
 import { 
@@ -9,7 +9,6 @@ import {
   employmentType,
   organizationType,
   JobPostingRecord,
-  JobSourceRecord
 } from '@fedjobs/database';
 import { UrlNormalizationService } from '@fedjobs/utils';
 
@@ -164,7 +163,7 @@ export class ScraperService {
         3. Mentions employment details such as job type, hours, or compensation
         4. Has a professional tone consistent with job advertisements
         
-        Return a JSON object with:
+        Return ONLY a JSON object (do not include any other text or even formatting like \`\`\`json) with:
         {
           "isLegitimateJob": true/false,
           "confidence": 0-1 (how confident you are in this assessment),
