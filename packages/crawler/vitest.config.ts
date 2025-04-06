@@ -1,4 +1,4 @@
-// File path: packages/utils/vitest.config.ts
+// packages/crawler/vitest.config.ts
 import { defineConfig } from 'vitest/config';
 import dotenv from 'dotenv'
 import path from 'path'
@@ -7,16 +7,14 @@ import path from 'path'
 dotenv.config({
   path: path.resolve(__dirname, '../../.env.local'),
 })
-
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.ts'],
-    exclude: ['**/node_modules/**'],
-    environment: 'node',
+    // Example: Provide extra setup or coverage config
     coverage: {
-      reporter: ['text', 'lcov'],
-      exclude: ['**/node_modules/**', '**/tests/**'],
+      provider: 'v8'
     },
-    testTimeout: 30000,
-  },
+    globals: true,
+    // If your tests are in a specific folder:
+    include: ['__tests__/**/*.spec.ts']
+  }
 });

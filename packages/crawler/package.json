@@ -7,24 +7,25 @@
     "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint src/**/*.ts",
-    "test": "jest"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:watch:verbose": "vitest --watch --reporter verbose",
+    "test:verbose": "vitest --run --reporter verbose"
   },
   "dependencies": {
-    "@fedjobs/types": "workspace:*",
     "@fedjobs/database": "workspace:*",
+    "@fedjobs/types": "workspace:*",
     "@fedjobs/utils": "workspace:*",
     "cheerio": "^1.0.0",
     "crawlee": "^3.13.0",
     "dotenv": "^16.4.7",
     "playwright": "^1.51.1",
-    "tsyringe": "^4.8.0",
-    "reflect-metadata": "^0.2.1"
+    "reflect-metadata": "^0.2.1",
+    "tsyringe": "^4.8.0"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
-    "@types/jest": "^29.5.11",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }
