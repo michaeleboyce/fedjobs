@@ -1,4 +1,4 @@
-// File path: apps/api/src/backend-utils/DocumentParsers.ts
+// apps/api/src/utils/documentParsers.ts
 import mammoth from 'mammoth';
 import pdf from 'pdf-parse';
 
@@ -14,31 +14,11 @@ export interface ProcessDocumentTextResponse {
 }
 
 /**
- * If you no longer need text items or positions for PDF, 
- * you can remove these interfaces. They are no longer used
- * by the `pdf-parse` approach.
- */
-export interface TextItem {
-  str: string;
-  transform: number[];  
-  width: number;
-  height: number;
-  dir: string;
-}
-
-export interface TextContent {
-  items: TextItem[];
-  styles?: Record<string, any>;
-}
-
-/**
  * Configuration options for text extraction
  */
 export interface TextExtractionOptions {
   preserveFormatting?: boolean;
-  maintainTextPosition?: boolean; // No longer used by pdf-parse
-  streamPages?: boolean;          // No longer used by pdf-parse
-  maxBufferSize?: number;         // You could do manual checks if desired
+  maxBufferSize?: number;
 }
 
 /**
@@ -116,13 +96,13 @@ export async function extractTextFromPDFBuffer(
       );
     }
 
-    // pdf-parse usage:
-    // If you only have a Buffer, pass { data: buffer }:
+    // Parse PDF
     const parsed = await pdf(buffer);
-    // `parsed.text` is the extracted text
+    
+    // Clean up the extracted text
     return cleanUpText(parsed.text, options.preserveFormatting);
   } catch (error) {
-    console.error("Error parsing PDF document with pdf-parse:", error);
+    console.error("Error parsing PDF document:", error);
     throw error;
   }
 }
