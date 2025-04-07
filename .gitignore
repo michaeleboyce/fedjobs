@@ -116,6 +116,8 @@ key-contents.txt
 .vercel
 
 all_files_with_contents.txt
+all-api-files.txt
+all-crawler-files.txt
 
 screenshot*
 
