@@ -27,10 +27,18 @@ export class JobPostingProcessor {
   }
   
   /**
-   * Process a job posting for storing in the database
+   * Process a job posting by validating, deduplicating, and storing it in the database
+   * 
+   * This function performs the complete job processing workflow:
+   * 1. Validates the job data for required fields and format
+   * 2. Checks if the job already exists (duplicate detection)
+   * 3. Either updates an existing job or creates a new one
+   * 4. Normalizes employment type, organization type, and other fields
+   * 5. Stores job metadata and tracking information
+   * 
    * @param sourceId Source ID to associate the job with
    * @param jobData Job data to process
-   * @returns ID of the created or updated job posting, or -1 if invalid
+   * @returns ID of the created or updated job posting, or -1 if invalid or error occurred
    */
   async processJob(sourceId: number, jobData: JobPostingData): Promise<number> {
     try {

@@ -21,7 +21,7 @@ export interface CrawlResult {
  * WebCrawler - Orchestrates the crawling process using specialized components
  */
 export class WebCrawler {
-  private logger = new Logger('WebCrawler');
+  private logger: Logger;
   private urlTracker: UrlTracker;
   private pageHandler: PageHandler;
   private linkDiscovery: LinkDiscovery;
@@ -36,6 +36,7 @@ export class WebCrawler {
     this.parser = parser || new JobParserService();
     
     // Initialize components
+    this.logger = new Logger('WebCrawler');
     this.urlTracker = new UrlTracker();
     this.pageHandler = new PageHandler();
     this.linkDiscovery = new LinkDiscovery(this.parser);
@@ -61,7 +62,7 @@ export class WebCrawler {
       this.logger.info(`Successfully cancelled crawler for source ${sourceId}`);
       return true;
     } catch (error) {
-      this.logger.error(`Error cancelling crawler for source ${sourceId}:`, error as Record<string, any>);
+      this.logger.error(`Error cancelling crawler for source ${sourceId}:`, error instanceof Error ? error : new Error(String(error)));
       return false;
     }
   }
@@ -97,7 +98,7 @@ export class WebCrawler {
         
         // Callback when a job is found
         onJobFound: async (job) => {
-          this.logger.info(`Found job: ${job.title} at ${job.organization}`);
+          this.logger.job(job.title, job.organization || '');
           
           // Process the job with the provided callback
           const jobId = await onProcessJob(job);
@@ -117,7 +118,7 @@ export class WebCrawler {
       
       return { jobsFound, jobsStored };
     } catch (error) {
-      this.logger.error(`Error in crawlSite:`, error as Record<string, any>);
+      this.logger.error(`Error in crawlSite:`, error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }
@@ -151,7 +152,7 @@ export class WebCrawler {
     try {
       new URL(url);
     } catch (error) {
-      this.logger.error(`Invalid URL: ${url}`, error as Record<string, any>);
+      this.logger.error(`Invalid URL: ${url}`, error instanceof Error ? error : new Error(String(error)));
       throw new Error(`Invalid URL: ${url}`);
     }
     
@@ -183,7 +184,7 @@ export class WebCrawler {
       
       return results;
     } catch (error) {
-      this.logger.error(`Error running crawler:`, error as Record<string, any>);
+      this.logger.error(`Error running crawler:`, error instanceof Error ? error : new Error(String(error)));
       
       if (onError && error instanceof Error) {
         await onError(error, url);
@@ -232,7 +233,18 @@ export class WebCrawler {
       
       // Process each page
       requestHandler: async ({ request, page, enqueueLinks }) => {
-        this.logger.info(`Processing: ${request.url}`);
+        // Use enhanced navigation log for URL transitions
+        this.logger.navigation(request.url);
+        
+        // Extract domain for site logging
+        let domain = '';
+        try {
+          domain = new URL(request.url).hostname.replace('www.', '');
+          // Log site entry with domain
+          this.logger.site(domain);
+        } catch (e) {
+          domain = request.url.split('/')[2] || '';
+        }
         
         // Skip if recently visited
         if (this.urlTracker.isRecentlyVisited(request.url)) {
@@ -244,14 +256,28 @@ export class WebCrawler {
         this.urlTracker.recordVisit(request.url);
         
         try {
+          // Check if page is already closed
+          if (page.isClosed?.()) {
+            this.logger.warn(`Page already closed for URL: ${request.url}`);
+            return;
+          }
+          
           // Step 1: Setup page
+          this.logger.step(1, "Setting up page");
           await this.pageHandler.setupPage(page);
           
+          // Check if page is still valid
+          if (page.isClosed?.()) {
+            this.logger.warn(`Page closed after setup for URL: ${request.url}`);
+            return;
+          }
+          
           // Step 2: Extract page data
+          this.logger.step(2, "Extracting page data");
           const { content, title, description } = await this.pageHandler.extractPageData(page);
           
           // Step 3: Parse jobs data
-          this.logger.info(`Parsing job data from ${request.url}`);
+          this.logger.step(3, "Parsing job data");
           const jobData = await this.parser.parseJobsFromPage({
             url: request.url,
             content,
@@ -260,34 +286,48 @@ export class WebCrawler {
             keywords
           });
           
-          this.logger.info(`Found ${jobData.length} jobs on ${request.url}`);
+          this.logger.success(`Found ${jobData.length} jobs on ${request.url}`);
           
           // Step 4: Process found jobs
           if (jobData.length > 0) {
+            this.logger.step(4, `Processing ${jobData.length} found jobs`);
+            
+            // Process each job with visual feedback
+            for (const job of jobData) {
+              this.logger.job(job.title, job.organization || domain);
+            }
+            
+            // Process the jobs even if page is closed - we already have the data
             await this.jobProcessor.processJobData(jobData, results, maxJobs, onJobFound);
             
             // Stop if we've reached the job limit
             if (results.length >= maxJobs) {
-              this.logger.info(`Reached maximum jobs limit (${maxJobs})`);
+              this.logger.success(`Reached maximum jobs limit (${maxJobs})`);
               const browser = page.context()?.browser();
-              if (browser) {
-                await browser.close();
+              if (browser && !browser.isConnected()) {
+                await browser.close().catch(() => {});
               }
               return;
             }
           }
           
-          // Step 5: Find and enqueue more links
-          await this.linkDiscovery.findAndEnqueueLinks(
-            page, 
-            enqueueLinks, 
-            request.url, 
-            url, 
-            this.urlTracker
-          );
-          
+          // Step 5: Find and enqueue more links - only if page is still available
+          if (!page.isClosed?.()) {
+            this.logger.step(5, "Discovering and enqueueing additional links");
+            await this.linkDiscovery.findAndEnqueueLinks(
+              page, 
+              enqueueLinks, 
+              request.url, 
+              url, 
+              this.urlTracker
+            ).catch(err => {
+              this.logger.error(`Error in link discovery:`, err instanceof Error ? err : new Error(String(err)));
+            });
+          } else {
+            this.logger.warn(`Skipping link discovery for ${request.url} - page is closed`);
+          }
         } catch (error) {
-          this.logger.error(`Error processing page ${request.url}:`, error as Record<string, any>);
+          this.logger.error(`Error processing page ${request.url}:`, error instanceof Error ? error : new Error(String(error)));
           if (onError) {
             await onError(error as Error, request.url);
           }

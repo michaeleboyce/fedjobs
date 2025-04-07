@@ -1,6 +1,4 @@
 // File path: apps/api/src/index.ts
-// apps/api/src/index.ts
-
 import express, { ErrorRequestHandler } from 'express';
 import http from 'http';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -15,7 +13,7 @@ import jobSourcesRouter from './routes/jobSources'; // Job sources route
 import jobPostingsRouter from './routes/jobPostings'; // Job postings route
 import { errorHandler } from './middleware/error';
 import debug from 'debug';  
-import { ScraperService } from '@fedjobs/crawler';
+import { createScraperService } from '@fedjobs/crawler';
 
 // Create Express app and HTTP server
 const app = express();
@@ -25,7 +23,7 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // Create a Map to store WebSocket clients by userId
-export const userWsClients = new Map<string, Set<WebSocket>>();
+export const userWsClients = new Map<string, Set<WebSocket & { isAlive: boolean; userId?: string }>>();
 
 // WebSocket connection handler
 wss.on('connection', (ws: WebSocket) => {
@@ -74,6 +72,28 @@ wss.on('connection', (ws: WebSocket) => {
           timestamp: new Date().toISOString(),
           message: 'Successfully registered for real-time updates'
         }));
+        
+        // Also send an online status message periodically to keep the connection alive
+        const keepaliveInterval = setInterval(() => {
+          if (extendedWs.readyState === WebSocket.OPEN) {
+            try {
+              extendedWs.send(JSON.stringify({ 
+                type: 'keepalive',
+                timestamp: new Date().toISOString()
+              }));
+            } catch (error) {
+              console.error('Error sending keepalive message:', error);
+              clearInterval(keepaliveInterval);
+            }
+          } else {
+            clearInterval(keepaliveInterval);
+          }
+        }, 30000); // Send keepalive every 30 seconds
+        
+        // Clear interval when WebSocket closes
+        extendedWs.on('close', () => {
+          clearInterval(keepaliveInterval);
+        });
       }
     } catch (error) {
       console.error('Error handling WebSocket message:', error);
@@ -108,6 +128,11 @@ wss.on('connection', (ws: WebSocket) => {
     }
   });
   
+  // Handle errors
+  extendedWs.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
+  
   // Send initial heartbeat
   extendedWs.send(JSON.stringify({
     type: 'heartbeat',
@@ -118,17 +143,21 @@ wss.on('connection', (ws: WebSocket) => {
 
 // Set up interval to check for dead connections and send heartbeats
 const heartbeatInterval = setInterval(() => {
+  let activeConnections = 0;
+  let terminatedConnections = 0;
+  
   wss.clients.forEach((ws) => {
     const extendedWs = ws as WebSocket & { isAlive: boolean };
     
     if (extendedWs.isAlive === false) {
       // Connection is dead, terminate it
-      console.log('Terminating inactive WebSocket connection');
+      terminatedConnections++;
       return extendedWs.terminate();
     }
     
     // Mark as inactive for next cycle
     extendedWs.isAlive = false;
+    activeConnections++;
     
     // Send a ping
     try {
@@ -143,8 +172,11 @@ const heartbeatInterval = setInterval(() => {
       // If sending fails, terminate the connection
       console.error('Error sending heartbeat:', err);
       extendedWs.terminate();
+      terminatedConnections++;
     }
   });
+  
+  console.log(`WebSocket status: ${activeConnections} active connections, ${terminatedConnections} terminated`);
 }, 30000); // Check every 30 seconds
 
 // Clean up interval on server close
@@ -187,8 +219,10 @@ app.post('/api/job-sources/scheduled-refresh', (req, res) => {
   try {
     const { frequency = 'DAILY' } = req.body;
     
+    // Create ScraperService using the factory function that initializes all dependencies
+    const jobScraperService = createScraperService();
+    
     // Start refresh process in the background
-    const jobScraperService = new ScraperService();
     jobScraperService.scheduleRefresh(frequency)
       .catch((error: Error) => logger(`Error in scheduled refresh: ${error.message}`));
     
@@ -206,6 +240,7 @@ app.use((req, res, next) => {
   logger(`No route found for ${req.method} ${req.path}`);
   res.status(404).json({ message: 'Route not found' });
 });
+
 // Error handling
 app.use(errorHandler as ErrorRequestHandler);
 

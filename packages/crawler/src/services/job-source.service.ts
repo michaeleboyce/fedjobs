@@ -92,7 +92,13 @@ export class JobSourceService {
   
   /**
    * Update a source after a successful crawl
-   * @param sourceId Source ID
+   * 
+   * This method updates the job source record with:
+   * - Status changed to 'ACTIVE' to indicate crawl completion
+   * - lastScraped timestamp set to current date/time
+   * - usedCache flag set to false (indicating a fresh crawl)
+   * 
+   * @param sourceId Source ID to update
    */
   async updateSourceAfterCrawl(sourceId: number): Promise<void> {
     await this.jobSourceRepo.update(sourceId, {

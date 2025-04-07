@@ -30,9 +30,6 @@ export default defineConfig({
         'node_modules/',
         'dist/',
         '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '__tests__/**',
         'src/test/**'
       ],
       all: true
@@ -47,10 +44,6 @@ export default defineConfig({
       USE_REAL_AI: process.env.USE_REAL_AI || 'false',
       TEST_URL: process.env.TEST_URL || 'https://openai.com/careers/search/?l=6252b4ed-714d-469a-a970-7a13101bac9d',
       INTEGRATION_TEST_MODE: process.env.INTEGRATION_TEST_MODE || 'mock'
-    },
-    
-    // By default, include only pattern specified in the command
-    // This allows specifying different patterns for unit vs integration
-    include: undefined
+    }
   },
 });

@@ -212,7 +212,8 @@ export class ScraperService {
         keywords: source.keywords
       },
       async (job) => {
-        // Process each job
+        // Process each job through validation, duplicate detection, and storage
+        // Returns job ID if stored successfully, or -1 if invalid/error
         const jobId = await this.jobPostingProcessor.processJob(sourceId, job);
         
         // Call the onJobFound callback if provided
@@ -224,11 +225,16 @@ export class ScraperService {
       }
     );
     
-    // Update source and cache
+    // Update source status to ACTIVE and record last scraped timestamp
+    // This marks the source as successfully refreshed and ready for use
     await this.jobSourceService.updateSourceAfterCrawl(sourceId);
+    
+    // Update or create global cache entry with job count
     await this.updateCache(sourceId, source, jobsFound.length);
     
-    // Call completion callback
+    // Call completion callback provided by the API controller or scheduled refresh
+    // This is used by the API controller to send a WebSocket message to the UI client
+    // with 'crawl_complete' event type, which clears error messages and updates status
     if (callbacks?.onComplete) {
       await callbacks.onComplete(jobsFound);
     }

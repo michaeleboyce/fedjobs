@@ -1,5 +1,5 @@
 // packages/crawler/__tests__/integration/openai-crawl.test.ts
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { getTestConfig, DEFAULT_CONFIG, TestConfig } from '../../src/test/config';
 import { setupTestEnvironment, cleanupTestEnvironment } from '../../src/test/setup';
 import { createTestServices } from '../../src/test/factory';
@@ -88,7 +88,7 @@ describe('OpenAI Careers Crawler Integration Test', () => {
           keywords: 'ai',
           maxJobs: config.useMocks ? 10 : 5 // Limit to 5 jobs for real crawls
         },
-        async (job) => {
+        async (job: JobPostingData) => {
           processedJobs.push(job);
           
           if (config.useMocks) {
@@ -135,7 +135,7 @@ describe('OpenAI Careers Crawler Integration Test', () => {
         testSourceId,
         {
           onJobFound: async () => { callbackTracker.jobFoundCount++; },
-          onComplete: async (jobs) => { 
+          onComplete: async (jobs: JobPostingData[]) => { 
             callbackTracker.completeInvoked = true;
             callbackTracker.jobsFromComplete = jobs;
           }
