@@ -1,5 +1,5 @@
 // File path: packages/crawler/src/services/job-source.service.ts
-import { JobSourceRepository, JobPostingRepository } from '@fedjobs/database';
+import { JobSourceRepository, JobPostingRepository, JobPostingRecord } from '@fedjobs/database';
 import { JobPostingData } from '../types';
 import { Logger } from '../utils/Logger';
 
@@ -70,7 +70,7 @@ export class JobSourceService {
     const jobs = await this.jobPostingRepo.getBySourceId(sourceId);
     
     // Convert database records to JobPostingData
-    return jobs.map((job: any) => ({
+    return jobs.map((job: JobPostingRecord) => ({
       title: job.title,
       organization: job.organization,
       location: job.location || undefined,

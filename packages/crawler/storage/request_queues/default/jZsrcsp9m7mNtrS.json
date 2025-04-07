@@ -1,0 +1,9 @@
+{
+	"id": "jZsrcsp9m7mNtrS",
+	"json": "{\"id\":\"jZsrcsp9m7mNtrS\",\"url\":\"https://openai.com/careers/search/?l=6252b4ed-714d-469a-a970-7a13101bac9d\",\"loadedUrl\":\"https://openai.com/careers/search/?l=6252b4ed-714d-469a-a970-7a13101bac9d\",\"uniqueKey\":\"https://openai.com/careers/search?l=6252b4ed-714d-469a-a970-7a13101bac9d\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-04-07T03:41:27.535Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://openai.com/careers/search?l=6252b4ed-714d-469a-a970-7a13101bac9d",
+	"url": "https://openai.com/careers/search/?l=6252b4ed-714d-469a-a970-7a13101bac9d"
+}

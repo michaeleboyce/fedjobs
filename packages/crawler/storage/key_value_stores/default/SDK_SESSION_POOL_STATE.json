@@ -1,5 +1,246 @@
 {
-  "usableSessionsCount": 0,
+  "usableSessionsCount": 4,
   "retiredSessionsCount": 0,
-  "sessions": []
+  "sessions": [
+    {
+      "id": "session_pwh9q1Mpzh",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": []
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-04-07T04:31:23.035Z",
+      "createdAt": "2025-04-07T03:41:23.035Z",
+      "usageCount": 0,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    },
+    {
+      "id": "session_sPqdyd6VGH",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": [
+          {
+            "key": "oai-did",
+            "value": "a73bf244-9efa-40bb-ac41-f0eafb9623b4",
+            "expires": "2026-04-07T03:41:23.916Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:25.287Z",
+            "lastAccessed": "2025-04-07T03:41:25.287Z"
+          },
+          {
+            "key": "locale",
+            "value": "en-US",
+            "expires": "2026-04-07T03:41:23.916Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:25.287Z",
+            "lastAccessed": "2025-04-07T03:41:25.287Z"
+          },
+          {
+            "key": "country",
+            "value": "US",
+            "expires": "2026-04-07T03:41:23.916Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:25.287Z",
+            "lastAccessed": "2025-04-07T03:41:25.287Z"
+          },
+          {
+            "key": "__cf_bm",
+            "value": "e.GYI7VU4U82cCiteWAU4nxd4qP8xWYR.pBRF_0269k-1743997283-1.0.1.1-U7K6XKjRliTMA5hxpyrW14O5RSKzTaoJSqLAcpFndv9LAyf_2L9c_JoDIMkf4QUdcwiUVH272NiSgN.wnYDHPkW2D43FayDodJ06HU3D26U",
+            "expires": "2025-04-07T04:11:23.916Z",
+            "domain": "openai.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:25.287Z",
+            "lastAccessed": "2025-04-07T03:41:25.287Z"
+          },
+          {
+            "key": "_cfuvid",
+            "value": "ENgVGOBDc8zSdx0_spqAfKfhApCrNYuX0jFAaatCqNk-1743997283938-0.0.1.1-604800000",
+            "expires": "2025-04-07T04:31:25.286Z",
+            "domain": "openai.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:25.287Z",
+            "lastAccessed": "2025-04-07T03:41:25.287Z"
+          },
+          {
+            "key": "_dd_s",
+            "value": "rum=2&id=a5731e1c-8b7a-4078-9304-aaea01b08494&created=1743997284314&expire=1743998184314",
+            "expires": "2025-04-07T03:56:24.000Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:25.288Z",
+            "lastAccessed": "2025-04-07T03:41:25.288Z"
+          },
+          {
+            "key": "consent",
+            "value": "agreed",
+            "expires": "2025-04-07T04:31:25.286Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:25.288Z",
+            "lastAccessed": "2025-04-07T03:41:25.288Z"
+          },
+          {
+            "key": "_ga",
+            "value": "GA1.1.634933296.1743997285",
+            "expires": "2026-05-12T03:41:25.012Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:25.288Z",
+            "lastAccessed": "2025-04-07T03:41:25.288Z"
+          },
+          {
+            "key": "_ga_8MYC5SEFJ1",
+            "value": "GS1.1.1743997285.1.0.1743997285.0.0.0",
+            "expires": "2026-05-12T03:41:25.027Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:25.288Z",
+            "lastAccessed": "2025-04-07T03:41:25.288Z"
+          }
+        ]
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-04-07T04:31:23.036Z",
+      "createdAt": "2025-04-07T03:41:23.036Z",
+      "usageCount": 2,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    },
+    {
+      "id": "session_oBuEhvgBGx",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": []
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-04-07T04:31:27.887Z",
+      "createdAt": "2025-04-07T03:41:27.887Z",
+      "usageCount": 0,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    },
+    {
+      "id": "session_O71oDRviWa",
+      "cookieJar": {
+        "version": "tough-cookie@5.1.2",
+        "storeType": "MemoryCookieStore",
+        "rejectPublicSuffixes": true,
+        "enableLooseMode": false,
+        "allowSpecialUseDomain": true,
+        "prefixSecurity": "silent",
+        "cookies": [
+          {
+            "key": "__cf_bm",
+            "value": "NqyckYn92X2Rsa5iipfaKd.an2d07vFPIfalzOaRJHU-1743997288-1.0.1.1-tDyI5J9I2mKfuog62dYW0wk5ll.DG9psaLreyL.4ZNlfCH9WZsIOvvhnBUJ23fDHMOVhPLBJK21oPlS5pH.aE5QQaQNlD1mo6pxt5pc9NxY",
+            "expires": "2025-04-07T04:11:28.171Z",
+            "domain": "openai.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          },
+          {
+            "key": "_cfuvid",
+            "value": "oy0Fgo4kPIwLDPImuKCI1X3MeyH0KvKWN1Chp87qkyw-1743997288201-0.0.1.1-604800000",
+            "expires": "2025-04-07T04:31:29.292Z",
+            "domain": "openai.com",
+            "path": "/",
+            "secure": true,
+            "httpOnly": true,
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          },
+          {
+            "key": "oai-did",
+            "value": "2d185426-9a67-4267-9bc6-50db84555b19",
+            "expires": "2026-04-07T03:41:28.311Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          },
+          {
+            "key": "locale",
+            "value": "en-US",
+            "expires": "2026-04-07T03:41:28.311Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          },
+          {
+            "key": "country",
+            "value": "US",
+            "expires": "2026-04-07T03:41:28.311Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          },
+          {
+            "key": "_dd_s",
+            "value": "rum=2&id=5aa5fe1d-eb21-43a8-8210-073f016f1bc6&created=1743997288917&expire=1743998188917",
+            "expires": "2025-04-07T03:56:28.000Z",
+            "domain": "openai.com",
+            "path": "/",
+            "hostOnly": true,
+            "creation": "2025-04-07T03:41:29.292Z",
+            "lastAccessed": "2025-04-07T03:41:29.292Z"
+          }
+        ]
+      },
+      "userData": {},
+      "maxErrorScore": 3,
+      "errorScoreDecrement": 0.5,
+      "expiresAt": "2025-04-07T04:31:27.887Z",
+      "createdAt": "2025-04-07T03:41:27.887Z",
+      "usageCount": 2,
+      "maxUsageCount": 50,
+      "errorScore": 0
+    }
+  ]
 }

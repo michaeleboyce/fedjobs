@@ -36,28 +36,56 @@ pnpm run dev
 
 ## Testing
 
-The package includes comprehensive tests using Vitest. You can run tests using the following commands:
+The package includes comprehensive tests using Vitest. Tests are separated into unit tests and integration tests.
+
+### Unit Tests
+
+These tests focus on individual components and use mocks for dependencies:
 
 ```bash
-# Run all tests
+# Run unit tests
 pnpm test
 
-# Run tests in watch mode
+# Run unit tests in watch mode
 pnpm test:watch
 
-# Run tests with verbose output
+# Run unit tests with verbose output
 pnpm test:verbose
+```
+
+### Integration Tests
+
+These tests validate the crawler with real or mock external services:
+
+```bash
+# Run integration tests with mocks
+pnpm test:integration
+
+# Run integration tests with real connections
+pnpm test:integration:real
+
+# Run specific OpenAI integration tests
+pnpm test:integration:openai
+```
+
+### Running All Tests
+
+To run both unit and integration tests:
+
+```bash
+# Run all tests (unit and integration)
+pnpm test:all
 ```
 
 ### Code Coverage
 
-Code coverage reports are generated using the v8 provider integrated with Vitest. To run tests with coverage reporting:
+Code coverage reports are generated using the v8 provider integrated with Vitest. To run unit tests with coverage reporting:
 
 ```bash
-# Run tests with coverage
+# Run unit tests with coverage
 pnpm test:coverage
 
-# Run tests with coverage in watch mode
+# Run unit tests with coverage in watch mode
 pnpm test:coverage:watch
 ```
 
@@ -67,7 +95,12 @@ After running the coverage tests, reports are available in the following formats
 - **HTML:** Interactive report at `./coverage/index.html`
 - **JSON:** Raw data at `./coverage/coverage-final.json`
 
-The coverage configuration targets all source files and excludes tests, type definitions, and generated code.
+To view the HTML coverage report:
+
+```bash
+# Open coverage report in browser
+pnpm open:coverage
+```
 
 ## Architecture
 

@@ -1,0 +1,9 @@
+{
+	"id": "6GxlWXddR0ZkN89",
+	"json": "{\"id\":\"6GxlWXddR0ZkN89\",\"url\":\"https://openai.com/careers\",\"loadedUrl\":\"https://openai.com/careers/\",\"uniqueKey\":\"https://openai.com/careers\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"__crawlee\":{\"state\":4}},\"handledAt\":\"2025-04-07T03:41:31.438Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://openai.com/careers",
+	"url": "https://openai.com/careers"
+}
