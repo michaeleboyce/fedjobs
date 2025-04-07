@@ -1,4 +1,4 @@
-File: ./apps/api/tests/services/parsingService.test.ts
+File: apps/api/tests/services/parsingService.test.ts
 ----------------------------------------
 // File path: apps/api/tests/services/parsingService.test.ts
 import { Anthropic } from '@anthropic-ai/sdk';
@@ -152,7 +152,7 @@ export class ParsingService {
 export const parsingService = new ParsingService();
 
 
-File: ./apps/api/package.json
+File: apps/api/package.json
 ----------------------------------------
 {
   "name": "@fedjobs/api",
@@ -202,7 +202,7 @@ File: ./apps/api/package.json
 }
 
 
-File: ./apps/api/tsconfig.json
+File: apps/api/tsconfig.json
 ----------------------------------------
 {
     "extends": "../../tsconfig.json",
@@ -238,7 +238,7 @@ File: ./apps/api/tsconfig.json
   }
 
 
-File: ./apps/api/src/middleware/error.ts
+File: apps/api/src/middleware/error.ts
 ----------------------------------------
 // File path: apps/api/src/middleware/error.ts
 import { Request, Response, NextFunction } from 'express';
@@ -280,7 +280,7 @@ export const errorHandler = (
 };
 
 
-File: ./apps/api/src/types/express.d.ts
+File: apps/api/src/types/express.d.ts
 ----------------------------------------
 // File path: apps/api/src/types/express.d.ts
 import express from 'express';
@@ -295,7 +295,7 @@ declare module 'express' {
 }
 
 
-File: ./apps/api/src/types/route-handlers.ts
+File: apps/api/src/types/route-handlers.ts
 ----------------------------------------
 // File path: apps/api/src/types/route-handlers.ts
 // apps/api/src/types/route-handlers.ts
@@ -315,7 +315,7 @@ export type ErrorRequestHandler = (
 ) => Promise<any> | any;
 
 
-File: ./apps/api/src/types/index.ts
+File: apps/api/src/types/index.ts
 ----------------------------------------
 // File path: apps/api/src/types/index.ts
 import { z } from 'zod';
@@ -345,7 +345,7 @@ export interface GenerateResponse {
 
 
 
-File: ./apps/api/src/backend-utils/pdf-parse.d.ts
+File: apps/api/src/backend-utils/pdf-parse.d.ts
 ----------------------------------------
 // File path: apps/api/src/backend-utils/pdf-parse.d.ts
 // declare module 'pdf-parse' {
@@ -355,7 +355,7 @@ File: ./apps/api/src/backend-utils/pdf-parse.d.ts
 
 
 
-File: ./apps/api/src/backend-utils/DocumentParsers.ts
+File: apps/api/src/backend-utils/DocumentParsers.ts
 ----------------------------------------
 // File path: apps/api/src/backend-utils/DocumentParsers.ts
 import mammoth from 'mammoth';
@@ -536,7 +536,7 @@ export async function processDocumentTextFromBuffer(
 
 
 
-File: ./apps/api/src/index.ts
+File: apps/api/src/index.ts
 ----------------------------------------
 // File path: apps/api/src/index.ts
 import express, { ErrorRequestHandler } from 'express';
@@ -754,51 +754,27 @@ app.use('/api/parse/document', (req, _res, next) => {
 app.use('/api/job-sources', jobSourcesRouter);
 app.use('/api/job-postings', jobPostingsRouter);
 
-// Create a reference to the ScraperService
-let scheduledRefreshScraperService: ReturnType<typeof createScraperService> | null = null;
-
-function getScheduledRefreshScraperService() {
-  if (!scheduledRefreshScraperService) {
-    try {
-      scheduledRefreshScraperService = createScraperService();
-      console.log('ScraperService instance successfully created for scheduled refresh');
-    } catch (error) {
-      console.error('Failed to create ScraperService instance for scheduled refresh:', 
-        error instanceof Error ? error.message : String(error));
-      throw error;
-    }
-  }
-  return scheduledRefreshScraperService;
-}
 // Cron-like endpoint for scheduled refresh
 app.post('/api/job-sources/scheduled-refresh', (req, res) => {
   try {
     const { frequency = 'DAILY' } = req.body;
     
-    // Create ScraperService using the helper function that ensures proper initialization
-    const jobScraperService = getScheduledRefreshScraperService();
+    // Create ScraperService using the factory function that initializes all dependencies
+    const jobScraperService = createScraperService();
     
     // Start refresh process in the background
     jobScraperService.scheduleRefresh(frequency)
-      .catch((error: Error) => {
-        logger(`Error in scheduled refresh: ${error.message}`);
-        console.error('Error in scheduled refresh:', error);
-      });
+      .catch((error: Error) => logger(`Error in scheduled refresh: ${error.message}`));
     
     res.json({ 
       message: `Scheduled job refresh started for frequency: ${frequency}`,
       status: 'STARTED'
     });
   } catch (error) {
-    logger(`Error in scheduled refresh endpoint: ${error instanceof Error ? error.message : String(error)}`);
-    console.error('Error in scheduled refresh endpoint:', error);
-    res.status(500).json({ 
-      error: 'Failed to start scheduled refresh',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
+    logger(`Error in scheduled refresh endpoint: ${error}`);
+    res.status(500).json({ error: 'Failed to start scheduled refresh' });
   }
 });
-
 
 app.use((req, res, next) => {
   logger(`No route found for ${req.method} ${req.path}`);
@@ -826,7 +802,7 @@ server.listen(port, () => {
 });
 
 
-File: ./apps/api/src/config.ts
+File: apps/api/src/config.ts
 ----------------------------------------
 // File path: apps/api/src/config.ts
 import { z } from 'zod';
@@ -862,7 +838,7 @@ export const config = {
 } as const;
 
 
-File: ./apps/api/src/routes/parse.ts
+File: apps/api/src/routes/parse.ts
 ----------------------------------------
 // File path: apps/api/src/routes/parse.ts
 // apps/api/src/routes/parse.ts
@@ -921,7 +897,7 @@ export { router as parseRouter };
 
 
 
-File: ./apps/api/src/routes/parsingStatus.ts
+File: apps/api/src/routes/parsingStatus.ts
 ----------------------------------------
 // File path: apps/api/src/routes/parsingStatus.ts
 // apps/api/src/routes/parsingStatus.ts
@@ -962,43 +938,45 @@ export { router as parsingStatusRouter };
 
 
 
-File: ./apps/api/src/routes/jobSources.ts
+File: apps/api/src/routes/jobSources.ts
 ----------------------------------------
-// apps/api/src/routes/jobSources.ts
+// File path: apps/api/src/routes/jobSources.ts
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { JobSourceRepository } from '@fedjobs/database';
 import { JobPostingRepository } from '@fedjobs/database';
-import { createScraperService } from '@fedjobs/crawler';
+import { 
+  ScraperService, 
+  JobSourceService,
+  CacheService,
+  JobPostingProcessor,
+  JobPostingValidator,
+  DuplicateDetector
+} from '@fedjobs/crawler';
 import { userWsClients } from '../index';
-import { Logger } from '@fedjobs/crawler';
 
 const router: Router = express.Router();
 const jobSourceRepo = new JobSourceRepository();
 const jobPostingRepo = new JobPostingRepository();
-const logger = new Logger('JobSourcesAPI');
-
-// Create a lazy-loaded instance of the ScraperService to ensure
-// it's only initialized when needed and with all dependencies
-let scraperServiceInstance: ReturnType<typeof createScraperService> | null = null;
-
-function getScraperService() {
-  if (!scraperServiceInstance) {
-    try {
-      scraperServiceInstance = createScraperService();
-      logger.info('ScraperService instance successfully created');
-    } catch (error) {
-      logger.error('Failed to create ScraperService instance:', error instanceof Error ? error : new Error(String(error)));
-      throw error;
-    }
-  }
-  return scraperServiceInstance;
-}
+const jobSourceService = new JobSourceService(jobSourceRepo, jobPostingRepo);
+const cacheService = new CacheService();
+const validator = new JobPostingValidator();
+const duplicateDetector = new DuplicateDetector(jobPostingRepo);
+const jobPostingProcessor = new JobPostingProcessor(
+  jobPostingRepo,
+  validator,
+  duplicateDetector
+);
+const jobScraperService = new ScraperService(
+  jobSourceService,
+  cacheService,
+  jobPostingProcessor
+);
 
 // Helper function to send WebSocket updates to a specific user with better error handling
 function sendWebSocketUpdate(userId: string, eventType: string, data: any) {
   const clients = userWsClients.get(userId);
   if (!clients || clients.size === 0) {
-    logger.info(`No connected WebSocket clients for user ${userId}`);
+    console.log(`No connected WebSocket clients for user ${userId}`);
     return; // No connected clients for this user
   }
   
@@ -1021,11 +999,11 @@ function sendWebSocketUpdate(userId: string, eventType: string, data: any) {
       }
     } catch (error) {
       errorCount++;
-      logger.error(`Error sending WebSocket message to client:`, error instanceof Error ? error : new Error(String(error)));
+      console.error(`Error sending WebSocket message to client:`, error);
     }
   });
   
-  logger.info(`WebSocket '${eventType}' update sent to ${sentCount}/${clients.size} clients for user ${userId} (${errorCount} errors)`);
+  console.log(`WebSocket '${eventType}' update sent to ${sentCount}/${clients.size} clients for user ${userId} (${errorCount} errors)`);
 }
 
 // Get all job sources for a user
@@ -1079,17 +1057,17 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
 // Create a new job source
 router.post('/', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    logger.info('POST / - Creating new job source', req.body);
+    console.log('[JobSourcesAPI] POST / - Creating new job source', req.body);
     
     const { userId, url, name, keywords, refreshFrequency } = req.body;
     
     if (!userId || !url || !name) {
-      logger.info('Missing required fields', { userId, url, name });
+      console.log('[JobSourcesAPI] Missing required fields', { userId, url, name });
       res.status(400).json({ error: 'userId, url, and name are required' });
       return;
     }
     
-    logger.info('Creating new job source in database');
+    console.log('[JobSourcesAPI] Creating new job source in database');
     // Create the new job source
     const newSource = await jobSourceRepo.insert({
       userId,
@@ -1100,7 +1078,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       status: 'PENDING'
     });
     
-    logger.info('Job source created successfully', newSource);
+    console.log('[JobSourcesAPI] Job source created successfully', newSource);
     
     // Send initial status via WebSocket
     sendWebSocketUpdate(userId, 'job_source_created', { 
@@ -1110,22 +1088,19 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
     });
     
     // Return the new source to the client immediately
-    logger.info('Sending response to client');
+    console.log('[JobSourcesAPI] Sending response to client');
     res.status(201).json(newSource);
     
     // Start the job crawl in a separate try/catch to prevent it from affecting the response
     setTimeout(async () => {
       try {
-        logger.info(`Starting background crawl for source ${newSource.id}`);
-        
-        // Get the service using our helper function
-        const jobScraperService = getScraperService();
+        console.log(`[JobSourcesAPI] Starting background crawl for source ${newSource.id}`);
         
         // The refreshJobSource method will automatically check if there's a cached version available
         jobScraperService.refreshJobSource(
           newSource.id, 
           {
-            onJobFound: async (job) => {
+            onJobFound: async (job: Record<string, any>) => {
               // Send real-time job updates
               sendWebSocketUpdate(userId, 'job_found', {
                 sourceId: newSource.id,
@@ -1134,7 +1109,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
                 url: job.url
               });
             },
-            onComplete: async (jobs) => {
+            onComplete: async (jobs: Array<Record<string, any>>) => {
               // Send completion update
               sendWebSocketUpdate(userId, 'crawl_complete', {
                 sourceId: newSource.id,
@@ -1144,7 +1119,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
                 message: 'Completed fresh crawl of job source'
               });
             },
-            onError: async (error) => {
+            onError: async (error: Error) => {
               // Send error update
               sendWebSocketUpdate(userId, 'crawl_error', {
                 sourceId: newSource.id,
@@ -1158,7 +1133,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
           },
           false // Don't force refresh for new sources
         ).catch(error => {
-          logger.error(`Error in initial scrape for source ${newSource.id}:`, error instanceof Error ? error : new Error(String(error)));
+          console.error(`Error in initial scrape for source ${newSource.id}:`, error);
           
           // Send error update via WebSocket
           sendWebSocketUpdate(userId, 'crawl_error', {
@@ -1170,11 +1145,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
           // Update the source status in the database
           const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during crawl';
           jobSourceRepo.updateStatus(newSource.id, 'ERROR', errorMessage).catch(err => {
-            logger.error(`Error updating source status:`, err instanceof Error ? err : new Error(String(err)));
+            console.error(`Error updating source status:`, err);
           });
         });
       } catch (error) {
-        logger.error(`Failed to start job scraper for source ${newSource.id}:`, error instanceof Error ? error : new Error(String(error)));
+        console.error(`Failed to start job scraper for source ${newSource.id}:`, error);
         
         // Send error update via WebSocket
         sendWebSocketUpdate(userId, 'crawl_error', {
@@ -1186,7 +1161,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         // Update source status in database
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred starting crawler';
         jobSourceRepo.updateStatus(newSource.id, 'ERROR', errorMessage).catch(err => {
-          logger.error(`Error updating source status:`, err instanceof Error ? err : new Error(String(err)));
+          console.error(`Error updating source status:`, err);
         });
       }
     }, 100); // Small delay to ensure the response is sent first
@@ -1233,7 +1208,6 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
     
     // Try to cancel any ongoing crawls
     try {
-      const jobScraperService = getScraperService();
       await jobScraperService.cancelRefresh(id);
     } catch (cancelError) {
       console.error(`Error cancelling refresh for source ${id}:`, cancelError);
@@ -1263,7 +1237,6 @@ router.post('/:id/cancel', async (req: Request, res: Response, next: NextFunctio
     console.log(`[JobSourcesAPI] Cancelling refresh for source ${id}`);
     
     // Use the JobScraperService to actually cancel the crawler
-    const jobScraperService = getScraperService();
     const cancelled = await jobScraperService.cancelRefresh(id);
     
     console.log(`[JobSourcesAPI] Cancellation result: ${cancelled ? 'Crawler stopped' : 'No active crawler found'}`);
@@ -1315,7 +1288,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
     
     // Force refresh flag - if true, bypass cache and force a fresh crawl
     const forceRefresh = req.query.forceRefresh === 'true' || req.body.forceRefresh === true;
-    logger.info(`Job source refresh for ID ${id}, forceRefresh: ${forceRefresh}`);
+    console.log(`Job source refresh for ID ${id}, forceRefresh: ${forceRefresh}`);
     
     // Respond with acknowledgement that the refresh has started
     res.json({ 
@@ -1337,18 +1310,11 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
     // Start the refresh in the background with WebSocket updates
     setTimeout(async () => {
       try {
-        logger.info(`Starting refresh with forceRefresh=${forceRefresh}`);
-        
-        // Get the scraperService using our helper function to ensure it's properly initialized
-        const jobScraperService = getScraperService();
-        
-        // Create a variable to track whether cache was used
-        let usedCache = false;
-        
+        console.log(`Starting refresh with forceRefresh=${forceRefresh}`);
         const crawlResult = await jobScraperService.refreshJobSource(
           id, 
           {
-            onJobFound: async (job) => {
+            onJobFound: async (job: Record<string, any>) => {
               // Send real-time job updates
               sendWebSocketUpdate(sourceDetails.userId, 'job_found', {
                 sourceId: id,
@@ -1357,8 +1323,10 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
                 url: job.url
               });
             },
-            onComplete: async (jobs) => {
-              // Use our tracked cache status instead of trying to access crawlResult
+            onComplete: async (jobs: Array<Record<string, any>>) => {
+              // Check if the refresh used cached data
+              const usedCache = crawlResult?.usedCache === true;
+              
               // Send completion update
               sendWebSocketUpdate(sourceDetails.userId, 'crawl_complete', {
                 sourceId: id,
@@ -1370,7 +1338,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
                   : 'Completed fresh crawl of job source'
               });
             },
-            onError: async (error) => {
+            onError: async (error: Error) => {
               // Send error update
               sendWebSocketUpdate(sourceDetails.userId, 'crawl_error', {
                 sourceId: id,
@@ -1381,11 +1349,8 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
           }, 
           forceRefresh
         );
-        
-        // Update our cache status tracking variable after the crawl is complete
-        usedCache = crawlResult.usedCache;
       } catch (error) {
-        logger.error(`Error refreshing source ${id}:`, error instanceof Error ? error : new Error(String(error)));
+        console.error(`Error refreshing source ${id}:`, error);
         
         // Send error update via WebSocket
         sendWebSocketUpdate(sourceDetails.userId, 'crawl_error', {
@@ -1399,7 +1364,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
         try {
           await jobSourceRepo.updateStatus(id, 'ERROR', errorMessage);
         } catch (dbError) {
-          logger.error(`Error updating source status:`, dbError instanceof Error ? dbError : new Error(String(dbError)));
+          console.error(`Error updating source status:`, dbError);
         }
       }
     }, 100); // Small delay to ensure the response is sent first
@@ -1430,7 +1395,7 @@ router.get('/:id/jobs', async (req: Request, res: Response, next: NextFunction):
 export default router;
 
 
-File: ./apps/api/src/routes/jobPostings.ts
+File: apps/api/src/routes/jobPostings.ts
 ----------------------------------------
 // File path: apps/api/src/routes/jobPostings.ts
 import express, { Router, Request, Response, NextFunction } from 'express';
@@ -1607,7 +1572,7 @@ export default router;
 
 
 
-File: ./apps/api/src/routes/documentParse.ts
+File: apps/api/src/routes/documentParse.ts
 ----------------------------------------
 // File path: apps/api/src/routes/documentParse.ts
 // apps/api/src/routes/documentParse.ts
@@ -1698,7 +1663,7 @@ export { router as documentParseRouter };
 
 
 
-File: ./apps/api/src/routes/generate.ts
+File: apps/api/src/routes/generate.ts
 ----------------------------------------
 // File path: apps/api/src/routes/generate.ts
 import express, { Router, Request, Response, NextFunction } from 'express';
@@ -1778,7 +1743,7 @@ router.post('/', async (
 export { router as generateRouter };
 
 
-File: ./apps/api/src/services/parsingService.ts
+File: apps/api/src/services/parsingService.ts
 ----------------------------------------
 // File path: apps/api/src/services/parsingService.ts
 // apps/api/src/services/parsingService.ts

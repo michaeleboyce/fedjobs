@@ -222,6 +222,7 @@ export class WebCrawler {
       headless: true,
       maxConcurrency: 2,
       navigationTimeoutSecs: 90,
+      requestHandlerTimeoutSecs: 180,
       
       // Handle failures
       failedRequestHandler: async ({ request, error }) => {

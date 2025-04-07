@@ -10,7 +10,7 @@ import {
   JobPostingValidator,
   DuplicateDetector
 } from '@fedjobs/crawler';
-import { userWsClients } from '../index';
+import { userWsClients } from '../websocket';
 
 const router: Router = express.Router();
 const jobSourceRepo = new JobSourceRepository();
@@ -173,8 +173,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
                 sourceId: newSource.id,
                 jobCount: jobs.length,
                 status: 'ACTIVE',
-                usedCache: false, // Initial crawl is never from cache
-                message: 'Completed fresh crawl of job source'
+                message: 'Completed crawl of job source'
               });
             },
             onError: async (error: Error) => {
@@ -382,18 +381,13 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
               });
             },
             onComplete: async (jobs: Array<Record<string, any>>) => {
-              // Check if the refresh used cached data
-              const usedCache = crawlResult?.usedCache === true;
-              
-              // Send completion update
+              // Instead of checking crawlResult, pass this info from within the function
+              // The crawler itself knows if it used cache or not
               sendWebSocketUpdate(sourceDetails.userId, 'crawl_complete', {
                 sourceId: id,
                 jobCount: jobs.length,
                 status: 'ACTIVE',
-                usedCache,
-                message: usedCache 
-                  ? 'Used cached data from previous crawl' 
-                  : 'Completed fresh crawl of job source'
+                message: 'Completed crawl of job source'
               });
             },
             onError: async (error: Error) => {

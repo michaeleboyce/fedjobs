@@ -86,19 +86,28 @@ export class LinkDiscovery {
   private async extractPaginationLinks(page: any): Promise<Array<PaginationLink>> {
     try {
       return page.evaluate(() => {
-        // Common pagination selectors
+        // Common pagination selectors (standard CSS only)
         const paginationSelectors = [
           'a[href*="page="]', '.pagination a', '[aria-label*="Next"]', '[aria-label*="Page"]',
           '.pager a', '.pages a', '.next a', '.nextpage', 'a.next', 'a.nextpage', 
-          '[data-page]', '[data-testid*="pagination"]',
-          // Text-based detection
-          'a:has-text("Next")', 'a:has-text("Next Page")', 'a:has-text("Load More")'
+          '[data-page]', '[data-testid*="pagination"]'
         ];
         
         const selector = paginationSelectors.join(', ');
-        const links = Array.from(document.querySelectorAll(selector));
+        const selectorLinks = Array.from(document.querySelectorAll(selector));
         
-        return links.map(a => ({
+        // Separately find links by text content (since :has-text() is not valid in querySelectorAll)
+        const allLinks = Array.from(document.querySelectorAll('a'));
+        const textBasedLinks = allLinks.filter(a => {
+          const text = (a.textContent || '').toLowerCase().trim();
+          return text.includes('next') || text === 'next page' || text.includes('load more');
+        });
+        
+        // Combine both sets of links, removing duplicates
+        const allPaginationLinks = [...selectorLinks, ...textBasedLinks];
+        const uniqueLinks = Array.from(new Set(allPaginationLinks));
+        
+        return uniqueLinks.map(a => ({
           href: (a as HTMLAnchorElement).href,
           text: a.textContent?.trim() || '',
           isPagination: true
