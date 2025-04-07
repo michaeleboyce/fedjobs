@@ -7,18 +7,29 @@ import { UrlTracker } from './URLTracker';
 import { PageHandler } from './PageHandler';
 import { LinkDiscovery } from './LinkDiscovery';
 import { JobProcessor } from './JobProcessor';
-import { CrawlerManager } from './CrawlerManager';
+import { Logger } from '../../utils/Logger';
+
+/**
+ * Result from a crawl operation
+ */
+export interface CrawlResult {
+  jobsFound: JobPostingData[];
+  jobsStored: number[];
+}
 
 /**
  * WebCrawler - Orchestrates the crawling process using specialized components
  */
 export class WebCrawler {
+  private logger = new Logger('WebCrawler');
   private urlTracker: UrlTracker;
   private pageHandler: PageHandler;
   private linkDiscovery: LinkDiscovery;
   private jobProcessor: JobProcessor;
-  private crawlerManager: CrawlerManager;
   private parser: JobParserService;
+  
+  // Map to store active crawlers by source ID
+  private activeCrawlers = new Map<number, PlaywrightCrawler>();
   
   constructor(parser?: JobParserService) {
     log.setLevel(LogLevel.INFO);
@@ -29,20 +40,91 @@ export class WebCrawler {
     this.pageHandler = new PageHandler();
     this.linkDiscovery = new LinkDiscovery(this.parser);
     this.jobProcessor = new JobProcessor();
-    this.crawlerManager = new CrawlerManager();
     
-    console.log('[WebCrawler] Initialized with PlaywrightCrawler from crawlee');
+    this.logger.info('Initialized with PlaywrightCrawler from crawlee');
   }
   
   /**
    * Cancel an active crawler for a source
    */
-  public async cancelCrawler(sourceId: number): Promise<boolean> {
-    return this.crawlerManager.cancelCrawler(sourceId);
+  async cancelCrawler(sourceId: number): Promise<boolean> {
+    const crawler = this.activeCrawlers.get(sourceId);
+    if (!crawler) {
+      this.logger.info(`No active crawler found for source ${sourceId}`);
+      return false;
+    }
+    
+    try {
+      this.logger.info(`Cancelling crawler for source ${sourceId}`);
+      await crawler.stop();
+      this.activeCrawlers.delete(sourceId);
+      this.logger.info(`Successfully cancelled crawler for source ${sourceId}`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Error cancelling crawler for source ${sourceId}:`, error as Record<string, any>);
+      return false;
+    }
   }
   
   /**
-   * Crawl a job site and extract job postings
+   * Simplified interface for crawling a job site and processing jobs
+   * 
+   * @param options Crawl options
+   * @param onProcessJob Function to process each found job
+   * @returns Results of the crawl including jobs found and jobs stored
+   */
+  async crawlSite(
+    options: {
+      sourceId: number;
+      url: string;
+      keywords?: string;
+      maxJobs?: number;
+    },
+    onProcessJob: (job: JobPostingData) => Promise<number>
+  ): Promise<CrawlResult> {
+    this.logger.info(`Starting crawl for source ${options.sourceId}, URL: ${options.url}`);
+    
+    const jobsFound: JobPostingData[] = [];
+    const jobsStored: number[] = [];
+    
+    try {
+      // Create crawl options
+      const crawlOptions: CrawlJobOptions = {
+        url: options.url,
+        keywords: options.keywords,
+        maxJobs: options.maxJobs || 50,
+        sourceId: options.sourceId,
+        
+        // Callback when a job is found
+        onJobFound: async (job) => {
+          this.logger.info(`Found job: ${job.title} at ${job.organization}`);
+          
+          // Process the job with the provided callback
+          const jobId = await onProcessJob(job);
+          
+          // Only track valid jobs (jobId > 0)
+          if (jobId > 0) {
+            jobsFound.push(job);
+            jobsStored.push(jobId);
+          } else {
+            this.logger.info(`Skipping invalid job: ${job.title}`);
+          }
+        }
+      };
+      
+      // Perform the crawl
+      await this.crawlJobSite(crawlOptions);
+      
+      return { jobsFound, jobsStored };
+    } catch (error) {
+      this.logger.error(`Error in crawlSite:`, error as Record<string, any>);
+      throw error;
+    }
+  }
+  
+  /**
+   * Original crawl method (now used internally)
+   * @internal
    */
   async crawlJobSite(options: CrawlJobOptions): Promise<JobPostingData[]> {
     const { 
@@ -55,13 +137,13 @@ export class WebCrawler {
       sourceId 
     } = options;
     
-    console.log(`[WebCrawler] Starting crawl of ${url} with keywords: ${keywords || 'none'}`);
+    this.logger.info(`Starting crawlJobSite of ${url} with keywords: ${keywords || 'none'}`);
     
     // If there's an existing crawler for this source, stop it first
     if (sourceId) {
-      const stopped = await this.crawlerManager.cancelCrawler(sourceId);
+      const stopped = await this.cancelCrawler(sourceId);
       if (stopped) {
-        console.log(`[WebCrawler] Stopped existing crawler for source ${sourceId}`);
+        this.logger.info(`Stopped existing crawler for source ${sourceId}`);
       }
     }
     
@@ -69,7 +151,7 @@ export class WebCrawler {
     try {
       new URL(url);
     } catch (error) {
-      console.error(`[WebCrawler] Invalid URL: ${url}`, error);
+      this.logger.error(`Invalid URL: ${url}`, error as Record<string, any>);
       throw new Error(`Invalid URL: ${url}`);
     }
     
@@ -88,7 +170,7 @@ export class WebCrawler {
     try {
       // Register crawler for possible cancellation
       if (sourceId) {
-        this.crawlerManager.registerCrawler(sourceId, crawler);
+        this.activeCrawlers.set(sourceId, crawler);
       }
       
       // Start the crawl
@@ -101,7 +183,7 @@ export class WebCrawler {
       
       return results;
     } catch (error) {
-      console.error(`[WebCrawler] Error running crawler:`, error);
+      this.logger.error(`Error running crawler:`, error as Record<string, any>);
       
       if (onError && error instanceof Error) {
         await onError(error, url);
@@ -111,13 +193,14 @@ export class WebCrawler {
     } finally {
       // Always unregister the crawler
       if (sourceId) {
-        this.crawlerManager.unregisterCrawler(sourceId);
+        this.activeCrawlers.delete(sourceId);
       }
     }
   }
   
   /**
    * Create a Playwright crawler with configured handlers
+   * @private
    */
   private createCrawler({
     url,
@@ -141,7 +224,7 @@ export class WebCrawler {
       
       // Handle failures
       failedRequestHandler: async ({ request, error }) => {
-        console.error(`[WebCrawler] Request ${request.url} failed:`, error);
+        this.logger.error(`Request ${request.url} failed:`, error as Record<string, any>);
         if (onError) {
           await onError(error as Error, request.url);
         }
@@ -149,11 +232,11 @@ export class WebCrawler {
       
       // Process each page
       requestHandler: async ({ request, page, enqueueLinks }) => {
-        console.log(`[WebCrawler] Processing: ${request.url}`);
+        this.logger.info(`Processing: ${request.url}`);
         
         // Skip if recently visited
         if (this.urlTracker.isRecentlyVisited(request.url)) {
-          console.log(`[WebCrawler] Skipping recently visited URL: ${request.url}`);
+          this.logger.info(`Skipping recently visited URL: ${request.url}`);
           return;
         }
         
@@ -168,7 +251,7 @@ export class WebCrawler {
           const { content, title, description } = await this.pageHandler.extractPageData(page);
           
           // Step 3: Parse jobs data
-          console.log(`[WebCrawler] Parsing job data from ${request.url}`);
+          this.logger.info(`Parsing job data from ${request.url}`);
           const jobData = await this.parser.parseJobsFromPage({
             url: request.url,
             content,
@@ -177,7 +260,7 @@ export class WebCrawler {
             keywords
           });
           
-          console.log(`[WebCrawler] Found ${jobData.length} jobs on ${request.url}`);
+          this.logger.info(`Found ${jobData.length} jobs on ${request.url}`);
           
           // Step 4: Process found jobs
           if (jobData.length > 0) {
@@ -185,7 +268,7 @@ export class WebCrawler {
             
             // Stop if we've reached the job limit
             if (results.length >= maxJobs) {
-              console.log(`[WebCrawler] Reached maximum jobs limit (${maxJobs})`);
+              this.logger.info(`Reached maximum jobs limit (${maxJobs})`);
               const browser = page.context()?.browser();
               if (browser) {
                 await browser.close();
@@ -204,7 +287,7 @@ export class WebCrawler {
           );
           
         } catch (error) {
-          console.error(`[WebCrawler] Error processing page ${request.url}:`, error);
+          this.logger.error(`Error processing page ${request.url}:`, error as Record<string, any>);
           if (onError) {
             await onError(error as Error, request.url);
           }
