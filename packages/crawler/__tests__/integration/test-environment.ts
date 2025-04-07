@@ -31,12 +31,12 @@ export function getTestConfig(): TestConfig {
   });
 
   // Read config from environment or use defaults
-  const useMocks = process.env.USE_MOCKS !== 'false';
-  const useRealCrawler = process.env.USE_REAL_CRAWLER === 'true';
-  const useRealParser = process.env.USE_REAL_PARSER === 'true';
-  const useRealDatabase = process.env.USE_REAL_DATABASE === 'true';
-  const useRealAI = process.env.USE_REAL_AI === 'true';
-  const timeout = parseInt(process.env.TEST_TIMEOUT || '30000', 10);
+  const useMocks = process.env.USE_MOCKS !== 'false'; //this default evaluates to true if USE_MOCKS is not set or is not found
+  const useRealCrawler = process.env.USE_REAL_CRAWLER === 'true'; //this default evaluates to false if USE_REAL_CRAWLER is not set or is not found
+  const useRealParser = process.env.USE_REAL_PARSER === 'true'; //this default evaluates to false if USE_REAL_PARSER is not set or is not found
+  const useRealDatabase = process.env.USE_REAL_DATABASE === 'true'; //this default evaluates to falseif USE_REAL_DATABASE is not set or is not found
+  const useRealAI = process.env.USE_REAL_AI === 'true'; //this default evaluates to false if USE_REAL_AI is not set or is not found
+  const timeout = parseInt(process.env.TEST_TIMEOUT || '30000', 10); //this default evaluates to 30000 if TEST_TIMEOUT is not set or is not found 
 
   return {
     useMocks,

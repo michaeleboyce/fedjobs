@@ -26,6 +26,6 @@ export default defineConfig({
     },
     globals: true,
     // If your tests are in a specific folder:
-    include: ['__tests__/**/*.spec.ts']
+    include: ['__tests__/**/*.spec.ts', '__tests__/**/*.integration.test.ts']
   }
 });
