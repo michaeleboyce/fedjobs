@@ -2,13 +2,33 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { JobSourceRepository } from '@fedjobs/database';
 import { JobPostingRepository } from '@fedjobs/database';
-import { ScraperService } from '@fedjobs/crawler';
+import { 
+  ScraperService, 
+  JobSourceService,
+  CacheService,
+  JobPostingProcessor,
+  JobPostingValidator,
+  DuplicateDetector
+} from '@fedjobs/crawler';
 import { userWsClients } from '../index';
 
 const router: Router = express.Router();
 const jobSourceRepo = new JobSourceRepository();
 const jobPostingRepo = new JobPostingRepository();
-const jobScraperService = new ScraperService();
+const jobSourceService = new JobSourceService(jobSourceRepo, jobPostingRepo);
+const cacheService = new CacheService();
+const validator = new JobPostingValidator();
+const duplicateDetector = new DuplicateDetector(jobPostingRepo);
+const jobPostingProcessor = new JobPostingProcessor(
+  jobPostingRepo,
+  validator,
+  duplicateDetector
+);
+const jobScraperService = new ScraperService(
+  jobSourceService,
+  cacheService,
+  jobPostingProcessor
+);
 
 // Helper function to send WebSocket updates to a specific user with better error handling
 function sendWebSocketUpdate(userId: string, eventType: string, data: any) {
@@ -138,7 +158,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         jobScraperService.refreshJobSource(
           newSource.id, 
           {
-            onJobFound: async (job) => {
+            onJobFound: async (job: Record<string, any>) => {
               // Send real-time job updates
               sendWebSocketUpdate(userId, 'job_found', {
                 sourceId: newSource.id,
@@ -147,7 +167,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
                 url: job.url
               });
             },
-            onComplete: async (jobs) => {
+            onComplete: async (jobs: Array<Record<string, any>>) => {
               // Send completion update
               sendWebSocketUpdate(userId, 'crawl_complete', {
                 sourceId: newSource.id,
@@ -157,7 +177,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
                 message: 'Completed fresh crawl of job source'
               });
             },
-            onError: async (error) => {
+            onError: async (error: Error) => {
               // Send error update
               sendWebSocketUpdate(userId, 'crawl_error', {
                 sourceId: newSource.id,
@@ -352,7 +372,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
         const crawlResult = await jobScraperService.refreshJobSource(
           id, 
           {
-            onJobFound: async (job) => {
+            onJobFound: async (job: Record<string, any>) => {
               // Send real-time job updates
               sendWebSocketUpdate(sourceDetails.userId, 'job_found', {
                 sourceId: id,
@@ -361,7 +381,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
                 url: job.url
               });
             },
-            onComplete: async (jobs) => {
+            onComplete: async (jobs: Array<Record<string, any>>) => {
               // Check if the refresh used cached data
               const usedCache = crawlResult?.usedCache === true;
               
@@ -376,7 +396,7 @@ router.post('/:id/refresh', async (req: Request, res: Response, next: NextFuncti
                   : 'Completed fresh crawl of job source'
               });
             },
-            onError: async (error) => {
+            onError: async (error: Error) => {
               // Send error update
               sendWebSocketUpdate(sourceDetails.userId, 'crawl_error', {
                 sourceId: id,

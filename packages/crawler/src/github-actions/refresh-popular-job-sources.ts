@@ -2,7 +2,12 @@
 // packages/crawler/src/github-actions/refresh-popular-job-sources.ts
 import { config } from 'dotenv';
 import { ScraperService } from '../services/scraper.service';
-import { JobSourceRepository } from '@fedjobs/database';
+import { JobSourceRepository, JobPostingRepository } from '@fedjobs/database';
+import { CacheService } from '../services/cache.service';
+import { JobPostingProcessor } from '../domain/job-posting.processor';
+import { JobSourceService } from '../services/job-source.service';
+import { JobPostingValidator } from '../domain/job-posting.validator';
+import { DuplicateDetector } from '../domain/duplicate.detector';
 
 // Load environment variables
 config();
@@ -39,7 +44,22 @@ async function refreshPopularJobSources() {
     }
     
     // Create service to handle refreshes
-    const jobScraperService = new ScraperService();
+    const jobSourceRepo = new JobSourceRepository();
+    const jobPostingRepo = new JobPostingRepository();
+    const jobSourceService = new JobSourceService(jobSourceRepo, jobPostingRepo);
+    const cacheService = new CacheService();
+    const validator = new JobPostingValidator();
+    const duplicateDetector = new DuplicateDetector(jobPostingRepo);
+    const jobPostingProcessor = new JobPostingProcessor(
+      jobPostingRepo,
+      validator,
+      duplicateDetector
+    );
+    const jobScraperService = new ScraperService(
+      jobSourceService,
+      cacheService,
+      jobPostingProcessor
+    );
     
     // Process sources with basic rate limiting
     let refreshedCount = 0;
