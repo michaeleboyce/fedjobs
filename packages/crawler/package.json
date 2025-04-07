@@ -24,6 +24,7 @@
     "@fedjobs/database": "workspace:*",
     "@fedjobs/types": "workspace:*",
     "@fedjobs/utils": "workspace:*",
+    "chalk": "^4.1.2",
     "cheerio": "^1.0.0",
     "crawlee": "^3.13.0",
     "dotenv": "^16.4.7",

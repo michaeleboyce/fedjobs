@@ -329,6 +329,9 @@ importers:
       '@fedjobs/utils':
         specifier: workspace:*
         version: link:../utils
+      chalk:
+        specifier: ^4.1.2
+        version: 4.1.2
       cheerio:
         specifier: ^1.0.0
         version: 1.0.0
@@ -10153,7 +10156,7 @@ snapshots:
 
   '@types/chalk@2.2.4':
     dependencies:
-      chalk: 5.4.1
+      chalk: 4.1.2
 
   '@types/cheerio@0.22.35':
     dependencies:
