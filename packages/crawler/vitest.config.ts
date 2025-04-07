@@ -11,7 +11,18 @@ export default defineConfig({
   test: {
     // Example: Provide extra setup or coverage config
     coverage: {
-      provider: 'v8'
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/',
+        'dist/',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '__tests__/**'
+      ],
+      all: true
     },
     globals: true,
     // If your tests are in a specific folder:
