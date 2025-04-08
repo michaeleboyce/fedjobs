@@ -3,7 +3,7 @@
   "retiredSessionsCount": 0,
   "sessions": [
     {
-      "id": "session_EfgdYT5eUl",
+      "id": "session_6UbwlSGwYS",
       "cookieJar": {
         "version": "tough-cookie@5.1.2",
         "storeType": "MemoryCookieStore",
@@ -16,14 +16,14 @@
       "userData": {},
       "maxErrorScore": 3,
       "errorScoreDecrement": 0.5,
-      "expiresAt": "2025-04-07T21:19:05.109Z",
-      "createdAt": "2025-04-07T20:29:05.109Z",
+      "expiresAt": "2025-04-08T01:52:31.279Z",
+      "createdAt": "2025-04-08T01:02:31.279Z",
       "usageCount": 0,
       "maxUsageCount": 50,
       "errorScore": 0
     },
     {
-      "id": "session_v9PAdB2PoD",
+      "id": "session_Elt0Wjjj6t",
       "cookieJar": {
         "version": "tough-cookie@5.1.2",
         "storeType": "MemoryCookieStore",
@@ -34,23 +34,43 @@
         "cookies": [
           {
             "key": "__cf_bm",
-            "value": "x8gBqvwyl32q8ipkK_L4auqaf1nxFlkjr3k.x6bJR0w-1744057745-1.0.1.1-H8.T2y96bDr8bBlNfy5K2X3nQylhCWb4JkkJsHUwZJY_QOjxAQ45KUHcVCNJcRUvhEaBNrYVFAHkEqtOOHqrPEkI0h2_6dccRZn9GngUg6Q",
-            "expires": "2025-04-07T20:59:05.803Z",
+            "value": "UbVJ5SFJMmXRS3btJCB47QP3KBM2fM2ACPXSNJ6th9w-1744074152-1.0.1.1-ntExpDHZ70sGJVDPQ2ca07HbHOColB_kxsih3luo74NnvEeMnwSE24Pro.X8m2FvjTreQrG5uFn1u74vyQ1bT.OGxtDiw1sPK2gr4ck6Aq0",
+            "expires": "2025-04-08T01:32:32.321Z",
             "domain": "anthropic.com",
             "path": "/",
             "secure": true,
             "httpOnly": true,
             "hostOnly": false,
-            "creation": "2025-04-07T20:29:06.474Z",
-            "lastAccessed": "2025-04-07T20:29:06.474Z"
+            "creation": "2025-04-08T01:02:33.880Z",
+            "lastAccessed": "2025-04-08T01:02:33.880Z"
+          },
+          {
+            "key": "_ga_MT0111843S",
+            "value": "GS1.1.1744074153.1.0.1744074153.0.0.0",
+            "expires": "2026-05-13T01:02:33.873Z",
+            "domain": "anthropic.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-08T01:02:33.883Z",
+            "lastAccessed": "2025-04-08T01:02:33.883Z"
+          },
+          {
+            "key": "_ga",
+            "value": "GA1.1.1380866949.1744074154",
+            "expires": "2026-05-13T01:02:33.873Z",
+            "domain": "anthropic.com",
+            "path": "/",
+            "hostOnly": false,
+            "creation": "2025-04-08T01:02:33.884Z",
+            "lastAccessed": "2025-04-08T01:02:33.884Z"
           }
         ]
       },
       "userData": {},
       "maxErrorScore": 3,
       "errorScoreDecrement": 0.5,
-      "expiresAt": "2025-04-07T21:19:05.111Z",
-      "createdAt": "2025-04-07T20:29:05.111Z",
+      "expiresAt": "2025-04-08T01:52:31.280Z",
+      "createdAt": "2025-04-08T01:02:31.280Z",
       "usageCount": 2,
       "maxUsageCount": 50,
       "errorScore": 0

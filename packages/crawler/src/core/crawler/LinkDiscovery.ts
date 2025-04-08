@@ -217,6 +217,12 @@ export class LinkDiscovery {
       return preFilteredLinks.map(link => link.href);
     }
     
+    // Log the top 20 potential links for debugging
+    this.logger.info(`Top 20 potential links for AI analysis:`);
+    preFilteredLinks.slice(0, 20).forEach((link, i) => {
+      this.logger.info(`[${i + 1}] ${link.text.substring(0, 40)}... -> ${link.href}`);
+    });
+    
     try {
       this.logger.info(`Running AI analysis on ${preFilteredLinks.length} pre-filtered links`);
       
@@ -228,7 +234,18 @@ export class LinkDiscovery {
       };
       
       // Use the parser to analyze links with AI
-      return await this.parser.analyzeLinks(linksForAnalysis);
+      const aiSelectedLinks = await this.parser.analyzeLinks(linksForAnalysis);
+      
+      // Log the top 5 links identified by AI
+      this.logger.info(`Top 5 links identified by AI:`);
+      const linkMap = new Map(preFilteredLinks.map(link => [link.href, link]));
+      aiSelectedLinks.slice(0, 5).forEach((url, i) => {
+        const linkInfo = linkMap.get(url);
+        const text = linkInfo ? linkInfo.text.substring(0, 40) : 'Unknown text';
+        this.logger.info(`[${i + 1}] ${text}... -> ${url}`);
+      });
+      
+      return aiSelectedLinks;
     } catch (error) {
       this.logger.error(`Error in AI link analysis:`, error as Record<string, any>);
       

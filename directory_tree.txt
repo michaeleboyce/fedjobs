@@ -20,10 +20,11 @@
 │   │   │   │   └── parsingStatus.ts
 │   │   │   ├── services
 │   │   │   │   └── parsingService.ts
-│   │   │   └── types
-│   │   │       ├── express.d.ts
-│   │   │       ├── index.ts
-│   │   │       └── route-handlers.ts
+│   │   │   ├── types
+│   │   │   │   ├── express.d.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   └── route-handlers.ts
+│   │   │   └── websocket.ts
 │   │   ├── storage
 │   │   │   ├── key_value_stores
 │   │   │   │   └── default
@@ -311,27 +312,103 @@
 ├── package.json
 ├── packages
 │   ├── crawler
+│   │   ├── __tests__
+│   │   │   ├── core
+│   │   │   │   ├── crawler
+│   │   │   │   │   ├── CrawlManager.spec.ts
+│   │   │   │   │   ├── JobProcessor.spec.ts
+│   │   │   │   │   ├── LinkDiscovery.spec.ts
+│   │   │   │   │   ├── PageHandler.spec.ts
+│   │   │   │   │   ├── URLTracker.spec.ts
+│   │   │   │   │   └── WebCrawler.spec.ts
+│   │   │   │   └── parser
+│   │   │   │       ├── HtmlCleaner.spec.ts
+│   │   │   │       ├── JobDataExtractor.spec.ts
+│   │   │   │       ├── JobEnricher.spec.ts
+│   │   │   │       ├── JobParserService.spec.ts
+│   │   │   │       └── LinkAnalyzer.spec.ts
+│   │   │   ├── domain
+│   │   │   │   ├── duplicate.detector.spec.ts
+│   │   │   │   ├── job-posting.processor.spec.ts
+│   │   │   │   └── job-posting.validator.spec.ts
+│   │   │   ├── integration
+│   │   │   │   ├── mocked-crawler.test.ts
+│   │   │   │   ├── openai-crawl.test.ts
+│   │   │   │   ├── real-crawler.test.ts
+│   │   │   │   ├── test-data.ts
+│   │   │   │   ├── test-environment.ts
+│   │   │   │   ├── test-mocks.ts
+│   │   │   │   ├── web-crawler.integration.test.ts
+│   │   │   │   ├── web-crawler.mock.test.ts
+│   │   │   │   └── web-crawler.real.test.ts
+│   │   │   ├── services
+│   │   │   │   ├── job-source.service.spec.ts
+│   │   │   │   └── scraper.service.spec.ts
+│   │   │   └── utls
+│   │   │       └── employment-type.normalizer.spec.ts
+│   │   ├── coverage
+│   │   │   ├── block-navigation.js
+│   │   │   ├── crawler
+│   │   │   │   └── src
+│   │   │   │       ├── core
+│   │   │   │       │   ├── crawler
+│   │   │   │       │   └── parser
+│   │   │   │       ├── domain
+│   │   │   │       ├── github-actions
+│   │   │   │       ├── services
+│   │   │   │       ├── types
+│   │   │   │       └── utils
+│   │   │   ├── prettify.js
+│   │   │   └── sorter.js
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── core
-│   │   │   │   ├── CrawlerManager.ts
-│   │   │   │   ├── JobRequestQueue.ts
-│   │   │   │   ├── LinkAnalyzer.ts
-│   │   │   │   ├── PaginationDetector.ts
-│   │   │   │   ├── crawler.ts
-│   │   │   │   └── parser.ts
+│   │   │   │   ├── crawler
+│   │   │   │   │   ├── CrawlerManager.ts
+│   │   │   │   │   ├── JobProcessor.ts
+│   │   │   │   │   ├── LinkDiscovery.ts
+│   │   │   │   │   ├── PageHandler.ts
+│   │   │   │   │   ├── URLTracker.ts
+│   │   │   │   │   ├── WebCrawler.ts
+│   │   │   │   │   └── index.ts
+│   │   │   │   └── parser
+│   │   │   │       ├── HtmlCleaner.ts
+│   │   │   │       ├── JobDataExtractor.ts
+│   │   │   │       ├── JobEnricher.ts
+│   │   │   │       ├── JobParserService.ts
+│   │   │   │       ├── LinkAnalyzer.ts
+│   │   │   │       ├── index.ts
+│   │   │   │       └── types.ts
+│   │   │   ├── domain
+│   │   │   │   ├── duplicate.detector.ts
+│   │   │   │   ├── job-posting.processor.ts
+│   │   │   │   └── job-posting.validator.ts
+│   │   │   ├── factory.ts
 │   │   │   ├── github-actions
 │   │   │   │   └── refresh-popular-job-sources.ts
 │   │   │   ├── index.ts
 │   │   │   ├── services
 │   │   │   │   ├── cache.service.ts
+│   │   │   │   ├── job-source.service.ts
 │   │   │   │   └── scraper.service.ts
+│   │   │   ├── test
+│   │   │   │   ├── config.ts
+│   │   │   │   ├── factory.ts
+│   │   │   │   └── setup.ts
 │   │   │   ├── types
 │   │   │   │   └── index.ts
 │   │   │   └── utils
 │   │   │       ├── Logger.ts
-│   │   │       └── index.ts
-│   │   └── tsconfig.json
+│   │   │       ├── employment-type.normalizer.ts
+│   │   │       ├── index.ts
+│   │   │       └── organization-type.normalizer.ts
+│   │   ├── storage
+│   │   │   ├── key_value_stores
+│   │   │   │   └── default
+│   │   │   └── request_queues
+│   │   │       └── default
+│   │   ├── tsconfig.json
+│   │   └── vitest.config.ts
 │   ├── database
 │   │   ├── drizzle
 │   │   │   └── meta
@@ -420,4 +497,4 @@
 ├── turbo.json
 └── vitest.config.ts
 
-140 directories, 281 files
+168 directories, 330 files

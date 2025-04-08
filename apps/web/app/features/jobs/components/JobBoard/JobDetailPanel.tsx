@@ -1,4 +1,3 @@
-// File path: apps/web/app/features/jobs/components/JobBoard/JobDetailPanel.tsx
 // apps/web/app/features/jobs/components/JobBoard/JobDetailPanel.tsx
 "use client";
 
@@ -39,7 +38,7 @@ export default function JobDetailPanel({ job, userId, onClose, onFeedbackUpdate 
       userId,
       feedbackType: 'VIEWED'
     }).catch(error => {
-      console.error('Error marking job as viewed:', error);
+      console.error('Error marking job as viewed:', error instanceof Error ? error.message : error);
     });
     
     // Load similar jobs
@@ -52,7 +51,7 @@ export default function JobDetailPanel({ job, userId, onClose, onFeedbackUpdate 
       const similar = await getSimilarJobs(job.id, { userId, limit: 3 });
       setSimilarJobs(similar);
     } catch (error) {
-      console.error('Error loading similar jobs:', error);
+      console.error('Error loading similar jobs:', error instanceof Error ? error.message : error);
     } finally {
       setIsLoadingSimilar(false);
     }
@@ -100,26 +99,27 @@ export default function JobDetailPanel({ job, userId, onClose, onFeedbackUpdate 
         loadSimilarJobs();
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      console.error('Error submitting feedback:', error instanceof Error ? error.message : error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
         <h2 className="font-medium">Job Details</h2>
         <button
           onClick={onClose}
           className="text-gray-500 hover:text-gray-700"
+          aria-label="Close job details"
         >
           ✕
         </button>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-6">
           <div>
             <h1 className="text-xl font-bold">{job.title}</h1>
             <div className="mt-1 text-gray-600">
@@ -289,4 +289,4 @@ export default function JobDetailPanel({ job, userId, onClose, onFeedbackUpdate 
       </div>
     </div>
   );
-}
+} 

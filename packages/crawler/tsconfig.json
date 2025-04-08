@@ -8,7 +8,8 @@
     "declaration": true,
     "declarationMap": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "references": [

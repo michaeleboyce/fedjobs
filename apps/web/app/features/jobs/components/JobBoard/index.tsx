@@ -1,4 +1,3 @@
-// File path: apps/web/app/features/jobs/components/JobBoard/index.tsx
 // apps/web/app/features/jobs/components/JobBoard/index.tsx
 "use client";
 
@@ -33,7 +32,7 @@ export default function JobBoard({ userId }: JobBoardProps) {
       setJobs(fetchedJobs);
     } catch (err) {
       setError('Failed to load jobs. Please try again.');
-      console.error('Error fetching jobs:', err);
+      console.error('Error fetching jobs:', err instanceof Error ? err.message : err);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +47,7 @@ export default function JobBoard({ userId }: JobBoardProps) {
       setRecommendedJobs(fetchedJobs);
     } catch (err) {
       setError('Failed to load recommended jobs. Please try again.');
-      console.error('Error fetching recommended jobs:', err);
+      console.error('Error fetching recommended jobs:', err instanceof Error ? err.message : err);
     } finally {
       setIsLoading(false);
     }
@@ -134,11 +133,17 @@ export default function JobBoard({ userId }: JobBoardProps) {
         </div>
       )}
 
-      <div className="flex-1 flex">
-        <div className={`flex-1 ${selectedJob ? 'hidden md:block' : ''}`}>
+      {/* Main content container with fixed height and flex layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left panel - Job list with its own scroll */}
+        <div 
+          className={`flex-1 overflow-auto ${selectedJob ? 'hidden md:block' : ''}`}
+          style={{ maxHeight: 'calc(100vh - 220px)' }}
+        >
           {isLoading ? (
             <div className="p-8 text-center">
-              <p>Loading jobs...</p>
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+              <p className="mt-2">Loading jobs...</p>
             </div>
           ) : viewMode === 'search' && jobs.length === 0 ? (
             <div className="p-8 text-center bg-gray-50 rounded-md">
@@ -161,8 +166,12 @@ export default function JobBoard({ userId }: JobBoardProps) {
           )}
         </div>
 
+        {/* Right panel - Job details with its own scroll */}
         {selectedJob && (
-          <div className={`w-full md:w-1/2 lg:w-2/5 border-l border-gray-200 ${selectedJob ? 'block' : 'hidden'}`}>
+          <div 
+            className={`w-full md:w-1/2 lg:w-2/5 border-l border-gray-200 overflow-hidden ${selectedJob ? 'block' : 'hidden'}`}
+            style={{ maxHeight: 'calc(100vh - 220px)' }}
+          >
             <JobDetailPanel 
               job={selectedJob} 
               userId={userId}
