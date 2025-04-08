@@ -4,21 +4,27 @@ import { UrlTracker } from './URLTracker';
 import { Logger } from '../../utils/Logger';
 
 // Define types for link objects
-type PaginationLink = {
+export type PaginationLink = {
   href: string;
   text: string;
   isPagination: boolean;
 };
 
-type FullLink = {
+export type FullLink = {
   href: string;
   text: string;
   title: string;
   aria: string;
 };
 
+export type ExtractedLinks = {
+  jobLinks: string[];
+  paginationLinks: PaginationLink[];
+};
+
 /**
  * Discovers and prioritizes links for crawling
+ * Refactored to separate link extraction from enqueuing
  */
 export class LinkDiscovery {
   private parser: JobParserService;
@@ -30,24 +36,25 @@ export class LinkDiscovery {
   }
   
   /**
-   * Find and enqueue additional links for crawling
-   * - Identifies pagination links first (without AI) to exclude them from analysis
-   * - But enqueues job links first (higher priority) then pagination links (lower priority)
+   * Pure function to extract links from a page without enqueuing
+   * Returns separate arrays for job links and pagination links
    */
-  async findAndEnqueueLinks(
+  async extractLinks(
     page: any, 
-    enqueueLinks: any, 
     currentUrl: string,
     baseUrl: string,
     urlTracker: UrlTracker
-  ): Promise<void> {
+  ): Promise<ExtractedLinks> {
     try {
+      this.logger.info(`Extracting links from ${currentUrl}`);
+      
       // Step 1: First identify pagination links (without using AI)
       const paginationLinks = await this.extractPaginationLinks(page);
       this.logger.info(`Identified ${paginationLinks.length} pagination links`);
       
       // Step 2: Extract all other links 
       const allLinks = await this.extractAllLinks(page);
+      this.logger.info(`Extracted ${allLinks.length} total links from page`);
       
       // Step 3: Remove pagination links from links to analyze
       const paginationUrls = new Set(paginationLinks.map(link => link.href));
@@ -64,19 +71,47 @@ export class LinkDiscovery {
         this.logger.info(`AI analysis identified ${jobLinks.length} job links`);
       }
       
-      // Step 6: Enqueue links in priority order - job links FIRST (higher priority)
+      return {
+        jobLinks,
+        paginationLinks
+      };
+    } catch (error) {
+      this.logger.error(`Error extracting links:`, error instanceof Error ? error : new Error(String(error)));
+      return {
+        jobLinks: [],
+        paginationLinks: []
+      };
+    }
+  }
+  
+  /**
+   * Legacy method that still supports the old pattern of combined extraction and enqueuing
+   * @deprecated Use extractLinks() and then enqueue separately
+   */
+  async findAndEnqueueLinks(
+    page: any, 
+    enqueueLinks: any, 
+    currentUrl: string,
+    baseUrl: string,
+    urlTracker: UrlTracker
+  ): Promise<void> {
+    try {
+      // Extract links using the new method
+      const { jobLinks, paginationLinks } = await this.extractLinks(page, currentUrl, baseUrl, urlTracker);
+      
+      // Enqueue job links first (higher priority)
       if (jobLinks.length > 0) {
         this.logger.info(`Enqueueing ${jobLinks.length} job-related links (high priority)`);
         await this.enqueueJobLinks(enqueueLinks, jobLinks);
       }
       
-      // Step 7: Enqueue pagination links SECOND (lower priority)
+      // Enqueue pagination links second (lower priority)
       if (paginationLinks.length > 0) {
         this.logger.info(`Enqueueing ${paginationLinks.length} pagination links (lower priority)`);
         await this.enqueuePaginationLinks(enqueueLinks, paginationLinks);
       }
     } catch (error) {
-      this.logger.error(`Error finding and enqueueing links:`, error as Record<string, any>);
+      this.logger.error(`Error finding and enqueueing links:`, error instanceof Error ? error : new Error(String(error)));
     }
   }
   
@@ -114,7 +149,7 @@ export class LinkDiscovery {
         })).filter(link => link.href && link.href !== '#' && !link.href.includes('javascript:'));
       });
     } catch (error) {
-      this.logger.error('Error extracting pagination links:', error as Record<string, any>);
+      this.logger.error('Error extracting pagination links:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -140,7 +175,7 @@ export class LinkDiscovery {
         );
       });
     } catch (error) {
-      this.logger.error('Error extracting all links:', error as Record<string, any>);
+      this.logger.error('Error extracting all links:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -247,7 +282,7 @@ export class LinkDiscovery {
       
       return aiSelectedLinks;
     } catch (error) {
-      this.logger.error(`Error in AI link analysis:`, error as Record<string, any>);
+      this.logger.error(`Error in AI link analysis:`, error instanceof Error ? error : new Error(String(error)));
       
       // Fallback: Return the top 5 most likely job links based on our pre-filtering
       // Sort links by "job relevance score" - a simple heuristic calculation
@@ -280,6 +315,7 @@ export class LinkDiscovery {
   
   /**
    * Enqueue pagination links
+   * @private
    */
   private async enqueuePaginationLinks(enqueueLinks: any, paginationLinks: Array<PaginationLink>): Promise<void> {
     try {
@@ -291,12 +327,13 @@ export class LinkDiscovery {
         }
       });
     } catch (error) {
-      this.logger.error('Error enqueueing pagination links:', error as Record<string, any>);
+      this.logger.error('Error enqueueing pagination links:', error instanceof Error ? error : new Error(String(error)));
     }
   }
   
   /**
    * Enqueue job links
+   * @private
    */
   private async enqueueJobLinks(enqueueLinks: any, jobLinks: string[]): Promise<void> {
     try {
@@ -308,7 +345,7 @@ export class LinkDiscovery {
         }
       });
     } catch (error) {
-      this.logger.error('Error enqueueing job links:', error as Record<string, any>);
+      this.logger.error('Error enqueueing job links:', error instanceof Error ? error : new Error(String(error)));
     }
   }
   

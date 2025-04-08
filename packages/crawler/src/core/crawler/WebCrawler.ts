@@ -1,11 +1,11 @@
 // File path: packages/crawler/src/core/crawler/WebCrawler.ts
-import { PlaywrightCrawler, LogLevel, log } from 'crawlee';
+import { PlaywrightCrawler, LogLevel, log, Request, RequestQueue, RequestProvider } from 'crawlee';
 import { URL } from 'url';
 import { CrawlJobOptions, JobPostingData } from '../../types';
 import { JobParserService } from '../parser';
 import { UrlTracker } from './URLTracker';
 import { PageHandler } from './PageHandler';
-import { LinkDiscovery } from './LinkDiscovery';
+import { LinkDiscovery, PaginationLink } from './LinkDiscovery';
 import { JobProcessor } from './JobProcessor';
 import { Logger } from '../../utils/Logger';
 
@@ -19,6 +19,7 @@ export interface CrawlResult {
 
 /**
  * WebCrawler - Orchestrates the crawling process using specialized components
+ * Refactored to use explicit request queue management and better debug logging
  */
 export class WebCrawler {
   private logger: Logger;
@@ -233,9 +234,20 @@ export class WebCrawler {
       },
       
       // Process each page
-      requestHandler: async ({ request, page, enqueueLinks }) => {
+      requestHandler: async ({ request, page, crawler }) => {
+        // Get the request queue for explicit enqueuing
+        const requestQueue = crawler.requestQueue;
+        if (!requestQueue) {
+          this.logger.error('No request queue available. Cannot continue crawling.');
+          return;
+        }
+
         // Use enhanced navigation log for URL transitions
         this.logger.navigation(request.url);
+        
+        // Debug info about the request (especially important for pagination)
+        const isPagination = request.userData?.isPagination === true;
+        this.logger.info(`Processing ${isPagination ? 'PAGINATION' : 'REGULAR'} page: ${request.url}`);
         
         // Extract domain for site logging
         let domain = '';
@@ -312,18 +324,10 @@ export class WebCrawler {
             }
           }
           
-          // Step 5: Find and enqueue more links - only if page is still available
+          // Step 5: Discover links - only if page is still available
           if (!page.isClosed?.()) {
-            this.logger.step(5, "Discovering and enqueueing additional links");
-            await this.linkDiscovery.findAndEnqueueLinks(
-              page, 
-              enqueueLinks, 
-              request.url, 
-              url, 
-              this.urlTracker
-            ).catch(err => {
-              this.logger.error(`Error in link discovery:`, err instanceof Error ? err : new Error(String(err)));
-            });
+            this.logger.step(5, "Discovering links for enqueueing");
+            await this.discoverAndEnqueueLinks(page, requestQueue, request.url, url, isPagination);
           } else {
             this.logger.warn(`Skipping link discovery for ${request.url} - page is closed`);
           }
@@ -335,5 +339,90 @@ export class WebCrawler {
         }
       }
     });
+  }
+
+  /**
+   * Discover and enqueue links using the explicit RequestQueue API
+   * This improves testability and debugging for pagination
+   */
+  private async discoverAndEnqueueLinks(
+    page: any,
+    requestQueue: RequestProvider,
+    currentUrl: string,
+    baseUrl: string,
+    isCurrentPagePagination: boolean
+  ): Promise<void> {
+    try {
+      this.logger.info(`Starting link discovery for ${currentUrl}`);
+
+      // Extract links but don't enqueue them yet - separation of concerns
+      const extractedLinks = await this.linkDiscovery.extractLinks(
+        page,
+        currentUrl,
+        baseUrl,
+        this.urlTracker
+      );
+
+      // Explicit logging of pagination links for debugging
+      if (extractedLinks.paginationLinks.length > 0) {
+        this.logger.info(`===== PAGINATION LINKS FOUND =====`);
+        extractedLinks.paginationLinks.forEach((link, i) => {
+          this.logger.info(`Pagination ${i+1}: ${link.text} -> ${link.href}`);
+        });
+        this.logger.info(`=================================`);
+      } else {
+        this.logger.info(`No pagination links found on this page`);
+      }
+
+      // Create request objects for job links with higher priority
+      const jobLinkRequests = extractedLinks.jobLinks.map(url => {
+        return {
+          url,
+          userData: {
+            isJobLink: true,
+            isPagination: false
+          }
+        };
+      });
+
+      // Create request objects for pagination links with lower priority
+      const paginationLinkRequests = extractedLinks.paginationLinks.map(link => {
+        return {
+          url: link.href,
+          userData: {
+            isPagination: true,
+            isJobLink: false,
+            linkText: link.text // Store the link text for better debugging
+          }
+        };
+      });
+
+      // Enqueue job links first (higher priority)
+      if (jobLinkRequests.length > 0) {
+        this.logger.info(`Explicitly enqueueing ${jobLinkRequests.length} job links to RequestQueue`);
+        await requestQueue.addRequests(jobLinkRequests);
+      }
+
+
+      // Enqueue pagination links after job links (lower priority)
+      if (paginationLinkRequests.length > 0) {
+        this.logger.info(`Explicitly enqueueing ${paginationLinkRequests.length} pagination links to RequestQueue`);
+        const result = await requestQueue.addRequests(paginationLinkRequests);
+        // Detailed logging of pagination enqueuing result
+        this.logger.info(`Pagination enqueue result: ${result.unprocessedRequests.length} unprocessed requests, ${result.processedRequests.length} processed requests`);
+        
+        if (result.unprocessedRequests.length > 0) {
+          this.logger.info(`Successfully added pagination links:`);
+          result.unprocessedRequests.forEach(req => {
+
+            const linkText = JSON.stringify(req)|| 'Unknown';
+            this.logger.info(`Pagination queued: "${linkText}" -> ${req.url}`);
+          });
+        }
+      }
+
+    } catch (error) {
+      this.logger.error(`Error in link discovery and enqueueing:`, error instanceof Error ? error : new Error(String(error)));
+    }
   }
 }
