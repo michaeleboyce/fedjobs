@@ -1,5 +1,5 @@
-// File path: packages/crawler/src/core/crawler/WebCrawler.ts
-import { PlaywrightCrawler, LogLevel, log, Request, RequestQueue, RequestProvider } from 'crawlee';
+// packages/crawler/src/core/crawler/WebCrawler.ts
+import { PlaywrightCrawler, LogLevel, log, RequestProvider } from 'crawlee';
 import { URL } from 'url';
 import { CrawlJobOptions, JobPostingData } from '../../types';
 import { JobParserService } from '../parser';
@@ -8,6 +8,8 @@ import { PageHandler } from './PageHandler';
 import { LinkDiscovery, PaginationLink } from './LinkDiscovery';
 import { JobProcessor } from './JobProcessor';
 import { Logger } from '../../utils/Logger';
+import { createJobBoardService, JobBoardService } from '../../job-boards/job-board-service';
+import { isKnownJobBoardDomain, KNOWN_JOB_BOARDS } from '../../job-boards/constants';
 
 /**
  * Result from a crawl operation
@@ -19,7 +21,7 @@ export interface CrawlResult {
 
 /**
  * WebCrawler - Orchestrates the crawling process using specialized components
- * Refactored to use explicit request queue management and better debug logging
+ * Enhanced with job board detection and specialized parsing
  */
 export class WebCrawler {
   private logger: Logger;
@@ -28,6 +30,7 @@ export class WebCrawler {
   private linkDiscovery: LinkDiscovery;
   private jobProcessor: JobProcessor;
   private parser: JobParserService;
+  private jobBoardService: JobBoardService;
   
   // Map to store active crawlers by source ID
   private activeCrawlers = new Map<number, PlaywrightCrawler>();
@@ -43,7 +46,23 @@ export class WebCrawler {
     this.linkDiscovery = new LinkDiscovery(this.parser);
     this.jobProcessor = new JobProcessor();
     
-    this.logger.info('Initialized with PlaywrightCrawler from crawlee');
+    // Initialize job board service
+    this.jobBoardService = createJobBoardService({ genericParser: this.parser });
+    
+    this.logger.info('WebCrawler initialized with job board support');
+    this.logger.info(`Known job board domains: ${this.getKnownJobBoardDomains()}`);
+  }
+  
+  /**
+   * Get a list of known job board domains for logging
+   * @private
+   */
+  private getKnownJobBoardDomains(): string {
+    // Extract all domains from all job boards
+    const allDomains = KNOWN_JOB_BOARDS.flatMap((board: { domains: string[] }) => board.domains);
+    
+    // Return a formatted string of all domains
+    return allDomains.join(', ');
   }
   
   /**
@@ -85,6 +104,15 @@ export class WebCrawler {
     onProcessJob: (job: JobPostingData) => Promise<number>
   ): Promise<CrawlResult> {
     this.logger.info(`Starting crawl for source ${options.sourceId}, URL: ${options.url}`);
+    
+    // Check if the URL is from a known job board
+    const isJobBoardUrl = this.jobBoardService.isJobBoardUrl(options.url);
+    if (isJobBoardUrl) {
+      const boardName = this.jobBoardService.getJobBoardName(options.url) || 'unknown job board';
+      this.logger.info(`Detected known job board: ${boardName} (${options.url})`);
+    } else {
+      this.logger.info(`URL is not from a known job board: ${options.url}`);
+    }
     
     const jobsFound: JobPostingData[] = [];
     const jobsStored: number[] = [];
@@ -140,6 +168,13 @@ export class WebCrawler {
     } = options;
     
     this.logger.info(`Starting crawlJobSite of ${url} with keywords: ${keywords || 'none'}`);
+    
+    // Check if the URL is from a known job board
+    const isJobBoardUrl = this.jobBoardService.isJobBoardUrl(url);
+    if (isJobBoardUrl) {
+      const boardName = this.jobBoardService.getJobBoardName(url) || 'unknown job board';
+      this.logger.info(`Detected known job board: ${boardName} (${url})`);
+    }
     
     // If there's an existing crawler for this source, stop it first
     if (sourceId) {
@@ -202,6 +237,7 @@ export class WebCrawler {
   
   /**
    * Create a Playwright crawler with configured handlers
+   * Enhanced with job board support
    * @private
    */
   private createCrawler({
@@ -220,6 +256,7 @@ export class WebCrawler {
     onError?: (error: Error, url: string) => Promise<void>;
   }): PlaywrightCrawler {
     return new PlaywrightCrawler({
+      useSessionPool: true,
       headless: true,
       maxConcurrency: 2,
       navigationTimeoutSecs: 90,
@@ -245,9 +282,20 @@ export class WebCrawler {
         // Use enhanced navigation log for URL transitions
         this.logger.navigation(request.url);
         
+        // Check if this is a job board URL
+        const isJobBoardUrl = request.userData?.isJobBoardUrl === true || this.jobBoardService.isJobBoardUrl(request.url);
+        
         // Debug info about the request (especially important for pagination)
         const isPagination = request.userData?.isPagination === true;
-        this.logger.info(`Processing ${isPagination ? 'PAGINATION' : 'REGULAR'} page: ${request.url}`);
+        
+        if (isJobBoardUrl) {
+          const boardName = this.jobBoardService.getJobBoardName(request.url) || 'unknown job board';
+          this.logger.info(`Processing ${isPagination ? 'PAGINATION' : 'REGULAR'} page from ${boardName}: ${request.url}`);
+          this.logger.info(`Job board detection: ${boardName} (${request.url})`);
+        } else {
+          this.logger.info(`Processing ${isPagination ? 'PAGINATION' : 'REGULAR'} page: ${request.url}`);
+          this.logger.info(`Not a known job board: ${request.url}`);
+        }
         
         // Extract domain for site logging
         let domain = '';
@@ -255,6 +303,11 @@ export class WebCrawler {
           domain = new URL(request.url).hostname.replace('www.', '');
           // Log site entry with domain
           this.logger.site(domain);
+          
+          // Check if domain is a known job board
+          if (isKnownJobBoardDomain(domain)) {
+            this.logger.info(`Domain is a known job board: ${domain}`);
+          }
         } catch (e) {
           domain = request.url.split('/')[2] || '';
         }
@@ -289,15 +342,46 @@ export class WebCrawler {
           this.logger.step(2, "Extracting page data");
           const { content, title, description } = await this.pageHandler.extractPageData(page);
           
-          // Step 3: Parse jobs data
-          this.logger.step(3, "Parsing job data");
-          const jobData = await this.parser.parseJobsFromPage({
-            url: request.url,
-            content,
-            title,
-            description,
-            keywords
-          });
+          // Step 3: Parse jobs data - use job board service for known job boards
+          let jobData: JobPostingData[] = [];
+          
+          if (isJobBoardUrl) {
+            const boardName = this.jobBoardService.getJobBoardName(request.url) || 'unknown job board';
+            this.logger.step(3, `Parsing job board data from ${boardName}`);
+            this.logger.info(`Using specialized parser for job board: ${boardName}`);
+            
+            jobData = await this.jobBoardService.parseJobBoardPage({
+              url: request.url,
+              content,
+              title,
+              description,
+              keywords
+            });
+            
+            // Check for additional URLs to crawl from job boards
+            const additionalUrls = this.jobBoardService.getAdditionalUrlsToCrawl(request.url);
+            if (additionalUrls.length > 0) {
+              this.logger.info(`Found ${additionalUrls.length} additional URLs to crawl from job board ${boardName}`);
+              this.logger.info(`Additional URLs: ${additionalUrls.join(', ')}`);
+              
+              await requestQueue.addRequests(additionalUrls.map(url => ({
+                url,
+                userData: { isJobBoardUrl: true }
+              })));
+            }
+          } else {
+            // Regular parsing with the standard parser
+            this.logger.step(3, "Parsing job data with standard parser");
+            this.logger.info(`Using generic parser for non-job board URL: ${request.url}`);
+            
+            jobData = await this.parser.parseJobsFromPage({
+              url: request.url,
+              content,
+              title,
+              description,
+              keywords
+            });
+          }
           
           this.logger.success(`Found ${jobData.length} jobs on ${request.url}`);
           
@@ -343,7 +427,7 @@ export class WebCrawler {
 
   /**
    * Discover and enqueue links using the explicit RequestQueue API
-   * This improves testability and debugging for pagination
+   * Enhanced with job board link prioritization
    */
   private async discoverAndEnqueueLinks(
     page: any,
@@ -374,8 +458,57 @@ export class WebCrawler {
         this.logger.info(`No pagination links found on this page`);
       }
 
-      // Create request objects for job links with higher priority
-      const jobLinkRequests = extractedLinks.jobLinks.map(url => {
+      // Separate job board links from regular job links
+      const jobBoardLinks: string[] = [];
+      const regularJobLinks: string[] = [];
+      
+      this.logger.info(`Analyzing ${extractedLinks.jobLinks.length} job links for job board detection`);
+      
+      extractedLinks.jobLinks.forEach(url => {
+        try {
+          const urlObj = new URL(url);
+          if (isKnownJobBoardDomain(urlObj.hostname)) {
+            this.logger.info(`Detected job board link: ${url} (domain: ${urlObj.hostname})`);
+            jobBoardLinks.push(url);
+          } else {
+            regularJobLinks.push(url);
+          }
+        } catch (e) {
+          // If URL parsing fails, consider it a regular link
+          this.logger.warn(`Failed to parse URL: ${url}`);
+          regularJobLinks.push(url);
+        }
+      });
+      
+      if (jobBoardLinks.length > 0) {
+        this.logger.info(`===== JOB BOARD LINKS FOUND =====`);
+        jobBoardLinks.forEach((url, i) => {
+          try {
+            const urlObj = new URL(url);
+            this.logger.info(`Job board ${i+1}: ${url} (domain: ${urlObj.hostname})`);
+          } catch (e) {
+            this.logger.info(`Job board ${i+1}: ${url}`);
+          }
+        });
+        this.logger.info(`=================================`);
+      } else {
+        this.logger.info(`No job board links found on this page`);
+      }
+      
+      // Create request objects for job board links with highest priority
+      const jobBoardRequests = jobBoardLinks.map(url => {
+        return {
+          url,
+          userData: {
+            isJobBoardUrl: true,
+            isJobLink: true,
+            isPagination: false
+          }
+        };
+      });
+
+      // Create request objects for regular job links with high priority
+      const jobLinkRequests = regularJobLinks.map(url => {
         return {
           url,
           userData: {
@@ -397,16 +530,21 @@ export class WebCrawler {
         };
       });
 
-      // Enqueue job links first (higher priority)
+      // Enqueue job board links first (highest priority)
+      if (jobBoardRequests.length > 0) {
+        this.logger.info(`Explicitly enqueueing ${jobBoardRequests.length} job board links to RequestQueue (highest priority)`);
+        await requestQueue.addRequests(jobBoardRequests);
+      }
+
+      // Enqueue regular job links second (high priority)
       if (jobLinkRequests.length > 0) {
-        this.logger.info(`Explicitly enqueueing ${jobLinkRequests.length} job links to RequestQueue`);
+        this.logger.info(`Explicitly enqueueing ${jobLinkRequests.length} regular job links to RequestQueue (high priority)`);
         await requestQueue.addRequests(jobLinkRequests);
       }
 
-
-      // Enqueue pagination links after job links (lower priority)
+      // Enqueue pagination links last (lowest priority)
       if (paginationLinkRequests.length > 0) {
-        this.logger.info(`Explicitly enqueueing ${paginationLinkRequests.length} pagination links to RequestQueue`);
+        this.logger.info(`Explicitly enqueueing ${paginationLinkRequests.length} pagination links to RequestQueue (lowest priority)`);
         const result = await requestQueue.addRequests(paginationLinkRequests);
         // Detailed logging of pagination enqueuing result
         this.logger.info(`Pagination enqueue result: ${result.unprocessedRequests.length} unprocessed requests, ${result.processedRequests.length} processed requests`);
@@ -414,7 +552,6 @@ export class WebCrawler {
         if (result.unprocessedRequests.length > 0) {
           this.logger.info(`Successfully added pagination links:`);
           result.unprocessedRequests.forEach(req => {
-
             const linkText = JSON.stringify(req)|| 'Unknown';
             this.logger.info(`Pagination queued: "${linkText}" -> ${req.url}`);
           });

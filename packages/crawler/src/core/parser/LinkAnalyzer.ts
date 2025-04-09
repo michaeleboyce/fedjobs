@@ -21,6 +21,7 @@ export class LinkAnalyzer {
    * @returns Array of URLs that are likely job listings
    */
   public async analyzeLinks(input: AnalyzeLinksInput): Promise<string[]> {
+    this.logger.info(`[LinkAnalyzer] Analyzing links for ${input.sourceUrl}`);
     try {
       const { sourceUrl, pageTitle, links } = input;
       
@@ -47,7 +48,7 @@ export class LinkAnalyzer {
       
       // Prepare prompt for AI
       const prompt = this.buildAIPrompt(pageTitle, domain, sourceUrl, linksFormatted);
-      
+      this.logger.info(`[LinkAnalyzer] Prompt: ${prompt}`);
       // Call AI service to analyze links
       const response = await this.aiService.generateText({
         prompt,
@@ -55,6 +56,8 @@ export class LinkAnalyzer {
         temperature: 0.1,
         maxTokens: 2000
       });
+
+      this.logger.info(`[LinkAnalyzer] Response: ${JSON.stringify(response)}`);
       
       return this.parseAIResponse(response);
     } catch (error: unknown) {

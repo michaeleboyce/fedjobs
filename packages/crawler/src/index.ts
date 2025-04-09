@@ -1,4 +1,4 @@
-// File path: packages/crawler/src/index.ts
+// packages/crawler/src/index.ts
 import 'reflect-metadata';
 
 // Export services
@@ -14,6 +14,9 @@ export { DuplicateDetector } from './domain/duplicate.detector';
 // Export core
 export { WebCrawler, type CrawlResult } from './core/crawler/WebCrawler';
 export { JobParserService } from './core/parser';
+
+// Export job board functionality
+export * from './job-boards';
 
 // Export utils
 export { EmploymentTypeNormalizer } from './utils/employment-type.normalizer';

@@ -1,7 +1,8 @@
-// File path: packages/crawler/src/core/crawler/LinkDiscovery.ts
+// packages/crawler/src/core/crawler/LinkDiscovery.ts
 import { JobParserService } from '../parser';
 import { UrlTracker } from './URLTracker';
 import { Logger } from '../../utils/Logger';
+import { isKnownJobBoardDomain, matchesJobBoardPattern } from '../../job-boards/constants';
 
 // Define types for link objects
 export type PaginationLink = {
@@ -24,7 +25,7 @@ export type ExtractedLinks = {
 
 /**
  * Discovers and prioritizes links for crawling
- * Refactored to separate link extraction from enqueuing
+ * Enhanced with job board detection and prioritization
  */
 export class LinkDiscovery {
   private parser: JobParserService;
@@ -182,64 +183,98 @@ export class LinkDiscovery {
   
   /**
    * Pre-filter links that are likely to be job postings without using AI
-   * This reduces the number of links that need AI analysis
+   * Enhanced with job board detection
    */
   private preFilterJobLinks(
     links: Array<FullLink>, 
     currentUrl: string, 
     urlTracker: UrlTracker
   ): Array<FullLink> {
-    // Common job-related keywords to look for in URLs, text, or titles
+    // Separate job board links from other links
+    const jobBoardLinks: Array<FullLink> = [];
+    const otherLinks: Array<FullLink> = [];
+    
+    // First pass: categorize links
+    for (const link of links) {
+      // Skip if already visited
+      if (urlTracker.isRecentlyVisited(link.href)) {
+        continue;
+      }
+      
+      // Skip self-links
+      if (link.href === currentUrl) {
+        continue;
+      }
+      
+      // Skip file downloads and irrelevant links
+      if (this.shouldSkipLink(link.href)) {
+        continue;
+      }
+      
+      // Check if this is a job board link
+      try {
+        const urlObj = new URL(link.href);
+        if (isKnownJobBoardDomain(urlObj.hostname)) {
+          jobBoardLinks.push(link);
+        } else {
+          otherLinks.push(link);
+        }
+      } catch (error) {
+        // Invalid URL, ignore
+        continue;
+      }
+    }
+    
+    if (jobBoardLinks.length > 0) {
+      this.logger.info(`Found ${jobBoardLinks.length} links to known job boards`);
+    }
+    
+    // For job board links, check if they match job board patterns
+    const likelyJobBoardLinks = jobBoardLinks.filter(link => {
+      return matchesJobBoardPattern(link.href) || this.linkLooksLikeJob(link);
+    });
+    
+    // Now filter other links using existing logic
+    const likelyOtherJobLinks = otherLinks.filter(link => this.linkLooksLikeJob(link));
+    
+    // Prioritize job board links
+    return [...likelyJobBoardLinks, ...likelyOtherJobLinks];
+  }
+  
+  /**
+   * Check if a link looks like a job posting based on text content and URL
+   */
+  private linkLooksLikeJob(link: FullLink): boolean {
+    const url = link.href.toLowerCase();
+    const text = link.text.toLowerCase();
+    const title = link.title.toLowerCase();
+    const aria = link.aria.toLowerCase();
+    
     const jobKeywords = [
       'job', 'career', 'position', 'vacancy', 'opening',
       'apply', 'posting', 'employment', 'requisition', 'id', 
       'opportunity', 'hire', 'role', 'join', 'talent'
     ];
     
-    // Filter out links that are definitely not job links
-    return links.filter(link => {
-      // Skip if already visited
-      if (urlTracker.isRecentlyVisited(link.href)) {
-        return false;
-      }
-      
-      // Skip self-links
-      if (link.href === currentUrl) {
-        return false;
-      }
-      
-      // Skip file downloads and irrelevant links
-      if (this.shouldSkipLink(link.href)) {
-        return false;
-      }
-      
-      // Check for job-related patterns in URL, text, or title
-      const url = link.href.toLowerCase();
-      const text = link.text.toLowerCase();
-      const title = link.title.toLowerCase();
-      const aria = link.aria.toLowerCase();
-      
-      // Check for job keywords in URL, text, or title
-      const hasJobKeyword = jobKeywords.some(keyword => 
-        url.includes(keyword) || 
-        text.includes(keyword) || 
-        title.includes(keyword) ||
-        aria.includes(keyword)
-      );
-      
-      // Check for job ID patterns (e.g., job/12345, position_id=12345)
-      const hasJobIdPattern = /\/job\/\d+|job[_-]id=\d+|position[_-]id=\d+|req[_-]id=\d+/i.test(url);
-      
-      // Look for typical job URL patterns
-      const hasJobUrlPattern = /\/jobs?\/|\/careers?\/|\/positions?\//i.test(url);
-      
-      return hasJobKeyword || hasJobIdPattern || hasJobUrlPattern;
-    });
+    // Check for job keywords in URL, text, or title
+    const hasJobKeyword = jobKeywords.some(keyword => 
+      url.includes(keyword) || 
+      text.includes(keyword) || 
+      title.includes(keyword) ||
+      aria.includes(keyword)
+    );
+    
+    // Check for job ID patterns (e.g., job/12345, position_id=12345)
+    const hasJobIdPattern = /\/job\/\d+|job[_-]id=\d+|position[_-]id=\d+|req[_-]id=\d+/i.test(url);
+    
+    // Look for typical job URL patterns
+    const hasJobUrlPattern = /\/jobs?\/|\/careers?\/|\/positions?\//i.test(url);
+    
+    return hasJobKeyword || hasJobIdPattern || hasJobUrlPattern;
   }
   
   /**
    * Analyze links using AI to find job postings
-   * This is an expensive operation so we only use it on pre-filtered links
    */
   private async analyzeLinksWithAI(
     preFilteredLinks: Array<FullLink>,
@@ -268,7 +303,8 @@ export class LinkDiscovery {
         links: preFilteredLinks
       };
       
-      // Use the parser to analyze links with AI
+      // Call the AI-powered link analysis function from the parser service
+      // This calls the analyzeLinks method in JobParserService which uses AI to identify job-related links
       const aiSelectedLinks = await this.parser.analyzeLinks(linksForAnalysis);
       
       // Log the top 5 links identified by AI
@@ -340,7 +376,17 @@ export class LinkDiscovery {
       await enqueueLinks({
         urls: jobLinks,
         transformRequestFunction: (req: any) => {
-          req.userData = { ...(req.userData || {}), isJobLink: true };
+          // Check if this is a job board link
+          try {
+            const urlObj = new URL(req.url);
+            if (isKnownJobBoardDomain(urlObj.hostname)) {
+              req.userData = { ...(req.userData || {}), isJobLink: true, isJobBoardUrl: true };
+            } else {
+              req.userData = { ...(req.userData || {}), isJobLink: true };
+            }
+          } catch {
+            req.userData = { ...(req.userData || {}), isJobLink: true };
+          }
           return req;
         }
       });

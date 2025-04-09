@@ -122,3 +122,5 @@ all-crawler-files.txt
 screenshot*
 
 **/coverage
+
+**/storage**
