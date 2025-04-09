@@ -53,26 +53,51 @@ export class JobParserService {
    */
   async analyzeLinks(input: AnalyzeLinksInput): Promise<string[]> {
     try {
-      this.logger.info(`Analyzing ${input.links.length} links from ${input.sourceUrl}`);
+      this.logger.info(`[JobParserService] Analyzing ${input.links.length} links from ${input.sourceUrl}`);
       
       // Validate input
       if (!input.links || input.links.length === 0) {
-        this.logger.info(`No links to analyze from ${input.sourceUrl}`);
+        this.logger.info(`[JobParserService] No links to analyze from ${input.sourceUrl}`);
         return [];
       }
       
       if (!input.sourceUrl) {
-        this.logger.warn('Missing sourceUrl in analyzeLinks input');
+        this.logger.warn(`[JobParserService] Missing sourceUrl in analyzeLinks input`);
+      }
+      
+      // Check for obvious job board links as a pre-optimization
+      const jobBoardLinks = input.links.filter(link => {
+        try {
+          return link.href.includes('greenhouse.io/') || 
+                 link.href.includes('lever.co/') || 
+                 link.href.includes('workday.com/');
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      // If we have a small number of clear job board links, prioritize them
+      if (jobBoardLinks.length > 0 && jobBoardLinks.length <= 20) {
+        this.logger.info(`[JobParserService] Found ${jobBoardLinks.length} obvious job board links, skipping AI analysis`);
+        return jobBoardLinks.map(link => link.href);
       }
       
       // Delegate to LinkAnalyzer with proper error handling
       try {
         const result = await this.linkAnalyzer.analyzeLinks(input);
-        this.logger.info(`LinkAnalyzer identified ${result.length} job links out of ${input.links.length} total links`);
+        this.logger.info(`[JobParserService] LinkAnalyzer identified ${result.length} job links out of ${input.links.length} total links`);
+        
+        // If AI found no links but we have obvious job board links, use those instead
+        if (result.length === 0 && jobBoardLinks.length > 0) {
+          this.logger.warn(`[JobParserService] AI found no links but we have ${jobBoardLinks.length} job board links - using as fallback`);
+          const fallbackLinks = jobBoardLinks.slice(0, 20).map(link => link.href);
+          return fallbackLinks;
+        }
+        
         return result;
       } catch (error) {
         if (error instanceof AIServiceError) {
-          this.logger.error(`AI service error during link analysis:`, {
+          this.logger.error(`[JobParserService] AI service error during link analysis:`, {
             provider: error.provider,
             model: error.model,
             message: error.message,
@@ -80,18 +105,24 @@ export class JobParserService {
             sourceUrl: input.sourceUrl,
           });
         } else {
-          this.logger.error(`Error in LinkAnalyzer:`, {
+          this.logger.error(`[JobParserService] Error in LinkAnalyzer:`, {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             sourceUrl: input.sourceUrl,
           });
         }
         
-        // Return empty array on failure
+        // Return job board links as fallback if the AI service fails
+        if (jobBoardLinks.length > 0) {
+          this.logger.info(`[JobParserService] Using ${Math.min(jobBoardLinks.length, 20)} job board links as fallback after AI error`);
+          return jobBoardLinks.slice(0, 20).map(link => link.href);
+        }
+        
+        // Return empty array if no fallback available
         return [];
       }
     } catch (error) {
-      this.logger.error(`Unexpected error in analyzeLinks:`, {
+      this.logger.error(`[JobParserService] Unexpected error in analyzeLinks:`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -106,22 +137,22 @@ export class JobParserService {
    */
   async parseJobsFromPage(input: ParsePageInput): Promise<JobPostingData[]> {
     try {
-      this.logger.info(`Parsing jobs from page: ${input.url}`);
+      this.logger.info(`[JobParserService] Parsing jobs from page: ${input.url}`);
       
       // Validate input
       if (!input.content) {
-        this.logger.warn(`Missing content for URL: ${input.url}`);
+        this.logger.warn(`[JobParserService] Missing content for URL: ${input.url}`);
         return [];
       }
       
       // Delegate to JobDataExtractor with proper error handling
       try {
         const result = await this.jobDataExtractor.extractJobListings(input);
-        this.logger.info(`Extracted ${result.length} job listings from ${input.url}`);
+        this.logger.info(`[JobParserService] Extracted ${result.length} job listings from ${input.url}`);
         return result;
       } catch (error) {
         if (error instanceof AIServiceError) {
-          this.logger.error(`AI service error during job extraction:`, {
+          this.logger.error(`[JobParserService] AI service error during job extraction:`, {
             provider: error.provider,
             model: error.model,
             message: error.message,
@@ -129,7 +160,7 @@ export class JobParserService {
             url: input.url,
           });
         } else {
-          this.logger.error(`Error in JobDataExtractor:`, {
+          this.logger.error(`[JobParserService] Error in JobDataExtractor:`, {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             url: input.url,
@@ -140,7 +171,7 @@ export class JobParserService {
         return [];
       }
     } catch (error) {
-      this.logger.error(`Unexpected error in parseJobsFromPage:`, {
+      this.logger.error(`[JobParserService] Unexpected error in parseJobsFromPage:`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         url: input.url,
@@ -156,22 +187,22 @@ export class JobParserService {
    */
   async enrichJobData(job: JobPostingData): Promise<JobPostingData> {
     try {
-      this.logger.info(`Enriching job data for: ${job.title}`);
+      this.logger.info(`[JobParserService] Enriching job data for: ${job.title}`);
       
       // Validate input
       if (!job.description || job.description.length < 100) {
-        this.logger.warn(`Job description too short for enrichment: ${job.title}`);
+        this.logger.warn(`[JobParserService] Job description too short for enrichment: ${job.title}`);
         return job;
       }
       
       // Delegate to JobEnricher with proper error handling
       try {
         const result = await this.jobEnricher.enrichJobData(job);
-        this.logger.info(`Successfully enriched job data for ${job.title}`);
+        this.logger.info(`[JobParserService] Successfully enriched job data for ${job.title}`);
         return result;
       } catch (error) {
         if (error instanceof AIServiceError) {
-          this.logger.error(`AI service error during job enrichment:`, {
+          this.logger.error(`[JobParserService] AI service error during job enrichment:`, {
             provider: error.provider,
             model: error.model,
             message: error.message,
@@ -179,7 +210,7 @@ export class JobParserService {
             jobTitle: job.title,
           });
         } else {
-          this.logger.error(`Error in JobEnricher:`, {
+          this.logger.error(`[JobParserService] Error in JobEnricher:`, {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
             jobTitle: job.title,
@@ -190,7 +221,7 @@ export class JobParserService {
         return job;
       }
     } catch (error) {
-      this.logger.error(`Unexpected error in enrichJobData:`, {
+      this.logger.error(`[JobParserService] Unexpected error in enrichJobData:`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         jobTitle: job.title,
@@ -207,13 +238,13 @@ export class JobParserService {
   cleanHtml(html: string): string {
     try {
       if (!html) {
-        this.logger.warn('Empty HTML content provided to cleanHtml');
+        this.logger.warn('[JobParserService] Empty HTML content provided to cleanHtml');
         return '';
       }
       
       return this.htmlCleaner.cleanHtml(html);
     } catch (error) {
-      this.logger.error(`Error cleaning HTML:`, {
+      this.logger.error(`[JobParserService] Error cleaning HTML:`, {
         error: error instanceof Error ? error.message : String(error),
         htmlLength: html?.length || 0,
       });

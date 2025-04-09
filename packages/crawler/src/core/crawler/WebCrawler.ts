@@ -369,45 +369,73 @@ export class WebCrawler {
           this.logger.step(2, "Extracting page data");
           const { content, title, description } = await this.pageHandler.extractPageData(page);
           
+          // Log content size for debugging
+          this.logger.info(`Extracted content size: ${content.length} bytes`);
+          if (content.length < 100) {
+            this.logger.warn(`Very small content extracted from ${request.url}, content: "${content}"`);
+          }
+          
           // Step 3: Parse jobs data - use job board service for known job boards
           let jobData: JobPostingData[] = [];
           
-          if (isJobBoardUrl) {
-            const boardName = this.jobBoardService.getJobBoardName(request.url) || 'unknown job board';
-            this.logger.step(3, `Parsing job board data from ${boardName}`);
-            this.logger.info(`Using specialized parser for job board: ${boardName}`);
-            
-            jobData = await this.jobBoardService.parseJobBoardPage({
-              url: request.url,
-              content,
-              title,
-              description,
-              keywords
-            });
-            
-            // Check for additional URLs to crawl from job boards
-            const additionalUrls = this.jobBoardService.getAdditionalUrlsToCrawl(request.url);
-            if (additionalUrls.length > 0) {
-              this.logger.info(`Found ${additionalUrls.length} additional URLs to crawl from job board ${boardName}`);
-              this.logger.info(`Additional URLs: ${additionalUrls.join(', ')}`);
+          try {
+            if (isJobBoardUrl) {
+              const boardName = this.jobBoardService.getJobBoardName(request.url) || 'unknown job board';
+              this.logger.step(3, `Parsing job board data from ${boardName}`);
+              this.logger.info(`Using specialized parser for job board: ${boardName}`);
               
-              await requestQueue.addRequests(additionalUrls.map(url => ({
-                url,
-                userData: { isJobBoardUrl: true }
-              })));
+              jobData = await this.jobBoardService.parseJobBoardPage({
+                url: request.url,
+                content,
+                title,
+                description,
+                keywords
+              });
+              
+              // Check for additional URLs to crawl from job boards
+              const additionalUrls = this.jobBoardService.getAdditionalUrlsToCrawl(request.url);
+              if (additionalUrls.length > 0) {
+                this.logger.info(`Found ${additionalUrls.length} additional URLs to crawl from job board ${boardName}`);
+                this.logger.info(`Additional URLs: ${additionalUrls.join(', ')}`);
+                
+                await requestQueue.addRequests(additionalUrls.map(url => ({
+                  url,
+                  userData: { isJobBoardUrl: true }
+                })));
+              }
+            } else {
+              // Regular parsing with the standard parser
+              this.logger.step(3, "Parsing job data with standard parser");
+              this.logger.info(`Using generic parser for non-job board URL: ${request.url}`);
+              
+              try {
+                jobData = await this.parser.parseJobsFromPage({
+                  url: request.url,
+                  content,
+                  title,
+                  description,
+                  keywords
+                });
+              } catch (parseError) {
+                // If job parsing fails, log detailed error but continue with the crawl
+                this.logger.error(`Error parsing jobs from page ${request.url}:`, {
+                  error: parseError instanceof Error ? parseError.message : String(parseError),
+                  stack: parseError instanceof Error ? parseError.stack : undefined,
+                  contentSize: content.length,
+                  title
+                });
+                jobData = [];
+              }
             }
-          } else {
-            // Regular parsing with the standard parser
-            this.logger.step(3, "Parsing job data with standard parser");
-            this.logger.info(`Using generic parser for non-job board URL: ${request.url}`);
-            
-            jobData = await this.parser.parseJobsFromPage({
-              url: request.url,
-              content,
-              title,
-              description,
-              keywords
+          } catch (parserError) {
+            // Handle errors at the parser level
+            this.logger.error(`Parser error for ${request.url}:`, {
+              error: parserError instanceof Error ? parserError.message : String(parserError),
+              stack: parserError instanceof Error ? parserError.stack : undefined,
+              contentSize: content.length,
+              title
             });
+            jobData = [];
           }
           
           this.logger.success(`Found ${jobData.length} jobs on ${request.url}`);

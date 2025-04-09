@@ -24,10 +24,12 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.2",
     "openai": "^4.77.0",
+    "redis": "^4.7.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
+    "@types/redis": "^4.0.11",
     "typescript": "^5.7.2"
   }
 }

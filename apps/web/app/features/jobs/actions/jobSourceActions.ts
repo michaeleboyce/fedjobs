@@ -61,6 +61,13 @@ export async function createJobSource(data: {
   refreshFrequency?: string;
 }): Promise<JobSource> {
   try {
+    // Validate URL before sending to API
+    try {
+      new URL(data.url);
+    } catch (error) {
+      throw new Error(`Invalid URL format: ${data.url}. Please include the full URL with http:// or https://`);
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/job-sources`, {
       method: 'POST',
       headers: {
@@ -69,11 +76,33 @@ export async function createJobSource(data: {
       body: JSON.stringify(data)
     });
     
+    // Handle non-OK responses properly
     if (!response.ok) {
-      throw new Error(`Failed to create job source: ${response.statusText}`);
+      let errorMessage = `Failed to create job source: ${response.statusText}`;
+      
+      // Try to get detailed error from response body
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = `Server error: ${errorData.message}`;
+        } else if (errorData.error) {
+          errorMessage = `Server error: ${errorData.error}`;
+        }
+      } catch (e) {
+        // If we can't parse the error response, use the status text
+        console.error('Could not parse error response:', e);
+      }
+      
+      throw new Error(errorMessage);
     }
     
-    const result = await response.json();
+    // Check if response is valid JSON
+    let result;
+    try {
+      result = await response.json();
+    } catch (e) {
+      throw new Error('Invalid response from server: could not parse JSON');
+    }
     
     // Revalidate related paths
     revalidatePath('/jobs');
@@ -81,8 +110,12 @@ export async function createJobSource(data: {
     
     return result;
   } catch (error) {
-    console.error('Error creating job source:', error);
-    throw error;
+    // Provide more helpful error message for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error creating job source:', errorMessage);
+    
+    // Rethrow the error with a clear message
+    throw error instanceof Error ? error : new Error(`Failed to create job source: ${errorMessage}`);
   }
 }
 

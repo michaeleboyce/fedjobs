@@ -303,24 +303,84 @@ export class LinkDiscovery {
         links: preFilteredLinks
       };
       
-      // Call the AI-powered link analysis function from the parser service
-      // This calls the analyzeLinks method in JobParserService which uses AI to identify job-related links
-      const aiSelectedLinks = await this.parser.analyzeLinks(linksForAnalysis);
+      // Log details about what we're about to do
+      this.logger.info(`Calling JobParserService.analyzeLinks for ${baseUrl} with ${preFilteredLinks.length} links`);
       
-      // Log the top 5 links identified by AI
-      this.logger.info(`Top 5 links identified by AI:`);
-      const linkMap = new Map(preFilteredLinks.map(link => [link.href, link]));
-      aiSelectedLinks.slice(0, 5).forEach((url, i) => {
-        const linkInfo = linkMap.get(url);
-        const text = linkInfo ? linkInfo.text.substring(0, 40) : 'Unknown text';
-        this.logger.info(`[${i + 1}] ${text}... -> ${url}`);
+      // Capture the start time for performance monitoring
+      const startTime = Date.now();
+      
+      try {
+        // Call the AI-powered link analysis function from the parser service
+        // This calls the analyzeLinks method in JobParserService which uses AI to identify job-related links
+        const aiSelectedLinks = await this.parser.analyzeLinks(linksForAnalysis);
+        
+        // Calculate elapsed time
+        const elapsedTime = Date.now() - startTime;
+        this.logger.info(`AI analysis completed in ${elapsedTime}ms, found ${aiSelectedLinks.length} job links`);
+        
+        // Log the top 5 links identified by AI
+        this.logger.info(`Top 5 links identified by AI:`);
+        const linkMap = new Map(preFilteredLinks.map(link => [link.href, link]));
+        
+        if (aiSelectedLinks.length > 0) {
+          aiSelectedLinks.slice(0, 5).forEach((url, i) => {
+            const linkInfo = linkMap.get(url);
+            const text = linkInfo ? linkInfo.text.substring(0, 40) : 'Unknown text';
+            this.logger.info(`[${i + 1}] ${text}... -> ${url}`);
+          });
+        } else {
+          this.logger.warn(`AI analysis found no job links, which is unusual for a page with ${preFilteredLinks.length} filtered links`);
+          
+          // Check if we're looking at known job board links (e.g., Greenhouse), which should be detected
+          const jobBoardLinks = preFilteredLinks.filter(link => {
+            try {
+              const url = new URL(link.href);
+              return url.hostname.includes('greenhouse.io') || 
+                     url.hostname.includes('lever.co') || 
+                     url.hostname.includes('workday.com') ||
+                     link.href.includes('/jobs/');
+            } catch (e) {
+              return false;
+            }
+          });
+          
+          if (jobBoardLinks.length > 0) {
+            this.logger.warn(`Found ${jobBoardLinks.length} job board links that AI didn't identify. This suggests a possible issue with AI analysis.`);
+            
+            // Consider using some of these as a fallback
+            if (jobBoardLinks.length <= 20) {
+              this.logger.info(`Using ${jobBoardLinks.length} job board links as fallback`);
+              return jobBoardLinks.map(link => link.href);
+            }
+          }
+        }
+        
+        return aiSelectedLinks;
+      } catch (aiError) {
+        // Detailed error logging for AI service errors
+        this.logger.error(`AI service error during link analysis:`, {
+          error: aiError instanceof Error ? aiError.message : String(aiError),
+          stack: aiError instanceof Error && aiError.stack ? aiError.stack : 'No stack trace',
+          baseUrl,
+          pageTitle,
+          linkCount: preFilteredLinks.length
+        });
+        
+        // Fall back to heuristic analysis
+        this.logger.info(`Falling back to heuristic link analysis due to AI error`);
+        throw aiError; // Re-throw to trigger the fallback logic
+      }
+    } catch (error) {
+      this.logger.error(`Error in AI link analysis:`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error && error.stack ? error.stack : 'No stack trace',
+        baseUrl,
+        linkCount: preFilteredLinks.length
       });
       
-      return aiSelectedLinks;
-    } catch (error) {
-      this.logger.error(`Error in AI link analysis:`, error instanceof Error ? error : new Error(String(error)));
-      
       // Fallback: Return the top 5 most likely job links based on our pre-filtering
+      this.logger.info(`Using fallback heuristic analysis for job links`);
+      
       // Sort links by "job relevance score" - a simple heuristic calculation
       const scoredLinks = preFilteredLinks.map(link => {
         let score = 0;
@@ -333,6 +393,8 @@ export class LinkDiscovery {
         if (link.href.includes('apply')) score += 3;
         if (/req[_-]id=\d+/i.test(link.href)) score += 5;
         if (/job[_-]id=\d+/i.test(link.href)) score += 5;
+        if (link.href.includes('greenhouse.io/')) score += 10; // Boost known job board links
+        if (link.href.includes('lever.co/')) score += 10;      // Boost known job board links
         
         // Score based on link text
         const text = link.text.toLowerCase();
@@ -344,8 +406,19 @@ export class LinkDiscovery {
         return { link, score };
       }).sort((a, b) => b.score - a.score);
       
-      // Return top 5 links with highest scores
-      return scoredLinks.slice(0, 5).map(item => item.link.href);
+      // Get top scoring links
+      const topLinks = scoredLinks.slice(0, 10).map(item => item.link.href);
+      this.logger.info(`Heuristic analysis identified ${topLinks.length} potential job links`);
+      
+      // Show the top links
+      topLinks.slice(0, 5).forEach((url, i) => {
+        const linkInfo = scoredLinks.find(item => item.link.href === url);
+        if (linkInfo) {
+          this.logger.info(`[${i + 1}] ${linkInfo.link.text.substring(0, 40)}... (score: ${linkInfo.score}) -> ${url}`);
+        }
+      });
+      
+      return topLinks;
     }
   }
   

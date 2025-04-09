@@ -77,7 +77,26 @@ export class PageHandler {
       let content = '';
       try {
         content = await page.content();
-        this.logger.info(`Content extracted: ${content.length} characters`);
+        
+        if (content.length === 0) {
+          this.logger.error(`Empty content returned from page.content()`);
+          // Try another method to extract HTML
+          try {
+            content = await page.evaluate(() => document.documentElement.outerHTML);
+            this.logger.info(`Content extracted using evaluate() method: ${content.length} characters`);
+          } catch (evaluateError) {
+            this.logger.error(`Failed to extract content using evaluate method:`, evaluateError instanceof Error ? evaluateError : new Error(String(evaluateError)));
+          }
+        } else {
+          this.logger.info(`Content extracted: ${content.length} characters`);
+          
+          // Log a sample of the content for debugging
+          if (content.length > 200) {
+            this.logger.debug(`Content sample: ${content.substring(0, 200)}...`);
+          } else {
+            this.logger.debug(`Content: ${content}`);
+          }
+        }
       } catch (error) {
         this.logger.error(`Error getting page content:`, error instanceof Error ? error : new Error(String(error)));
         content = '<html><body>Error extracting content</body></html>';
@@ -103,6 +122,9 @@ export class PageHandler {
       } catch (error) {
         this.logger.error(`Error getting meta description:`, error instanceof Error ? error : new Error(String(error)));
       }
+      
+      // Log content stats for debugging
+      this.logger.info(`Extraction complete - Content: ${content.length} bytes, Title: ${title.length} chars, Description: ${description.length} chars`);
       
       return { content, title, description };
     }

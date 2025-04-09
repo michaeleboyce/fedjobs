@@ -1,17 +1,20 @@
 // File path: packages/crawler/src/core/parser/LinkAnalyzer.ts
 import { AnalyzeLinksInput } from '../../types';
 import { Logger } from '../../utils/Logger';
-import { AIService } from '@fedjobs/utils';
+import { AIService, AIServiceError } from '@fedjobs/utils';
+import { LinkAIService } from './LinkAIService';
 
 /**
  * Analyzes links to determine which ones are likely job listings
  */
 export class LinkAnalyzer {
   private aiService: AIService;
+  private linkAIService: LinkAIService;
   private logger: Logger;
   
   constructor(aiService?: AIService) {
     this.aiService = aiService || new AIService();
+    this.linkAIService = new LinkAIService(this.aiService);
     this.logger = new Logger('LinkAnalyzer');
   }
   
@@ -24,11 +27,11 @@ export class LinkAnalyzer {
     try {
       const { sourceUrl, pageTitle, links } = input;
       
-      this.logger.info(`Analyzing ${links.length} links for ${sourceUrl}`);
+      this.logger.info(`[LinkAnalyzer] Analyzing ${links.length} links for ${sourceUrl}`);
       
       // Skip if no links
       if (!links || links.length === 0) {
-        this.logger.info(`No links to analyze for ${sourceUrl}`);
+        this.logger.info(`[LinkAnalyzer] No links to analyze for ${sourceUrl}`);
         return [];
       }
       
@@ -46,30 +49,27 @@ export class LinkAnalyzer {
         domain = new URL(sourceUrl).hostname.replace('www.', '');
       } catch (e) {
         domain = sourceUrl.split('/')[2] || '';
-        this.logger.warn(`Error parsing URL ${sourceUrl}: ${e instanceof Error ? e.message : String(e)}`);
+        this.logger.warn(`[LinkAnalyzer] Error parsing URL ${sourceUrl}: ${e instanceof Error ? e.message : String(e)}`);
       }
       
       // Prepare prompt for AI
       const prompt = this.buildAIPrompt(pageTitle, domain, sourceUrl, linksFormatted);
-      this.logger.debug(`AI Prompt length: ${prompt.length} characters`);
+      this.logger.debug(`[LinkAnalyzer] AI Prompt length: ${prompt.length} characters`);
       
-      // Call AI service to analyze links
-      let response;
+      // Call specialized link AI service
       try {
-        this.logger.info(`Calling AI service (model: gpt-4o) for link analysis on ${sourceUrl}`);
-        response = await this.aiService.generateText({
-          prompt,
-          model: "gpt-4o",
-          temperature: 0.1,
-          maxTokens: 2000
-        });
-        this.logger.info(`AI service returned response of length: ${response?.length || 0} characters`);
+        this.logger.info(`[LinkAnalyzer] Calling AI service for link analysis on ${sourceUrl}`);
+        const response = await this.linkAIService.generateLinkAnalysis(prompt, sourceUrl);
+        
+        const parsedLinks = this.parseAIResponse(response);
+        this.logger.info(`[LinkAnalyzer] Identified ${parsedLinks.length} links as potential job listings from ${links.length} total links`);
+        return parsedLinks;
       } catch (aiError: unknown) {
         // Detailed logging of AI service errors
         const errorMessage = aiError instanceof Error ? aiError.message : String(aiError);
         const errorDetails = aiError instanceof Error && aiError.stack ? aiError.stack : 'No stack trace available';
         
-        this.logger.error(`AI service error during link analysis:`, {
+        this.logger.error(`[LinkAnalyzer] AI service error during link analysis:`, {
           error: errorMessage,
           stack: errorDetails,
           sourceUrl,
@@ -78,20 +78,11 @@ export class LinkAnalyzer {
         
         return [];
       }
-      
-      if (!response) {
-        this.logger.error(`AI service returned empty response for ${sourceUrl}`);
-        return [];
-      }
-      
-      const parsedLinks = this.parseAIResponse(response);
-      this.logger.info(`Identified ${parsedLinks.length} links as potential job listings from ${links.length} total links`);
-      return parsedLinks;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorDetails = error instanceof Error && error.stack ? error.stack : 'No stack trace available';
       
-      this.logger.error('Error in analyzeLinks:', {
+      this.logger.error('[LinkAnalyzer] Error in analyzeLinks:', {
         error: errorMessage, 
         stack: errorDetails,
         sourceUrl: input?.sourceUrl || 'Unknown URL',
@@ -146,17 +137,17 @@ export class LinkAnalyzer {
           
           return validUrls;
         } catch (jsonError) {
-          this.logger.error(`Error parsing AI response JSON: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
-          this.logger.debug(`Raw response content: ${response.substring(0, 200)}...`);
+          this.logger.error(`[LinkAnalyzer] Error parsing AI response JSON: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+          this.logger.debug(`[LinkAnalyzer] Raw response content: ${response.substring(0, 200)}...`);
           return [];
         }
       }
       
-      this.logger.warn(`No JSON array found in AI response. Raw response begins with: ${response.substring(0, 100)}...`);
+      this.logger.warn(`[LinkAnalyzer] No JSON array found in AI response. Raw response begins with: ${response.substring(0, 100)}...`);
       return [];
     } catch (error: unknown) {
-      this.logger.error(`Error parsing AI response for link analysis: ${error instanceof Error ? error.message : String(error)}`);
-      this.logger.debug(`Raw response content: ${response.substring(0, 200)}...`);
+      this.logger.error(`[LinkAnalyzer] Error parsing AI response for link analysis: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.debug(`[LinkAnalyzer] Raw response content: ${response.substring(0, 200)}...`);
       return [];
     }
   }

@@ -65,8 +65,31 @@ export default function JobSourceForm({ userId, onSuccess, onCancel }: JobSource
       
       onSuccess();
     } catch (err) {
-      console.error('Error creating job source:', err);
-      setError('Failed to create job source. Please try again.');
+      // Extract the most useful error message
+      let errorMessage = 'Failed to create job source. Please try again.';
+      
+      if (err instanceof Error) {
+        console.error('Error creating job source:', err);
+        
+        // Check for specific error patterns
+        if (err.message.includes('crawlResult')) {
+          errorMessage = 'Server error: Problem initializing the crawler. This is likely a temporary issue.';
+        } else if (err.message.includes('ECONNREFUSED') || err.message.includes('fetch failed')) {
+          errorMessage = 'Could not connect to the server. Please check your internet connection.';
+        } else if (err.message.includes('timeout')) {
+          errorMessage = 'Request timed out. The server might be busy, please try again.';
+        } else if (err.message.startsWith('Server error:')) {
+          // Use the server error message directly
+          errorMessage = err.message;
+        } else {
+          // Use the error message but with a more user-friendly prefix
+          errorMessage = `Error: ${err.message}`;
+        }
+      } else {
+        console.error('Unknown error creating job source:', err);
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
