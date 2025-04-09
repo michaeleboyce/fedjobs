@@ -72,6 +72,7 @@ export interface CrawlJobOptions {
   keywords?: string;
   maxJobs?: number;
   sourceId?: number;
+  forceRefresh?: boolean; // Whether to ignore cache and previously visited URLs
   onJobFound?: (job: JobPostingData) => Promise<void>;
   onComplete?: (jobs: JobPostingData[]) => Promise<void>;
   onError?: (error: Error, url: string) => Promise<void>;

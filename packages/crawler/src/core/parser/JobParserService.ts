@@ -1,5 +1,5 @@
 // File path: packages/crawler/src/core/parser/JobParserService.ts
-import { AIService } from '@fedjobs/utils';
+import { AIService, AIServiceError } from '@fedjobs/utils';
 import { AnalyzeLinksInput, JobPostingData, ParsePageInput } from '../../types';
 import { Logger } from '../../utils/Logger';
 import { HtmlCleaner } from './HtmlCleaner';
@@ -52,8 +52,51 @@ export class JobParserService {
    * Returns an array of URLs that should be prioritized for crawling
    */
   async analyzeLinks(input: AnalyzeLinksInput): Promise<string[]> {
-    this.logger.info(`Analyzing ${input.links.length} links from ${input.sourceUrl}`);
-    return this.linkAnalyzer.analyzeLinks(input);
+    try {
+      this.logger.info(`Analyzing ${input.links.length} links from ${input.sourceUrl}`);
+      
+      // Validate input
+      if (!input.links || input.links.length === 0) {
+        this.logger.info(`No links to analyze from ${input.sourceUrl}`);
+        return [];
+      }
+      
+      if (!input.sourceUrl) {
+        this.logger.warn('Missing sourceUrl in analyzeLinks input');
+      }
+      
+      // Delegate to LinkAnalyzer with proper error handling
+      try {
+        const result = await this.linkAnalyzer.analyzeLinks(input);
+        this.logger.info(`LinkAnalyzer identified ${result.length} job links out of ${input.links.length} total links`);
+        return result;
+      } catch (error) {
+        if (error instanceof AIServiceError) {
+          this.logger.error(`AI service error during link analysis:`, {
+            provider: error.provider,
+            model: error.model,
+            message: error.message,
+            statusCode: error.statusCode,
+            sourceUrl: input.sourceUrl,
+          });
+        } else {
+          this.logger.error(`Error in LinkAnalyzer:`, {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            sourceUrl: input.sourceUrl,
+          });
+        }
+        
+        // Return empty array on failure
+        return [];
+      }
+    } catch (error) {
+      this.logger.error(`Unexpected error in analyzeLinks:`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      return [];
+    }
   }
   
   /**
@@ -62,8 +105,48 @@ export class JobParserService {
    * @returns Array of job postings found on the page
    */
   async parseJobsFromPage(input: ParsePageInput): Promise<JobPostingData[]> {
-    this.logger.info(`Parsing jobs from page: ${input.url}`);
-    return this.jobDataExtractor.extractJobListings(input);
+    try {
+      this.logger.info(`Parsing jobs from page: ${input.url}`);
+      
+      // Validate input
+      if (!input.content) {
+        this.logger.warn(`Missing content for URL: ${input.url}`);
+        return [];
+      }
+      
+      // Delegate to JobDataExtractor with proper error handling
+      try {
+        const result = await this.jobDataExtractor.extractJobListings(input);
+        this.logger.info(`Extracted ${result.length} job listings from ${input.url}`);
+        return result;
+      } catch (error) {
+        if (error instanceof AIServiceError) {
+          this.logger.error(`AI service error during job extraction:`, {
+            provider: error.provider,
+            model: error.model,
+            message: error.message,
+            statusCode: error.statusCode,
+            url: input.url,
+          });
+        } else {
+          this.logger.error(`Error in JobDataExtractor:`, {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            url: input.url,
+          });
+        }
+        
+        // Return empty array on failure
+        return [];
+      }
+    } catch (error) {
+      this.logger.error(`Unexpected error in parseJobsFromPage:`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        url: input.url,
+      });
+      return [];
+    }
   }
   
   /**
@@ -72,8 +155,48 @@ export class JobParserService {
    * @returns Enriched job data
    */
   async enrichJobData(job: JobPostingData): Promise<JobPostingData> {
-    this.logger.info(`Enriching job data for: ${job.title}`);
-    return this.jobEnricher.enrichJobData(job);
+    try {
+      this.logger.info(`Enriching job data for: ${job.title}`);
+      
+      // Validate input
+      if (!job.description || job.description.length < 100) {
+        this.logger.warn(`Job description too short for enrichment: ${job.title}`);
+        return job;
+      }
+      
+      // Delegate to JobEnricher with proper error handling
+      try {
+        const result = await this.jobEnricher.enrichJobData(job);
+        this.logger.info(`Successfully enriched job data for ${job.title}`);
+        return result;
+      } catch (error) {
+        if (error instanceof AIServiceError) {
+          this.logger.error(`AI service error during job enrichment:`, {
+            provider: error.provider,
+            model: error.model,
+            message: error.message,
+            statusCode: error.statusCode,
+            jobTitle: job.title,
+          });
+        } else {
+          this.logger.error(`Error in JobEnricher:`, {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            jobTitle: job.title,
+          });
+        }
+        
+        // Return original job on failure
+        return job;
+      }
+    } catch (error) {
+      this.logger.error(`Unexpected error in enrichJobData:`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        jobTitle: job.title,
+      });
+      return job;
+    }
   }
   
   /**
@@ -82,6 +205,21 @@ export class JobParserService {
    * @returns Cleaned text
    */
   cleanHtml(html: string): string {
-    return this.htmlCleaner.cleanHtml(html);
+    try {
+      if (!html) {
+        this.logger.warn('Empty HTML content provided to cleanHtml');
+        return '';
+      }
+      
+      return this.htmlCleaner.cleanHtml(html);
+    } catch (error) {
+      this.logger.error(`Error cleaning HTML:`, {
+        error: error instanceof Error ? error.message : String(error),
+        htmlLength: html?.length || 0,
+      });
+      
+      // Return empty string on failure
+      return '';
+    }
   }
 }

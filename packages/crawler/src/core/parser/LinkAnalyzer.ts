@@ -21,12 +21,14 @@ export class LinkAnalyzer {
    * @returns Array of URLs that are likely job listings
    */
   public async analyzeLinks(input: AnalyzeLinksInput): Promise<string[]> {
-    this.logger.info(`[LinkAnalyzer] Analyzing links for ${input.sourceUrl}`);
     try {
       const { sourceUrl, pageTitle, links } = input;
       
+      this.logger.info(`Analyzing ${links.length} links for ${sourceUrl}`);
+      
       // Skip if no links
       if (!links || links.length === 0) {
+        this.logger.info(`No links to analyze for ${sourceUrl}`);
         return [];
       }
       
@@ -44,24 +46,58 @@ export class LinkAnalyzer {
         domain = new URL(sourceUrl).hostname.replace('www.', '');
       } catch (e) {
         domain = sourceUrl.split('/')[2] || '';
+        this.logger.warn(`Error parsing URL ${sourceUrl}: ${e instanceof Error ? e.message : String(e)}`);
       }
       
       // Prepare prompt for AI
       const prompt = this.buildAIPrompt(pageTitle, domain, sourceUrl, linksFormatted);
-      this.logger.info(`[LinkAnalyzer] Prompt: ${prompt}`);
-      // Call AI service to analyze links
-      const response = await this.aiService.generateText({
-        prompt,
-        model: "gpt-4o",
-        temperature: 0.1,
-        maxTokens: 2000
-      });
-
-      this.logger.info(`[LinkAnalyzer] Response: ${JSON.stringify(response)}`);
+      this.logger.debug(`AI Prompt length: ${prompt.length} characters`);
       
-      return this.parseAIResponse(response);
+      // Call AI service to analyze links
+      let response;
+      try {
+        this.logger.info(`Calling AI service (model: gpt-4o) for link analysis on ${sourceUrl}`);
+        response = await this.aiService.generateText({
+          prompt,
+          model: "gpt-4o",
+          temperature: 0.1,
+          maxTokens: 2000
+        });
+        this.logger.info(`AI service returned response of length: ${response?.length || 0} characters`);
+      } catch (aiError: unknown) {
+        // Detailed logging of AI service errors
+        const errorMessage = aiError instanceof Error ? aiError.message : String(aiError);
+        const errorDetails = aiError instanceof Error && aiError.stack ? aiError.stack : 'No stack trace available';
+        
+        this.logger.error(`AI service error during link analysis:`, {
+          error: errorMessage,
+          stack: errorDetails,
+          sourceUrl,
+          linkCount: links.length,
+        });
+        
+        return [];
+      }
+      
+      if (!response) {
+        this.logger.error(`AI service returned empty response for ${sourceUrl}`);
+        return [];
+      }
+      
+      const parsedLinks = this.parseAIResponse(response);
+      this.logger.info(`Identified ${parsedLinks.length} links as potential job listings from ${links.length} total links`);
+      return parsedLinks;
     } catch (error: unknown) {
-      this.logger.error('Error in analyzeLinks:', error as Record<string, any>);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorDetails = error instanceof Error && error.stack ? error.stack : 'No stack trace available';
+      
+      this.logger.error('Error in analyzeLinks:', {
+        error: errorMessage, 
+        stack: errorDetails,
+        sourceUrl: input?.sourceUrl || 'Unknown URL',
+        linkCount: input?.links?.length || 0
+      });
+      
       return [];
     }
   }
@@ -99,19 +135,28 @@ export class LinkAnalyzer {
       // Find JSON array in the response
       const match = response.match(/\[.*?\]/s);
       if (match) {
-        const jsonResponse = JSON.parse(match[0]);
-        
-        // Validate each URL
-        const validUrls = jsonResponse.filter((url: any) => 
-          typeof url === 'string' && 
-          (url.startsWith('http://') || url.startsWith('https://'))
-        );
-        
-        return validUrls;
+        try {
+          const jsonResponse = JSON.parse(match[0]);
+          
+          // Validate each URL
+          const validUrls = jsonResponse.filter((url: any) => 
+            typeof url === 'string' && 
+            (url.startsWith('http://') || url.startsWith('https://'))
+          );
+          
+          return validUrls;
+        } catch (jsonError) {
+          this.logger.error(`Error parsing AI response JSON: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+          this.logger.debug(`Raw response content: ${response.substring(0, 200)}...`);
+          return [];
+        }
       }
+      
+      this.logger.warn(`No JSON array found in AI response. Raw response begins with: ${response.substring(0, 100)}...`);
       return [];
     } catch (error: unknown) {
-      this.logger.error('Error parsing AI response for link analysis:', error as Record<string, any>);
+      this.logger.error(`Error parsing AI response for link analysis: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.debug(`Raw response content: ${response.substring(0, 200)}...`);
       return [];
     }
   }

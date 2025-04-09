@@ -30,6 +30,14 @@ export class UrlTracker {
   }
   
   /**
+   * Clear the URL history
+   * This is useful for force refreshing to ensure all URLs are processed
+   */
+  clearHistory(): void {
+    this.urlHistory.clear();
+  }
+  
+  /**
    * Normalize a URL for consistent comparison
    */
   private normalizeUrl(url: string): string {

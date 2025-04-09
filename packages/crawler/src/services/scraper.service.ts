@@ -84,7 +84,7 @@ export class ScraperService {
       }
       
       // Perform fresh crawl
-      return await this.performFreshCrawl(sourceId, source, callbacks);
+      return await this.performFreshCrawl(sourceId, source, callbacks, forceRefresh);
     } catch (error) {
       this.logger.error(`Error refreshing job source ${sourceId}:`, error as Record<string, any>);
       
@@ -198,8 +198,8 @@ export class ScraperService {
    * Perform a fresh crawl for job data
    * @private
    */
-  private async performFreshCrawl(sourceId: number, source: any, callbacks?: any): Promise<JobCrawlerResult> {
-    this.logger.info(`Performing fresh crawl for source ${sourceId}, URL: ${source.url}`);
+  private async performFreshCrawl(sourceId: number, source: any, callbacks?: any, forceRefresh: boolean = false): Promise<JobCrawlerResult> {
+    this.logger.info(`Performing fresh crawl for source ${sourceId}, URL: ${source.url}, forceRefresh: ${forceRefresh}`);
     
     // Mark existing jobs from this source as inactive
     await this.jobSourceService.deactivateSourceJobs(sourceId);
@@ -209,7 +209,8 @@ export class ScraperService {
       {
         sourceId,
         url: source.url,
-        keywords: source.keywords
+        keywords: source.keywords,
+        forceRefresh
       },
       async (job) => {
         // Process each job through validation, duplicate detection, and storage

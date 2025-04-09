@@ -100,10 +100,11 @@ export class WebCrawler {
       url: string;
       keywords?: string;
       maxJobs?: number;
+      forceRefresh?: boolean;
     },
     onProcessJob: (job: JobPostingData) => Promise<number>
   ): Promise<CrawlResult> {
-    this.logger.info(`Starting crawl for source ${options.sourceId}, URL: ${options.url}`);
+    this.logger.info(`Starting crawl for source ${options.sourceId}, URL: ${options.url}, forceRefresh: ${!!options.forceRefresh}`);
     
     // Check if the URL is from a known job board
     const isJobBoardUrl = this.jobBoardService.isJobBoardUrl(options.url);
@@ -124,6 +125,7 @@ export class WebCrawler {
         keywords: options.keywords,
         maxJobs: options.maxJobs || 50,
         sourceId: options.sourceId,
+        forceRefresh: options.forceRefresh,
         
         // Callback when a job is found
         onJobFound: async (job) => {
@@ -164,10 +166,11 @@ export class WebCrawler {
       onJobFound, 
       onComplete, 
       onError, 
-      sourceId 
+      sourceId,
+      forceRefresh = false // Add forceRefresh parameter with default value
     } = options;
     
-    this.logger.info(`Starting crawlJobSite of ${url} with keywords: ${keywords || 'none'}`);
+    this.logger.info(`Starting crawlJobSite of ${url} with keywords: ${keywords || 'none'}, forceRefresh: ${forceRefresh}`);
     
     // Check if the URL is from a known job board
     const isJobBoardUrl = this.jobBoardService.isJobBoardUrl(url);
@@ -182,6 +185,12 @@ export class WebCrawler {
       if (stopped) {
         this.logger.info(`Stopped existing crawler for source ${sourceId}`);
       }
+    }
+    
+    // Reset URL tracker history if force refresh is enabled
+    if (forceRefresh) {
+      this.logger.info(`Force refresh enabled - clearing URL tracker history`);
+      this.urlTracker.clearHistory();
     }
     
     // Validate URL
@@ -201,7 +210,8 @@ export class WebCrawler {
       maxJobs,
       results,
       onJobFound,
-      onError
+      onError,
+      forceRefresh
     });
     
     try {
@@ -210,8 +220,23 @@ export class WebCrawler {
         this.activeCrawlers.set(sourceId, crawler);
       }
       
+      // Debug log before starting crawler
+      this.logger.info(`Starting crawler for URL: ${url}`);
+      
       // Start the crawl
-      await crawler.run([url]);
+      const runResult = await crawler.run([url]);
+      
+      // Debug log after crawler finished
+      this.logger.info(`Crawler finished. Stats: ${JSON.stringify({
+        requestsFinished: runResult.requestsFinished,
+        requestsFailed: runResult.requestsFailed,
+        requestsTotal: runResult.requestsTotal,
+        retryHistogram: runResult.retryHistogram,
+        crawlerRuntimeMillis: runResult.crawlerRuntimeMillis
+      })}`);
+      if (runResult.requestsTotal === 0) {
+        this.logger.warn(`No requests were processed. This might indicate an issue with the initial URL or request queue.`);
+      }
       
       // Call onComplete callback if provided
       if (onComplete) {
@@ -246,7 +271,8 @@ export class WebCrawler {
     maxJobs,
     results,
     onJobFound,
-    onError
+    onError,
+    forceRefresh
   }: {
     url: string;
     keywords?: string;
@@ -254,13 +280,14 @@ export class WebCrawler {
     results: JobPostingData[];
     onJobFound?: (job: JobPostingData) => Promise<void>;
     onError?: (error: Error, url: string) => Promise<void>;
+    forceRefresh?: boolean;
   }): PlaywrightCrawler {
     return new PlaywrightCrawler({
       useSessionPool: true,
       headless: true,
       maxConcurrency: 2,
-      navigationTimeoutSecs: 90,
-      requestHandlerTimeoutSecs: 180,
+      navigationTimeoutSecs: 120,
+      requestHandlerTimeoutSecs: 240,
       
       // Handle failures
       failedRequestHandler: async ({ request, error }) => {

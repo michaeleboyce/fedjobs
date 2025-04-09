@@ -1,26 +1,58 @@
 // File path: packages/crawler/src/core/crawler/PageHandler.ts
+import { Logger } from '../../utils/Logger';
 
 /**
  * Handles page setup and data extraction
  */
 export class PageHandler {
+    private logger: Logger;
+    
+    constructor() {
+      this.logger = new Logger('PageHandler');
+    }
+    
     /**
-     * Setup the page for crawling
+     * Setup the page for crawling with improved reliability
      */
     async setupPage(page: any): Promise<void> {
       // Set viewport
       await page.setViewportSize({ width: 1280, height: 800 });
       
-      // Wait for page to load
-      await page.waitForLoadState('domcontentloaded');
-      await page.waitForTimeout(2000); // Give JS some time to execute
+      this.logger.info(`Setting up page and waiting for content to load`);
       
+      // Wait for page to load with increased timeouts
       try {
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
+        this.logger.info(`Waiting for DOMContentLoaded event`);
+        await page.waitForLoadState('domcontentloaded', { timeout: 30000 }); // Increased to 30 seconds
+        this.logger.info(`DOMContentLoaded event fired`);
+        
+        // Wait for a short time to let initial scripts execute
+        await page.waitForTimeout(3000); // Increased from 2000ms to 3000ms
+        
+        try {
+          this.logger.info(`Waiting for network idle state`);
+          // Longer timeout for network idle
+          await page.waitForLoadState('networkidle', { timeout: 20000 }); // Increased to 20 seconds
+          this.logger.info(`Network idle state reached`);
+        } catch (e) {
+          // Continue anyway if networkidle times out
+          this.logger.warn(`NetworkIdle timeout - continuing anyway: ${e instanceof Error ? e.message : String(e)}`);
+        }
+        
+        // Ensure page has rendered properly by waiting for body element
+        try {
+          this.logger.info(`Waiting for body element to be visible`);
+          await page.waitForSelector('body', { timeout: 10000 });
+          this.logger.info(`Body element is visible`);
+        } catch (e) {
+          this.logger.warn(`Error waiting for body element: ${e instanceof Error ? e.message : String(e)}`);
+        }
       } catch (e) {
-        // Continue anyway if networkidle times out
-        console.log(`[PageHandler] NetworkIdle timeout - continuing anyway`);
+        this.logger.error(`Error during page setup: ${e instanceof Error ? e.message : String(e)}`);
+        // Continue anyway, we'll try to extract what we can
       }
+      
+      this.logger.info(`Page setup completed`);
     }
     
     /**
@@ -39,11 +71,26 @@ export class PageHandler {
      * @returns Object containing the HTML content, page title, and meta description
      */
     async extractPageData(page: any): Promise<{ content: string, title: string, description: string }> {
+      this.logger.info(`Extracting page data`);
+      
       // Get page content
-      const content = await page.content();
+      let content = '';
+      try {
+        content = await page.content();
+        this.logger.info(`Content extracted: ${content.length} characters`);
+      } catch (error) {
+        this.logger.error(`Error getting page content:`, error instanceof Error ? error : new Error(String(error)));
+        content = '<html><body>Error extracting content</body></html>';
+      }
       
       // Get title
-      const title = await page.title();
+      let title = '';
+      try {
+        title = await page.title();
+        this.logger.info(`Title extracted: "${title}"`);
+      } catch (error) {
+        this.logger.error(`Error getting page title:`, error instanceof Error ? error : new Error(String(error)));
+      }
       
       // Get meta description
       let description = '';
@@ -52,8 +99,9 @@ export class PageHandler {
           const metaTag = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
           return metaTag ? metaTag.getAttribute('content') || '' : '';
         });
+        this.logger.info(`Description extracted: "${description.substring(0, 50)}${description.length > 50 ? '...' : ''}"`);
       } catch (error) {
-        console.log(`[PageHandler] Error getting meta description:`, error);
+        this.logger.error(`Error getting meta description:`, error instanceof Error ? error : new Error(String(error)));
       }
       
       return { content, title, description };
