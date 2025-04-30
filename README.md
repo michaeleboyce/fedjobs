@@ -77,7 +77,3 @@ The repository uses GitHub Actions for CI/CD:
 - **crawler-tests.yml**: Runs tests for the crawler package with coverage reporting
 - **refresh-job-sources.yml**: Scheduled job to refresh job sources
 - **fly-deploy.yml**: Deploys the web application
-
----
-
-### TODO: move to proper package management: https://turbo.build/repo/docs/crafting-your-repository/structuring-a-repository
