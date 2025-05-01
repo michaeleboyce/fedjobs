@@ -18,7 +18,9 @@
     "test:integration:mock": "chmod +x ./run-integration-tests.sh && ./run-integration-tests.sh mock",
     "test:integration:real": "chmod +x ./run-integration-tests.sh && ./run-integration-tests.sh real",
     "test:integration:openai": "INTEGRATION_TEST_MODE=mock vitest run \"__tests__/integration/openai-crawl.test.ts\"",
-    "test:all": "vitest run"
+    "test:all": "vitest run",
+    "build:scripts": "tsc --project tsconfig.scripts.json",
+    "clean-html": "node dist/scripts/clean-html.js"
   },
   "dependencies": {
     "@fedjobs/database": "workspace:*",

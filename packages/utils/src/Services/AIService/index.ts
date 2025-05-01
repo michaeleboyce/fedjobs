@@ -3,36 +3,19 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { AIProvider, AIStreamOptions, GenerationParams, StreamResponse } from './types';
-import { createClient } from 'redis';
+import { redisService } from '../RedisService'; 
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+
+
 dotenv.config();
 
-console.log('REDIS_URL', process.env.REDIS_URL);
-console.log('REDISPASSWORD', process.env.REDISPASSWORD);
-
-// Create the Redis client with the constructed URL.
-// If the password is included in the URL, there's no need to pass it separately.
-const redisClient = createClient({ 
-  url: process.env.REDIS_URL,
-  password: process.env.REDISPASSWORD || undefined,
-});
-
-// Attempt to connect and log any errors.
-redisClient.connect().catch(err => {
-  console.error('Redis connection error:', err);
-});
-
-// Connect to Redis and handle connection errors.
-redisClient.connect().catch(err => {
-  console.error('Redis connection error:', err);
-});
 /**
- * Helper function to generate a unique cache key for a given model and prompt.
- * Using a hash allows the key to be a consistent length.
+ * Helper function to generate a unique cache key.
  */
-function getCacheKey(model: string, prompt: string): string {
-  const hash = crypto.createHash('sha256').update(prompt).digest('hex');
+function getCacheKey(model: string, prompt: string, jsonMode?: boolean): string {
+  const modeSuffix = jsonMode ? ':json' : ':text';
+  const hash = crypto.createHash('sha256').update(prompt + modeSuffix).digest('hex');
   return `ai-cache:${model}:${hash}`;
 }
 
@@ -53,14 +36,12 @@ export class AIServiceError extends Error {
     this.model = model;
     this.originalError = originalError;
     
-    // Extract status code if available
     if (originalError?.status) {
       this.statusCode = originalError.status;
     } else if (originalError?.statusCode) {
       this.statusCode = originalError.statusCode;
     }
     
-    // Capture stack trace
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -77,9 +58,9 @@ export class AIService {
    */
   private getOpenAIClient(): OpenAI {
     if (!this.openAIClient) {
-      const apiKey = process.env.OPENAI_API_KEY_35 || '';
+      const apiKey = process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_35 || '';
       if (!apiKey) {
-        console.warn('Warning: OPENAI_API_KEY_35 is not set in environment variables');
+        console.warn('Warning: OPENAI_API_KEY is not set in environment variables');
       }
       
       this.openAIClient = new OpenAI({
@@ -107,27 +88,28 @@ export class AIService {
   }
   
   /**
-   * Determine the AI provider based on model name
+   * Determine the AI provider based on model name (Reinstated)
    */
   private getProviderForModel(model: string): AIProvider {
-    if (model.startsWith('claude')) {
+    if (model.toLowerCase().startsWith('claude')) {
       return 'anthropic';
     }
     return 'openai';
   }
-  
+
   /**
    * Create a streaming response for text generation
-   * (Caching for streaming responses is less common so it's not included here)
    */
   public async createStreamingResponse(options: AIStreamOptions): Promise<StreamResponse> {
-    const { model, prompt, temperature, maxTokens } = options;
+    const { model, prompt, temperature, maxTokens = 4096, jsonMode } = options;
+    
     const provider = this.getProviderForModel(model);
+    
+    const finalPrompt = jsonMode ? `You MUST respond ONLY with valid JSON. Do not include any other text, explanations, or markdown formatting.\n\n${prompt}` : prompt;
     
     const encoder = new TextEncoder();
     let fullCompletion = '';
     
-    // Store service instance to use in callbacks
     const service = this;
     
     const readableStream = new ReadableStream({
@@ -136,10 +118,10 @@ export class AIService {
           if (provider === 'anthropic') {
             const client = service.getAnthropicClient();
             const stream = client.messages.stream({
-              model,
-              messages: [{ role: 'user', content: prompt }],
-              temperature: temperature || 0,
-              max_tokens: maxTokens || 4096,
+              model: model,
+              messages: [{ role: 'user', content: finalPrompt }],
+              temperature: temperature ?? 0,
+              max_tokens: maxTokens,
               stream: true,
             });
             
@@ -150,23 +132,31 @@ export class AIService {
             
             stream.on('end', () => controller.close());
             stream.on('error', (err: any) => {
+              const serviceError = new AIServiceError(
+                `Anthropic streaming error: ${err.message || String(err)}`,
+                provider,
+                model,
+                err
+              );
+              serviceError.promptLength = finalPrompt.length;
               console.error('Anthropic streaming error:', {
-                error: err.message || String(err),
+                error: serviceError.message,
                 model,
                 provider,
-                promptLength: prompt.length,
+                promptLength: serviceError.promptLength,
+                statusCode: serviceError.statusCode,
               });
-              controller.error(err);
+              controller.error(serviceError);
             });
           } else {
-            // OpenAI Streaming Response
             const client = service.getOpenAIClient();
             const response = await client.chat.completions.create({
-              model,
-              messages: [{ role: 'user', content: prompt }],
-              temperature: temperature || 0,
-              max_tokens: maxTokens || 4096,
+              model: model,
+              messages: [{ role: 'user', content: finalPrompt }],
+              temperature: temperature ?? 0,
+              max_tokens: maxTokens,
               stream: true,
+              ...(jsonMode && { response_format: { type: "json_object" } }),
             });
             
             for await (const chunk of response) {
@@ -180,13 +170,21 @@ export class AIService {
             controller.close();
           }
         } catch (error) {
-          console.error('AI streaming error:', error);
-          controller.error(new AIServiceError(
+          const serviceError = new AIServiceError(
             `Streaming error with ${provider} model ${model}`,
             provider,
             model,
             error
-          ));
+          );
+          serviceError.promptLength = finalPrompt.length;
+          console.error('AI streaming error:', {
+             error: serviceError.message,
+             model,
+             provider,
+             promptLength: serviceError.promptLength,
+             statusCode: serviceError.statusCode,
+          });
+          controller.error(serviceError);
         }
       }
     });
@@ -201,33 +199,32 @@ export class AIService {
    * Generate text without streaming (for short generations) with caching.
    */
   public async generateText(params: GenerationParams): Promise<string> {
-    const { model, prompt, temperature = 0, maxTokens = 4096 } = params;
-    const provider = this.getProviderForModel(model);
+    const { model, prompt, temperature = 0, maxTokens = 4096, jsonMode } = params;
     
-    const requestId = Math.random().toString(36).substring(2, 10); // Generate a request ID for tracing
+    const provider = this.getProviderForModel(model);
 
-    // Create a cache key based on the model and prompt
-    const cacheKey = getCacheKey(model, prompt);
+    const finalPrompt = jsonMode ? `You MUST respond ONLY with valid JSON. Do not include any other text, explanations, or markdown formatting.\n\n${prompt}` : prompt;
+
+    const requestId = Math.random().toString(36).substring(2, 10);
+
+    const cacheKey = getCacheKey(model, finalPrompt, jsonMode);
     try {
-      // Check if the response is already cached
-      const cachedResult = await redisClient.get(cacheKey);
-      if (cachedResult) {
+      const cachedResult = await redisService.get(cacheKey);
+      if (cachedResult !== null) {
         console.log(`[AI:${requestId}] Cache hit for key ${cacheKey}`);
         return cachedResult;
       }
+      console.log(`[AI:${requestId}] Cache miss for key ${cacheKey}`);
     } catch (cacheError) {
-      console.error(`[AI:${requestId}] Redis lookup failed:`, cacheError);
-      // Continue without caching if there was a problem with Redis
+      console.error(`[AI:${requestId}] Cache lookup failed for key ${cacheKey}:`, cacheError);
     }
     
     try {
-      // Check for empty or undefined prompt
-      if (!prompt) {
+      if (!finalPrompt) {
         throw new AIServiceError('Empty prompt provided to AI service', provider, model);
       }
       
-      // Log basic info for all requests
-      console.log(`Generating text using ${provider} model ${model} (${prompt.length} chars)`);
+      console.log(`Generating text using ${provider} model ${model} (${finalPrompt.length} chars)${jsonMode ? ' (JSON mode)' : ''}`);
       
       const startTime = Date.now();
       let result = '';
@@ -236,8 +233,8 @@ export class AIService {
         const client = this.getAnthropicClient();
         try {
           const response = await client.messages.create({
-            model,
-            messages: [{ role: 'user', content: prompt }],
+            model: model,
+            messages: [{ role: 'user', content: finalPrompt }],
             temperature,
             max_tokens: maxTokens,
           });
@@ -266,14 +263,14 @@ export class AIService {
           );
         }
       } else {
-        // OpenAI
         const client = this.getOpenAIClient();
         try {
           const response = await client.chat.completions.create({
-            model,
-            messages: [{ role: 'user', content: prompt }],
+            model: model,
+            messages: [{ role: 'user', content: finalPrompt }],
             temperature,
             max_tokens: maxTokens,
+            ...(jsonMode && { response_format: { type: "json_object" } }),
           });
           
           const elapsedTime = Date.now() - startTime;
@@ -296,45 +293,50 @@ export class AIService {
         }
       }
       
-      // Cache the result with an expiration time (e.g., 1 hour)
       try {
-        await redisClient.set(cacheKey, result, { EX: 3600 });
+        await redisService.set(cacheKey, result, 604800); 
         console.log(`[AI:${requestId}] Cached result under key ${cacheKey}`);
       } catch (cacheError) {
-        console.error(`[AI:${requestId}] Redis caching failed:`, cacheError);
+        console.error(`[AI:${requestId}] Redis caching failed for key ${cacheKey}:`, cacheError);
       }
       
       return result;
     } catch (error) {
-      if (error instanceof AIServiceError) {
-        error.promptLength = prompt.length;
+      const serviceError = error instanceof AIServiceError ? error : new AIServiceError(
+        `Error generating text: ${error instanceof Error ? error.message : String(error)}`,
+        provider, 
+        model, 
+        error
+      );
+      
+      if (!(error instanceof AIServiceError)) {
+        serviceError.promptLength = finalPrompt?.length;
       }
+
       console.error(`[AI:${requestId}] Error generating text:`, {
-        error: error instanceof Error ? error.message : String(error),
-        provider,
-        model,
-        promptLength: prompt.length,
-        statusCode: error instanceof AIServiceError ? error.statusCode : undefined,
+        error: serviceError.message,
+        provider: serviceError.provider,
+        model: serviceError.model,
+        promptLength: serviceError.promptLength,
+        statusCode: serviceError.statusCode,
       });
-      throw error;
+      throw serviceError;
     }
   }
-  
+
   /**
-   * Get available AI models grouped by provider
+   * Get available AI models grouped by provider (Original hardcoded version)
    */
   public getAvailableModels() {
     return {
       'openai': [
         { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' },
-        { id: 'o1', name: 'o1', provider: 'openai' },
-        { id: 'o1-mini', name: 'o1-mini', provider: 'openai' },
-        { id: 'o3-mini', name: 'o3-mini', provider: 'openai' },
-        { id: 'o1-preview', name: 'o1-preview', provider: 'openai' },
+        { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai' },
+        { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'openai' },
       ],
       'anthropic': [
-        { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet', provider: 'anthropic' },
-        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'anthropic' },
+        { id: 'claude-3-5-sonnet-20240620', name: 'Claude 3.5 Sonnet', provider: 'anthropic' },
+        { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'anthropic' },
       ]
     };
   }

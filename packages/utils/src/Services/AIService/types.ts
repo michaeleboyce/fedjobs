@@ -24,6 +24,7 @@ export interface AIStreamOptions {
   temperature?: number;
   maxTokens?: number;
   userId?: string;
+  jsonMode?: boolean;
 }
 
 /**
@@ -34,6 +35,7 @@ export interface GenerationParams {
   prompt: string;
   temperature?: number;
   maxTokens?: number;
+  jsonMode?: boolean;
 }
 
 /**
@@ -49,7 +51,10 @@ export interface TextBlock {
   type: 'text';
   text: string;
 }
-
+// Example usage:
+// When handling a response from Anthropic's Claude model, you might receive a ToolUseBlock like this:
+// { type: 'tool_use', id: '123', name: 'getWeather', input: { location: 'NYC' } }
+// This interface is used to type such blocks in AIService responses. It is specific to Anthropic models and not used for OpenAI.
 export interface ToolUseBlock {
   type: 'tool_use';
   id: string;
